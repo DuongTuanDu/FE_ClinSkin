@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaUser, FaHeart, FaBars, FaTimes } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaSearch, FaShoppingCart, FaUser, FaHeart, FaBars, FaTimes, FaRegUserCircle } from "react-icons/fa";
 import Logo from "./Logo";
+import { Button } from "antd";
+import { useSelector } from "react-redux";
 
 const HeaderUser = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isAuthenticated } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
 
     // Handle scroll event to change header appearance
     useEffect(() => {
@@ -68,11 +72,6 @@ const HeaderUser = () => {
                             <FaSearch />
                         </button>
 
-                        {/* Wishlist */}
-                        <Link to="/wishlist" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                            <FaHeart />
-                        </Link>
-
                         {/* Cart */}
                         <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"} relative`}>
                             <FaShoppingCart />
@@ -82,9 +81,21 @@ const HeaderUser = () => {
                         </Link>
 
                         {/* User */}
-                        <Link to="/account" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                            <FaUser />
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link to="/account" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
+                                <FaUser />
+                            </Link>
+                        ) : (
+                            <Button
+                                onClick={() => navigate("/auth")}
+                                type="text"
+                                icon={<FaRegUserCircle className="text-3xl" />}
+                                className="hidden md:flex text-base font-medium"
+                            >
+                                Đăng nhập
+                            </Button>
+                        )}
+
 
                         {/* Mobile menu button */}
                         <button
