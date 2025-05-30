@@ -28,7 +28,7 @@ const LayoutUser = ({ children }) => {
         }}
       />
       <HeaderUser />
-      <main className="flex-grow px-4 lg:px-16 py-2">{children}</main>
+      <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
       <FooterUser />
     </div>
   );

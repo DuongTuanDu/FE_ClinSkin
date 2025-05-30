@@ -115,6 +115,20 @@ export const authSlice = createSlice({
                 state.error = action.payload;
                 state.isLoading = false;
             })
+            //Reset Password
+            .addCase(resetPassword.pending, (state, action) => {
+                state.isLoading = true;
+            })
+            .addCase(resetPassword.fulfilled, (state, action) => {
+                if (action.payload.success) {
+                    state.isLoading = false;
+                    state.error = {};
+                }
+            })
+            .addCase(resetPassword.rejected, (state, action) => {
+                state.error = action.payload;
+                state.isLoading = false;
+            })
     },
 });
 export const {
