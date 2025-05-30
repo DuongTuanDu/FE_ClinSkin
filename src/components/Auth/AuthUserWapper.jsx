@@ -13,7 +13,6 @@ import ModalAuth from "../Modal/ModalAuth";
 const AuthUserWrapper = ({
   children,
   isModalAuth = false,
-  isAuthBooking = false,
 }) => {
   const dispatch = useDispatch();
   const { isLoading, isAuthenticated } = useSelector((state) => state.auth);
