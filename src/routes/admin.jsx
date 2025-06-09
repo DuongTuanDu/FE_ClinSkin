@@ -10,6 +10,7 @@ const AuthAdminWrapper = lazy(() => import("@components/Auth/AuthAdminWapper"));
 // Lazy load all page components
 const LoginAdmin = lazy(() => import("@pages/LoginAdmin"));
 const Dashboard = lazy(() => import("@pages/DashBoard"));
+const ManageCategory = lazy(() => import("@pages/ManageCategory"));
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading } = useSelector(
@@ -81,7 +82,14 @@ const adminRoutes = [
         title: "Dashboard",
         layoutTitle: "Hi 👋, Wellcome Admin ClinSkin!",
         isProtected: true,
-    }
+    },
+    {
+        path: "/admin/categories",
+        element: ManageCategory,
+        title: "Admin - Danh sách danh mục",
+        layoutTitle: "Danh sách danh mục",
+        isProtected: true,
+    },
 ];
 
 const AdminRoutes = adminRoutes.map(
