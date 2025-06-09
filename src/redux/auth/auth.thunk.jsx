@@ -61,3 +61,27 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
+
+export const loginAdmin = createAsyncThunk(
+  "auth/loginAdmin",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await axios.post("/admin/auth/login", data);
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const getAccountAdmin = createAsyncThunk(
+  "auth/getAccountAdmin",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await axios.get("/admin/auth/account");
+    } catch (error) {
+      remove("ACCESS_TOKEN_ADMIN");
+      return rejectWithValue(error.response.data);
+    }
+  }
+);

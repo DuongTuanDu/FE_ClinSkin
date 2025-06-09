@@ -6,6 +6,7 @@ const LayoutUser = lazy(() => import("@components/Layout/LayoutUser"));
 // Lazy load all page components
 const Home = lazy(() => import("@pages/Home/index"));
 const Auth = lazy(() => import("@pages/Auth/index"));
+const Account = lazy(() => import("@pages/Account/Account"));
 
 
 const WrapRoute = ({ element: Element }) => (
