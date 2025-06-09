@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+    getAccountAdmin,
+    loginAdmin,
     loginUser,
     registerUser,
     resetPassword,
@@ -26,6 +28,16 @@ const initialState = {
     isAuthenticatedAdmin: false,
     emailVerify: "",
     openModelAuth: false,
+    adminInfo: {
+        _id: "",
+        name: "",
+        username: "",
+        role: "",
+        avatar: {
+            url: "",
+            publicId: "",
+        },
+    },
 };
 
 export const authSlice = createSlice({
@@ -50,7 +62,12 @@ export const authSlice = createSlice({
             state.isAuthenticated = false;
             state.userInfo = {};
             window.location.reload();
-        }
+        },
+        logoutAdmin(state, action) {
+            remove("ACCESS_TOKEN_ADMIN");
+            state.isAuthenticatedAdmin = false;
+            state.adminInfo = {};
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -129,6 +146,41 @@ export const authSlice = createSlice({
                 state.error = action.payload;
                 state.isLoading = false;
             })
+
+            //Login Admin
+            .addCase(loginAdmin.pending, (state, action) => {
+                state.isLoading = true;
+            })
+            .addCase(loginAdmin.fulfilled, (state, action) => {
+                if (action.payload.success) {
+                    state.isLoading = false;
+                    state.adminInfo = action.payload.data;
+                    state.isAuthenticatedAdmin = true;
+                    state.error = {};
+                }
+            })
+            .addCase(loginAdmin.rejected, (state, action) => {
+                state.error = action.payload;
+                state.isLoading = false;
+            })
+
+            // Get Account Admin
+            .addCase(getAccountAdmin.pending, (state, action) => {
+                state.isLoading = true;
+            })
+            .addCase(getAccountAdmin.fulfilled, (state, action) => {
+                if (action.payload.success) {
+                    state.isLoading = false;
+                    state.adminInfo = action.payload.data;
+                    state.isAuthenticatedAdmin = true;
+                    state.error = {};
+                }
+            })
+            .addCase(getAccountAdmin.rejected, (state, action) => {
+                state.error = action.payload;
+                state.isLoading = false;
+                state.isAuthenticatedAdmin = false;
+            });
     },
 });
 export const {
@@ -137,5 +189,6 @@ export const {
     setOpenModelAuth,
     setIsLoading,
     setIsAuthenticated,
+    logoutAdmin
 } = authSlice.actions;
 export default authSlice.reducer;

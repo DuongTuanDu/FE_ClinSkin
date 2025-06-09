@@ -16,9 +16,13 @@ const createAxiosInstance = () => {
 
   instance.interceptors.request.use((config) => {
     const accessToken = get("ACCESS_TOKEN");
+    const accessTokenAdmin = get("ACCESS_TOKEN_ADMIN");
 
     if (accessToken) {
       config.headers["X-User-Header"] = accessToken;
+    }
+    if (accessTokenAdmin) {
+      config.headers["X-Admin-Header"] = accessTokenAdmin;
     }
     return config;
   });
