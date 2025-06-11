@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { Table, Tooltip, Pagination, Tag, Popconfirm } from "antd";
+import { Table, Tooltip, Pagination, Tag, Popconfirm, message } from "antd";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
+import { useDeleteCategoryMutation } from "@/redux/category/category.query";
 
 const TableCategory = ({
   categories = [],
@@ -11,8 +12,17 @@ const TableCategory = ({
   totalItems,
   setPaginate
 }) => {
+  const [deleteCategory, { isLoading: isLoadingDelete }] = useDeleteCategoryMutation();
   const removeCategory = async (id) => {
     console.log(id);
+    try {
+      const res = await deleteCategory(id);
+      if (res.data.success) {
+        message.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const columns = useMemo(
@@ -74,8 +84,7 @@ const TableCategory = ({
             <Tooltip title="Sửa">
               <button
                 onClick={() => {
-                  setCategory(record);
-                  setOpen(true);
+                  console.log(record);
                 }}
                 className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors"
               >
