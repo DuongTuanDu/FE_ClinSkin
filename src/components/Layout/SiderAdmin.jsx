@@ -110,7 +110,7 @@ const Logo = ({ collapsed, adminInfo }) => (
       transition={LOGO_TRANSITION}
     >
       {collapsed
-        ? "SLC"
+        ? "CLS"
         : adminInfo?.role === "ADMIN"
         && "ClinSkin"
       }

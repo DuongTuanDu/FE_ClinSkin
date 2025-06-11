@@ -1,100 +1,88 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import { Input, Button } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import TableCategory from "@/pages/ManageCategory/TableCategory";
 import debounce from "lodash/debounce";
-import MOCK_DATA from "./MockData";
+import ModalCategoryAction from "@/pages/ManageCategory/ModalCategoryAction";
+import { useGetCategoryListQuery } from "@/redux/category/category.query";
 
 const ManageCategory = () => {
-    const [paginate, setPaginate] = useState({
-        page: 1,
-        pageSize: 10,
-    });
-    const [filter, setFilter] = useState({
-        name: "",
-    });
+  const [paginate, setPaginate] = useState({
+    page: 1,
+    pageSize: 10,
+  });
+  const [filter, setFilter] = useState({
+    name: "",
+  });
+  const [open, setOpen] = useState(false);
+  const [isFetch, setIsfetch] = useState(false);
 
-    const [isFetch, setIsfetch] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const { data, isLoading, refetch } = useGetCategoryListQuery({
+    ...paginate,
+    ...filter,
+  });
 
-    const processedData = useMemo(() => {
-        const allCategories = MOCK_DATA.data;
-        
-        // Filter theo tên nếu có
-        const filteredCategories = allCategories.filter(category => {
-            if (!filter.name) return true;
-            return category.name.toLowerCase().includes(filter.name.toLowerCase());
-        });
+  const { data: categories = [], pagination = {} } = data || {};
 
-        // Phân trang
-        const startIndex = (paginate.page - 1) * paginate.pageSize;
-        const endIndex = startIndex + paginate.pageSize;
-        const paginatedCategories = filteredCategories.slice(startIndex, endIndex);
+  const debouncedFilter = useCallback(
+    debounce((value) => {
+      setFilter({ name: value });
+      setPaginate((prev) => ({ ...prev, page: 1 }));
+    }, 1000),
+    []
+  );
 
-        return {
-            data: paginatedCategories,
-            pagination: {
-                page: paginate.page,
-                pageSize: paginate.pageSize,
-                totalItems: filteredCategories.length,
-                totalPage: Math.ceil(filteredCategories.length / paginate.pageSize)
-            }
-        };
-    }, [paginate, filter]);
+  const handleFilterChange = (e) => {
+    debouncedFilter(e.target.value);
+  };
 
-    const debouncedFilter = useCallback(
-        debounce((value) => {
-            setFilter({ name: value });
-            setPaginate((prev) => ({ ...prev, page: 1 }));
-        }, 1000),
-        []
-    );
+  const handlePageChange = (newPage, newPageSize) => {
+    setPaginate({ page: newPage, pageSize: newPageSize });
+  };
 
-    const handleFilterChange = (e) => {
-        debouncedFilter(e.target.value);
-    };
+  return (
+    <div className="mt-4">
+      <ModalCategoryAction
+        {...{
+          page: pagination?.page,
+          pageSize: pagination?.pageSize,
+          open,
+          setOpen,
+          refetch,
+          isFetch,
+        }}
+      />
+      <div className="mb-4 bg-white p-4 rounded-md shadow-lg flex gap-4 items-center">
+        <Input
+          size="middle"
+          placeholder="Tìm kiếm danh mục..."
+          prefix={<SearchOutlined />}
+          onChange={handleFilterChange}
+          allowClear
+        />
+        <Button
+          size="middle"
+          onClick={() => setOpen(true)}
+          type="primary"
+          icon={<PlusOutlined />}
+          className="bg-indigo-600 hover:bg-indigo-700"
+        >
+          Thêm danh mục
+        </Button>
+      </div>
 
-    const handlePageChange = (newPage, newPageSize) => {
-        setPaginate({ page: newPage, pageSize: newPageSize });
-    };
-
-    const refetch = () => {
-        setIsfetch(!isFetch);
-    };
-
-    return (
-        <div className="mt-4">
-            <div className="mb-4 bg-white p-4 rounded-md shadow-lg flex gap-4 items-center">
-                <Input
-                    size="middle"
-                    placeholder="Tìm kiếm danh mục..."
-                    prefix={<SearchOutlined />}
-                    onChange={handleFilterChange}
-                    allowClear
-                />
-                <Button
-                    size="middle"
-                    onClick={() => setOpen(true)}
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    className="bg-indigo-600 hover:bg-indigo-700"
-                >
-                    Thêm danh mục
-                </Button>
-            </div>
-
-            <TableCategory
-                categories={processedData.data}
-                isLoading={isLoading}
-                page={processedData.pagination.page}
-                pageSize={processedData.pagination.pageSize}
-                totalItems={processedData.pagination.totalItems}
-                setPaginate={handlePageChange}
-                refetch={refetch}
-                setIsfetch={setIsfetch}
-            />
-        </div>
-    );
+      <TableCategory
+        categories={categories}
+        isLoading={isLoading}
+        page={pagination?.page}
+        pageSize={pagination?.pageSize}
+        totalItems={pagination?.totalItems || 0}
+        setPaginate={handlePageChange}
+        refetch={refetch}
+        setIsfetch={setIsfetch}
+      />
+    </div>
+  );
 };
 
 export default ManageCategory;
