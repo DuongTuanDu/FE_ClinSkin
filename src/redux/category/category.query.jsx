@@ -31,6 +31,7 @@ export const categoryApi = createApi({
             },
             providesTags: ["Category"],
         }),
+        
         deleteCategory: builder.mutation({
             query: (id) => ({
                 url: `/admin/categories/${id}`,
