@@ -11,6 +11,7 @@ const AuthAdminWrapper = lazy(() => import("@components/Auth/AuthAdminWapper"));
 const LoginAdmin = lazy(() => import("@pages/LoginAdmin"));
 const Dashboard = lazy(() => import("@pages/DashBoard"));
 const ManageCategory = lazy(() => import("@pages/ManageCategory"));
+const SettingAdmin = lazy(() => import("@pages/SettingAdmin"));
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading } = useSelector(
@@ -88,6 +89,13 @@ const adminRoutes = [
         element: ManageCategory,
         title: "Admin - Danh sách danh mục",
         layoutTitle: "Danh sách danh mục",
+        isProtected: true,
+    },
+    {
+        path: "/admin/settings",
+        element: SettingAdmin,
+        title: "Admin - Cài đặt",
+        layoutTitle: "Thông tin cài đặt tài khoản",
         isProtected: true,
     },
 ];

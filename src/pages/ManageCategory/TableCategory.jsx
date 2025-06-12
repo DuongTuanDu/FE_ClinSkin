@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Table, Tooltip, Pagination, Tag, Popconfirm, message } from "antd";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { useDeleteCategoryMutation } from "@/redux/category/category.query";
+import ModalCategoryAction from "./ModalCategoryAction";
 
 const TableCategory = ({
   categories = [],
@@ -10,9 +11,14 @@ const TableCategory = ({
   page,
   pageSize,
   totalItems,
-  setPaginate
+  setPaginate,
+  refetch,
+  setIsfetch,
 }) => {
   const [deleteCategory, { isLoading: isLoadingDelete }] = useDeleteCategoryMutation();
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState({});
+
   const removeCategory = async (id) => {
     console.log(id);
     try {
@@ -84,7 +90,8 @@ const TableCategory = ({
             <Tooltip title="Sửa">
               <button
                 onClick={() => {
-                  console.log(record);
+                  setCategory(record);
+                  setOpen(true);
                 }}
                 className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors"
               >
@@ -119,6 +126,15 @@ const TableCategory = ({
 
   return (
     <>
+      <ModalCategoryAction
+        {...{
+          refetch,
+          category,
+          setCategory,
+          open,
+          setOpen,
+        }}
+      />
       <Table
         columns={columns}
         dataSource={categories}
