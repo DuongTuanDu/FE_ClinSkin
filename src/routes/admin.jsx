@@ -96,7 +96,7 @@ const adminRoutes = [
         path: "/admin/promotions",
         element: ManagePromotion,
         title: "Admin - Danh sách Khuyến mãi",
-        layoutTitle: "Danh sách Khuyến mãi",
+        layoutTitle: "",
         isProtected: true,
     },
 ];
