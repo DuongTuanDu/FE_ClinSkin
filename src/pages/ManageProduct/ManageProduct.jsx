@@ -3,10 +3,10 @@ import { Input, Button } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import TableProduct from "@/pages/ManageProduct/TableProduct";
 import debounce from "lodash/debounce";
-import ModalProductAction from "@/pages/ManageProduct/ModalProductAction";
-// Replace with actual query when implemented
-// import { useGetProductListQuery } from "@/redux/product/product.query";
-import MockData from "./MockData"; // For testing until actual API is connected
+import { useGetProductListQuery } from "@redux/product/product.query";
+import ModalCreateProduct from "./ModalCreateProduct";
+import ModalUpdateProduct from "./ModalUpdateProduct";
+import { isEmpty } from "lodash";
 
 const ManageProduct = () => {
   const [paginate, setPaginate] = useState({
@@ -16,22 +16,20 @@ const ManageProduct = () => {
   const [filter, setFilter] = useState({
     name: "",
   });
-  const [open, setOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState({});
   const [isFetch, setIsFetch] = useState(false);
 
-  // Mock data for testing - replace with actual query when ready
-  const isLoading = false;
-  const data = MockData;
-  const refetch = () => console.log("Refetching products");
-  
-  // Uncomment this when you have the actual API query
-  /*
-  const { data, isLoading, refetch } = useGetProductListQuery({
-    ...paginate,
-    ...filter,
-  });
-  */
+  // Use a stable reference for the query parameters
+  const queryParams = {
+    page: paginate.page,
+    pageSize: paginate.pageSize,
+    name: filter.name,
+  };
+
+  // Use the actual API query with stable parameters
+  const { data, isLoading, refetch } = useGetProductListQuery(queryParams);
 
   const { data: products = [], pagination = {} } = data || {};
 
@@ -53,20 +51,30 @@ const ManageProduct = () => {
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
-    setOpen(true);
+    setUpdateModalOpen(true);
+  };
+
+  const handleAddProduct = () => {
+    setCreateModalOpen(true);
   };
 
   return (
     <div className="mt-4">
-      <ModalProductAction
-        {...{
-          open,
-          setOpen,
-          product: selectedProduct,
-          refetch,
-          isFetch,
-        }}
+      {/* Create Product Modal */}
+      <ModalCreateProduct
+        open={createModalOpen}
+        setOpen={setCreateModalOpen}
+        refetch={refetch}
       />
+
+      {/* Update Product Modal */}
+      <ModalUpdateProduct
+        open={updateModalOpen}
+        setOpen={setUpdateModalOpen}
+        product={selectedProduct}
+        refetch={refetch}
+      />
+
       <div className="mb-4 bg-white p-4 rounded-md shadow-lg flex gap-4 items-center">
         <Input
           size="middle"
@@ -77,10 +85,7 @@ const ManageProduct = () => {
         />
         <Button
           size="middle"
-          onClick={() => {
-            setSelectedProduct({});
-            setOpen(true);
-          }}
+          onClick={handleAddProduct}
           type="primary"
           icon={<PlusOutlined />}
           className="bg-indigo-600 hover:bg-indigo-700"

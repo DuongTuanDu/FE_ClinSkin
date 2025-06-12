@@ -1,110 +1,67 @@
 import { Input, message, Modal, Select, InputNumber, Upload, Form } from "antd";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { isEmpty } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
 import ErrorMessage from "@components/Error/ErrorMessage";
-// Replace with actual API queries when implemented
-// import { useGetAllCategoryQuery } from "@/redux/category/category.query";
-// import { useGetAllBrandsQuery } from "@/redux/brand/brand.query";
-// import { createProduct, updateProduct } from "@redux/product/product.thunk";
+import { useGetAllCategoryQuery } from "@redux/category/category.query";
+import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
+import { createProduct } from "@redux/product/product.thunk";
+import { validateForm, validateProductActionSchema } from "@validate/validate";
 
 const { TextArea } = Input;
 const { Option } = Select;
 
-const ModalProductAction = ({
-  open,
-  setOpen,
-  product = {},
-  refetch,
-  isFetch,
-}) => {
+const ModalCreateProduct = ({ open, setOpen, refetch }) => {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [mainImage, setMainImage] = useState(null);
+  const [errors, setErrors] = useState({});
   
-  // Mock data for categories and brands - replace with actual API queries
-  const categories = [
-    { _id: "1", name: "Chăm sóc da" },
-    { _id: "2", name: "Trang điểm" },
-    { _id: "3", name: "Chăm sóc cơ thể" },
-  ];
-  const isLoadingCategories = false;
-  
-  const brands = [
-    { _id: "1", name: "La Roche-Posay" },
-    { _id: "2", name: "Nivea" },
-    { _id: "3", name: "L'Oreal" },
-  ];
-  const isLoadingBrands = false;
-  
-  // Uncomment when you have actual API queries
-  /*
   const {
-    data: categories = [],
+    data: categoriesData,
     isLoading: isLoadingCategories,
   } = useGetAllCategoryQuery();
   
   const {
-    data: brands = [],
+    data: brandsData,
     isLoading: isLoadingBrands,
   } = useGetAllBrandsQuery();
-  */
+  
+  const categories = categoriesData || [];
+  const brands = brandsData || [];
 
   useEffect(() => {
-    if (open && !isEmpty(product)) {
-      form.setFieldsValue({
-        name: product.name,
-        price: product.price,
-        categories: product.categories?.map(cat => cat._id || cat),
-        brandId: product.brandId?._id || product.brandId,
-        description: product.description,
-        tags: product.tags?.join(", ")
-      });
-      
-      // Set main image
-      if (product.mainImage?.url) {
-        setMainImage({
-          uid: '-1',
-          name: 'main-image.png',
-          status: 'done',
-          url: product.mainImage.url,
-          thumbUrl: product.mainImage.url,
-        });
-      }
-      
-      // Set additional images
-      if (product.images && product.images.length > 0) {
-        setFileList(
-          product.images.map((img, index) => ({
-            uid: `-${index + 2}`,
-            name: `image-${index}.png`,
-            status: 'done',
-            url: img.url,
-            thumbUrl: img.url,
-          }))
-        );
-      }
-    } else {
+    if (open) {
       form.resetFields();
       setMainImage(null);
       setFileList([]);
+      setErrors({});
     }
-  }, [product, open, form]);
+  }, [open, form]);
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
       
-      // Process tags (convert comma-separated string to array)
       const tags = values.tags ? values.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
       
-      // Validate main image
-      if (!mainImage && isEmpty(product)) {
-        message.error("Vui lòng tải lên hình ảnh chính của sản phẩm");
+      const processedValues = {
+        ...values,
+        tags: tags
+      };
+      
+      const formErrors = await validateForm({
+        input: processedValues,
+        validateSchema: validateProductActionSchema,
+        context: { isNewProduct: true }
+      });
+      
+      if (Object.keys(formErrors).length > 0) {
+        console.log("Validation errors:", formErrors);
+        setErrors(formErrors);
         setLoading(false);
         return;
       }
@@ -112,34 +69,27 @@ const ModalProductAction = ({
       const productData = {
         ...values,
         tags,
-        // We keep the existing currentStock if updating a product
-        currentStock: product.currentStock || 0, // Default to 0 for new products
-        // In a real app, you would upload images and get URLs/IDs
-        mainImage: mainImage ? { 
-          url: mainImage.url || "https://via.placeholder.com/500", 
-          public_id: mainImage.uid 
-        } : product.mainImage,
-        images: fileList.map(file => ({ 
-          url: file.url || "https://via.placeholder.com/500", 
-          public_id: file.uid 
-        }))
       };
       
-      // This is a mock implementation - replace with actual API calls
-      console.log("Submitting product data:", productData);
-      
-      if (isEmpty(product)) {
-        // Create new product
-        // const result = await dispatch(createProduct(productData)).unwrap();
-        message.success("Sản phẩm đã được tạo thành công!");
-      } else {
-        // Update existing product
-        // const result = await dispatch(updateProduct({ id: product._id, data: productData })).unwrap();
-        message.success("Sản phẩm đã được cập nhật thành công!");
+      if (mainImage?.originFileObj) {
+        productData.mainImageBase64 = await getBase64(mainImage.originFileObj);
       }
       
-      refetch();
+      const additionalImagesBase64 = await Promise.all(
+        fileList.filter(file => file.originFileObj)
+          .map(file => getBase64(file.originFileObj))
+      );
+      
+      if (additionalImagesBase64.length > 0) {
+        productData.additionalImagesBase64 = additionalImagesBase64;
+      }
+      
+      await dispatch(createProduct(productData)).unwrap();
+      
+      setErrors({});
+      message.success("Thêm sản phẩm thành công");
       setOpen(false);
+      refetch();
     } catch (error) {
       console.error("Form submission error:", error);
       message.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
@@ -148,17 +98,30 @@ const ModalProductAction = ({
     }
   };
 
+  const getBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleCancel = () => {
     setOpen(false);
     form.resetFields();
     setMainImage(null);
     setFileList([]);
+    setErrors({});
   };
 
   const mainImageUploadProps = {
     listType: "picture-card",
     maxCount: 1,
     fileList: mainImage ? [mainImage] : [],
+    beforeUpload: (file) => {
+      return false;
+    },
     onChange({ fileList }) {
       if (fileList.length > 0) {
         setMainImage(fileList[0]);
@@ -168,12 +131,8 @@ const ModalProductAction = ({
     },
     onPreview: async (file) => {
       let src = file.url;
-      if (!src) {
-        src = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file.originFileObj);
-          reader.onload = () => resolve(reader.result);
-        });
+      if (!src && file.originFileObj) {
+        src = await getBase64(file.originFileObj);
       }
       const image = new Image();
       image.src = src;
@@ -185,17 +144,16 @@ const ModalProductAction = ({
   const additionalImagesUploadProps = {
     listType: "picture-card",
     fileList,
+    beforeUpload: (file) => {
+      return false;
+    },
     onChange: ({ fileList: newFileList }) => {
       setFileList(newFileList);
     },
     onPreview: async (file) => {
       let src = file.url;
-      if (!src) {
-        src = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file.originFileObj);
-          reader.onload = () => resolve(reader.result);
-        });
+      if (!src && file.originFileObj) {
+        src = await getBase64(file.originFileObj);
       }
       const image = new Image();
       image.src = src;
@@ -216,7 +174,7 @@ const ModalProductAction = ({
       open={open}
       title={
         <div className="text-lg md:text-2xl font-bold text-center">
-          {isEmpty(product) ? "Thêm mới sản phẩm" : "Cập nhật sản phẩm"}
+          Thêm mới sản phẩm
         </div>
       }
       onOk={handleSubmit}
@@ -235,7 +193,7 @@ const ModalProductAction = ({
           onClick={handleSubmit}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full transition duration-300 ease-in-out mx-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isEmpty(product) ? "Thêm" : "Cập nhật"}
+          Thêm
         </button>,
       ]}
       width={800}
@@ -244,12 +202,14 @@ const ModalProductAction = ({
         form={form}
         layout="vertical"
         className="mt-4"
+        preserve={false}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
             name="name"
             label="Tên sản phẩm"
-            rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
+            validateStatus={errors.name ? "error" : ""}
+            help={errors.name ? <ErrorMessage message={errors.name} /> : ""}
           >
             <Input size="large" />
           </Form.Item>
@@ -257,7 +217,8 @@ const ModalProductAction = ({
           <Form.Item
             name="price"
             label="Giá"
-            rules={[{ required: true, message: 'Vui lòng nhập giá sản phẩm!' }]}
+            validateStatus={errors.price ? "error" : ""}
+            help={errors.price ? <ErrorMessage message={errors.price} /> : ""}
           >
             <InputNumber 
               size="large"
@@ -268,12 +229,14 @@ const ModalProductAction = ({
               className="w-full"
             />
           </Form.Item>
+          
         </div>
         
         <Form.Item
           name="brandId"
           label="Thương hiệu"
-          rules={[{ required: true, message: 'Vui lòng chọn thương hiệu!' }]}
+          validateStatus={errors.brandId ? "error" : ""}
+          help={errors.brandId ? <ErrorMessage message={errors.brandId} /> : ""}
         >
           <Select 
             size="large"
@@ -289,7 +252,8 @@ const ModalProductAction = ({
         <Form.Item
           name="categories"
           label="Danh mục"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một danh mục!' }]}
+          validateStatus={errors.categories ? "error" : ""}
+          help={errors.categories ? <ErrorMessage message={errors.categories} /> : ""}
         >
           <Select
             mode="multiple"
@@ -314,6 +278,8 @@ const ModalProductAction = ({
         <Form.Item
           name="description"
           label="Mô tả sản phẩm"
+          validateStatus={errors.description ? "error" : ""}
+          help={errors.description ? <ErrorMessage message={errors.description} /> : ""}
         >
           <TextArea rows={4} />
         </Form.Item>
@@ -325,6 +291,7 @@ const ModalProductAction = ({
           <Upload {...mainImageUploadProps}>
             {!mainImage && uploadButton}
           </Upload>
+          {errors.mainImageBase64 && <ErrorMessage message={errors.mainImageBase64} />}
         </div>
         
         <div className="mb-4">
@@ -335,10 +302,11 @@ const ModalProductAction = ({
             {fileList.length < 5 && uploadButton}
           </Upload>
           <div className="text-xs text-gray-500 mt-1">Tối đa 5 hình ảnh</div>
+          {errors.additionalImagesBase64 && <ErrorMessage message={errors.additionalImagesBase64} />}
         </div>
       </Form>
     </Modal>
   );
 };
 
-export default ModalProductAction;
+export default ModalCreateProduct;

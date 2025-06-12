@@ -2,8 +2,7 @@ import React, { useMemo } from "react";
 import { Table, Tooltip, Pagination, Tag, Popconfirm, message, Image } from "antd";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
-// Replace with actual query when implemented
-// import { useDeleteProductMutation } from "@/redux/product/product.query";
+import { useDeleteProductMutation } from "@redux/product/product.query";
 
 const TableProduct = ({
   products = [],
@@ -15,29 +14,18 @@ const TableProduct = ({
   refetch,
   onEdit
 }) => {
-  // Mock delete function - replace with actual mutation when ready
-  const deleteProduct = async (id) => {
-    console.log("Deleting product:", id);
-    message.success("Sản phẩm đã được xóa thành công");
-    refetch();
-  };
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   
-  // Uncomment this when you have the actual API mutation
-  /*
-  const [deleteProduct, { isLoading: isLoadingDelete }] = useDeleteProductMutation();
   const removeProduct = async (id) => {
     try {
-      const res = await deleteProduct(id);
-      if (res.data.success) {
-        message.success(res.data.message);
-        refetch();
-      }
+      await deleteProduct(id).unwrap();
+      message.success("Sản phẩm đã được xóa thành công");
+      refetch();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       message.error("Không thể xóa sản phẩm");
     }
   };
-  */
 
   const columns = useMemo(
     () => [
@@ -148,13 +136,13 @@ const TableProduct = ({
               placement="topLeft"
               title={"Xác nhận xóa thông tin sản phẩm"}
               description={record?.name}
-              onConfirm={() => deleteProduct(record._id)}
+              onConfirm={() => removeProduct(record._id)}
               okText="Xóa"
               cancelText="Hủy"
               okButtonProps={{
-                loading: isLoading,
+                loading: isDeleting,
               }}
-              destroyTooltipOnHide={true}
+              destroyOnHidden={true}
             >
               <Tooltip title="Xóa">
                 <button className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors">
@@ -166,7 +154,7 @@ const TableProduct = ({
         ),
       },
     ],
-    [page, pageSize]
+    [page, pageSize, isDeleting]
   );
 
   return (
