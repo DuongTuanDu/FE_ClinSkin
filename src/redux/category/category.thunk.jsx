@@ -13,3 +13,15 @@ export const createCategory = createAsyncThunk(
         }
     }
 );
+
+export const updateCategory = createAsyncThunk(
+    "category/updateCategory",
+    async (payload, { rejectWithValue }) => {
+        try {
+            return await axios.put(`/admin/categories/${payload.id}`, payload);
+        } catch (error) {
+            message.error(error.response.data.message);
+            return rejectWithValue(error.response.data);
+        }
+    }
+);

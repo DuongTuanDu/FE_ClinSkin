@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
 import {
   createCategory,
+  updateCategory,
 } from "@redux/category/category.thunk";
 import { validateCategoryActionSchema, validateForm } from "@validate/validate";
 import ErrorMessage from "@components/Error/ErrorMessage";
@@ -129,6 +130,14 @@ const ModalCategoryAction = ({
           parent: input.parent,
           level: input.level,
         })
+      ).unwrap();
+    } else {
+      result = await dispatch(updateCategory({
+        id: category._id,
+        name: input.name,
+        parent: input.parent,
+        level: input.level,
+      })
       ).unwrap();
     }
 
