@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import Loading from "@components/Loading/Loading";
+import ManagePromotion from "@/pages/ManagePromotion";
 
 const PageTitle = lazy(() => import("@components/Layout/PageTitle"));
 const LayoutAdmin = lazy(() => import("@components/Layout/LayoutAdmin"));
@@ -11,6 +12,7 @@ const AuthAdminWrapper = lazy(() => import("@components/Auth/AuthAdminWapper"));
 const LoginAdmin = lazy(() => import("@pages/LoginAdmin"));
 const Dashboard = lazy(() => import("@pages/DashBoard"));
 const ManageCategory = lazy(() => import("@pages/ManageCategory"));
+const ManageProduct = lazy(() => import("@pages/ManageProduct"));
 const SettingAdmin = lazy(() => import("@pages/SettingAdmin"));
 const ManageReview = lazy(() => import("@pages/ManageReview"));
 
@@ -90,6 +92,22 @@ const adminRoutes = [
         element: ManageCategory,
         title: "Admin - Danh sách danh mục",
         layoutTitle: "Danh sách danh mục",
+        isProtected: true,
+    },
+
+    {
+        path: "/admin/promotions",
+        element: ManagePromotion,
+        title: "Admin - Danh sách Khuyến mãi",
+        layoutTitle: "",
+        isProtected: true,
+    },
+
+    {
+        path: "/admin/products",
+        element: ManageProduct,
+        title: "Admin - Danh sách sản phẩm",
+        layoutTitle: "Danh sách sản phẩm",
         isProtected: true,
     },
     {
