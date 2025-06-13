@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import Loading from "@components/Loading/Loading";
+import ManagePromotion from "@/pages/ManagePromotion";
 
 const PageTitle = lazy(() => import("@components/Layout/PageTitle"));
 const LayoutAdmin = lazy(() => import("@components/Layout/LayoutAdmin"));
@@ -92,6 +93,15 @@ const adminRoutes = [
         layoutTitle: "Danh sách danh mục",
         isProtected: true,
     },
+
+    {
+        path: "/admin/promotions",
+        element: ManagePromotion,
+        title: "Admin - Danh sách Khuyến mãi",
+        layoutTitle: "",
+        isProtected: true,
+    },
+
     {
         path: "/admin/products",
         element: ManageProduct,
