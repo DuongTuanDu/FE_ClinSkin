@@ -15,6 +15,7 @@ const ManageCategory = lazy(() => import("@pages/ManageCategory"));
 const ManageProduct = lazy(() => import("@pages/ManageProduct"));
 const SettingAdmin = lazy(() => import("@pages/SettingAdmin"));
 const ManageBrand = lazy(() => import("@pages/ManageBrand"));
+const ManageReview = lazy(() => import("@pages/ManageReview"));
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading } = useSelector(
@@ -107,6 +108,13 @@ const adminRoutes = [
         element: ManageProduct,
         title: "Admin - Danh sách sản phẩm",
         layoutTitle: "Danh sách sản phẩm",
+        isProtected: true,
+    },
+    {
+        path: "/admin/reviews",
+        element: ManageReview,
+        title: "Admin - Danh sách review",
+        layoutTitle: "Danh sách review",
         isProtected: true,
     },
     {
