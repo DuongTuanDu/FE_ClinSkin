@@ -65,3 +65,9 @@ export const validateProductActionSchema = Yup.object().shape({
         .of(Yup.string())
         .nullable(),
 });
+
+export const validateBrandActionSchema = Yup.object().shape({
+  name: Yup.string()
+    .trim()
+    .required("Vui lòng nhập tên thương hiệu")
+});
