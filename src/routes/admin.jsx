@@ -12,6 +12,7 @@ const AuthAdminWrapper = lazy(() => import("@components/Auth/AuthAdminWapper"));
 const LoginAdmin = lazy(() => import("@pages/LoginAdmin"));
 const Dashboard = lazy(() => import("@pages/DashBoard"));
 const ManageCategory = lazy(() => import("@pages/ManageCategory"));
+const ManageProduct = lazy(() => import("@pages/ManageProduct"));
 const SettingAdmin = lazy(() => import("@pages/SettingAdmin"));
 
 const ProtectedRoute = ({ children }) => {
@@ -101,6 +102,13 @@ const adminRoutes = [
         isProtected: true,
     },
 
+    {
+        path: "/admin/products",
+        element: ManageProduct,
+        title: "Admin - Danh sách sản phẩm",
+        layoutTitle: "Danh sách sản phẩm",
+        isProtected: true,
+    },
     {
         path: "/admin/settings",
         element: SettingAdmin,
