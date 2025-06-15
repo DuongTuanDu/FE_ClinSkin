@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSearch, FaShoppingCart, FaUser, FaHeart, FaBars, FaTimes, FaRegUserCircle } from "react-icons/fa";
 import Logo from "./Logo";
-import { Button } from "antd";
-import { useSelector } from "react-redux";
+import { Avatar, Button, Dropdown } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { logoutUser } from "@/redux/auth/auth.slice";
+import { isEmpty } from "lodash";
 
 const HeaderUser = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { isAuthenticated } = useSelector((state) => state.auth);
+    const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // Handle scroll event to change header appearance
     useEffect(() => {
@@ -29,6 +33,33 @@ const HeaderUser = () => {
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+        navigate("/");
+    };
+
+    const accoutItems = [
+        {
+            key: "1",
+            label: (
+                <div
+                    className="flex items-center gap-4"
+                    onClick={() => navigate("/account")}
+                >
+                    <UserOutlined /> <span>Tài khoản</span>
+                </div>
+            ),
+        },
+        {
+            key: "2",
+            label: (
+                <div className="flex items-center gap-4" onClick={handleLogout}>
+                    <LogoutOutlined /> <span>Đăng xuất</span>
+                </div>
+            ),
+        },
+    ];
 
     return (
         <div
@@ -82,9 +113,24 @@ const HeaderUser = () => {
 
                         {/* User */}
                         {isAuthenticated ? (
-                            <Link to="/account" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                                <FaUser />
-                            </Link>
+                            <Dropdown
+                                className="hidden md:flex"
+                                menu={{ items: accoutItems }}
+                            >
+                                <div
+                                    className="ant-dropdown-link flex items-center"
+                                    onClick={(e) => e.preventDefault()}
+                                >
+                                    <Avatar
+                                        src={userInfo.avatar.url}
+                                        size={"large"}
+                                        className="mr-2"
+                                    />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-rose-700 font-extrabold text-sm text-center uppercase">
+                                        {!isEmpty(userInfo) ? userInfo.name : ""}
+                                    </span>
+                                </div>
+                            </Dropdown>
                         ) : (
                             <Button
                                 onClick={() => navigate("/auth")}
