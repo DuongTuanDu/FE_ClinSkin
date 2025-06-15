@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import {
   setIsAuthenticated,
   setIsLoading,
+  setUserInfo,
 } from "@/redux/auth/auth.slice";
 import ModalAuth from "../Modal/ModalAuth";
 

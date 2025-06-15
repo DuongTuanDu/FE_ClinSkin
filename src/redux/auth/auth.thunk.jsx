@@ -62,6 +62,19 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const getAccountUser = createAsyncThunk(
+  "auth/getAccountUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await axios.get("/auth/account");
+    } catch (error) {
+      remove("ACCESS_TOKEN");
+      remove("cart");
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const loginAdmin = createAsyncThunk(
   "auth/loginAdmin",
   async (data, { rejectWithValue }) => {
