@@ -8,6 +8,7 @@ import { useGetAllCategoryQuery } from "@redux/category/category.query";
 import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
 import { updateProduct, createProduct } from "@redux/product/product.thunk";
 import { validateForm, validateProductActionSchema } from "@validate/validate";
+import SelectBrandsAsyncInfinite from "@/components/CustomSelect/SelectBrandsAsyncInfinite";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -154,7 +155,6 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
         })).unwrap();
       }
       
-      message.success(isEmpty(product) ? "Thêm sản phẩm thành công" : "Cập nhật sản phẩm thành công");
       refetch();
       setOpen(false);
       setErrors({});
@@ -305,15 +305,12 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
           validateStatus={errors.brandId ? "error" : ""}
           help={errors.brandId ? <ErrorMessage message={errors.brandId} /> : ""}
         >
-          <Select 
-            size="large"
-            placeholder="Chọn thương hiệu"
-            loading={isLoadingBrands}
-          >
-            {brands.map(brand => (
-              <Option key={brand._id} value={brand._id}>{brand.name}</Option>
-            ))}
-          </Select>
+          <SelectBrandsAsyncInfinite
+          defaultBrand={product?.brandId}
+          onSelectChange={(option) => {
+            form.setFieldsValue({ brandId: option?.value });
+          }}
+          />
         </Form.Item>
 
         <Form.Item
