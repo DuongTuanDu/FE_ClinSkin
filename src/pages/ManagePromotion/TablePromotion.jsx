@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaEye, FaTrash } from 'react-icons/fa';
 import PromotionDetailModal from './PromotionDetailModal.jsx';
+import { message } from "antd";
 
 const TablePromotion = ({ refreshTable, onEdit }) => {
   const [promotions, setPromotions] = useState([]);
@@ -26,7 +27,7 @@ const TablePromotion = ({ refreshTable, onEdit }) => {
       setTotalPages(response.data.pagination.totalPages || 1);
     } catch (error) {
       console.error('Error fetching promotions:', error);
-      alert('Không thể lấy danh sách khuyến mãi.');
+      message.error('Không thể lấy danh sách khuyến mãi.');
     }
   };
 
@@ -41,11 +42,11 @@ const TablePromotion = ({ refreshTable, onEdit }) => {
         await axios.delete(`http://localhost:9999/api/v1/admin/promotion/deletePromotion/${id}`, {
           headers: { Authorization: `Bearer ${token}` } }
         );
-        alert('Xóa khuyến mãi thành công');
+        message.success('Xóa khuyến mãi thành công');
         fetchPromotions();
       } catch (error) {
         console.error('Error deleting promotion:', error);
-        alert('Xóa khuyến mãi thất bại');
+        message.error('Xóa khuyến mãi thất bại');
       }
     }
   };
@@ -60,7 +61,7 @@ const TablePromotion = ({ refreshTable, onEdit }) => {
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error fetching promotion details:', error);
-      alert('Không thể lấy chi tiết khuyến mãi');
+      message.error('Không thể lấy chi tiết khuyến mãi');
     }
   };
 
@@ -72,11 +73,11 @@ const TablePromotion = ({ refreshTable, onEdit }) => {
         { isActive: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('Cập nhật trạng thái thành công');
+      message.success('Cập nhật trạng thái thành công');
       fetchPromotions();
     } catch (error) {
       console.error('Error updating promotion status:', error);
-      alert('Cập nhật trạng thái thất bại');
+      message.error('Cập nhật trạng thái thất bại');
     }
   };
 
