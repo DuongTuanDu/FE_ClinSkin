@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Table, Tooltip, Pagination, Tag, Popconfirm, message, Image } from "antd";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { useDeleteProductMutation } from "@redux/product/product.query";
+import ModalProductAction from "./ModalProductAction";
 
 const TableProduct = ({
   products = [],
@@ -12,15 +13,30 @@ const TableProduct = ({
   totalItems,
   setPaginate,
   refetch,
-  onEdit
+  setIsFetch,
+  showAddModal = false,
+  setShowAddModal
 }) => {
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [open, setOpen] = useState(false);
+  const [product, setProduct] = useState({});
+  
+  // Handle the add product modal from parent component
+  useEffect(() => {
+    if (showAddModal) {
+      setProduct({});
+      setOpen(true);
+      setShowAddModal(false);
+    }
+  }, [showAddModal, setShowAddModal]);
   
   const removeProduct = async (id) => {
     try {
-      await deleteProduct(id).unwrap();
-      message.success("Sản phẩm đã được xóa thành công");
-      refetch();
+      const res = await deleteProduct(id);
+      if (res.data.success) {
+        message.success(res.data.message);
+        refetch();
+      }
     } catch (error) {
       console.error(error);
       message.error("Không thể xóa sản phẩm");
@@ -125,7 +141,10 @@ const TableProduct = ({
           <div className="flex gap-2 items-center text-[#00246a]">
             <Tooltip title="Sửa">
               <button
-                onClick={() => onEdit(record)}
+                onClick={() => {
+                  setProduct(record);
+                  setOpen(true);
+                }}
                 className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors"
               >
                 <GrEdit />
@@ -142,7 +161,7 @@ const TableProduct = ({
               okButtonProps={{
                 loading: isDeleting,
               }}
-              destroyOnHidden={true}
+              destroyTooltipOnHide={true}
             >
               <Tooltip title="Xóa">
                 <button className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors">
@@ -157,8 +176,20 @@ const TableProduct = ({
     [page, pageSize, isDeleting]
   );
 
+  // Handle modal close and reset
+  const handleModalClose = () => {
+    setOpen(false);
+    setProduct({});
+  };
+
   return (
     <>
+      <ModalProductAction
+        open={open}
+        setOpen={handleModalClose}
+        product={product}
+        refetch={refetch}
+      />
       <Table
         columns={columns}
         dataSource={products}
