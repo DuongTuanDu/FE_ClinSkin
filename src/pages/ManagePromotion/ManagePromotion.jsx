@@ -3,6 +3,7 @@ import axios from 'axios';
 import AsyncSelect from 'react-select/async';
 import { useDebounce } from 'use-debounce';
 import TablePromotion from './TablePromotion.jsx';
+import { message } from "antd";
 
 // Modal Component for Creating/Updating Promotions
 const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts }) => {
@@ -47,24 +48,33 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
   }, [promotion, allProducts]);
 
   // Fetch product options asynchronously
-  const loadProductOptions = async (inputValue, callback) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `http://localhost:9999/api/v1/admin/product/search?${inputValue ? `name=${encodeURIComponent(inputValue)}` : ''}&page=1&limit=20&sort=name`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const options = response.data.data.map(product => ({
-        value: product._id,
-        label: product.name
-      }));
-      console.log(options);
-      // callback(options);
-    } catch (error) {
-      console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-      callback([]);
+  const loadProductOptions = async (inputValue) => {
+  try {
+    const token = localStorage.getItem('token');
+    const params = new URLSearchParams({
+      page: 1,
+      limit: 20,
+      sort: 'name',
+    });
+    if (inputValue) {
+      params.append('name', inputValue);
     }
-  };
+
+    const response = await axios.get(
+      `http://localhost:9999/api/v1/admin/product/search?${params.toString()}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return response.data.data.map(product => ({
+      value: product._id,
+      label: product.name,
+    }));
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách sản phẩm:', error);
+    return [];
+  }
+};
+
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -117,11 +127,16 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
           .filter(p => p.pid && p.discount)
           .map(({ pid, discount }) => ({ pid, discount: Number(discount) }))
       };
-      await onSubmit(payload, promotion?._id);
-      onClose();
+      // await onSubmit(payload, promotion?._id);
+      // onClose();
+
+      const response = await onSubmit(payload, promotion?._id);
+      if (response) {
+        onClose();
+      }
     } catch (error) {
       console.error('Lỗi khi lưu khuyến mãi:', error);
-      alert('Lỗi khi lưu khuyến mãi');
+      message.error('Lỗi khi lưu khuyến mãi');
     }
   };
 
@@ -274,7 +289,7 @@ const ManagePromotion = () => {
         setAllProducts(response.data.data || []);
       } catch (error) {
         console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-        alert('Không thể lấy danh sách sản phẩm. Vui lòng kiểm tra đăng nhập.');
+        message.error('Không thể lấy danh sách sản phẩm. Vui lòng kiểm tra đăng nhập.');
       }
     };
     fetchProducts();
@@ -286,16 +301,29 @@ const ManagePromotion = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (promotionId) {
         await axios.put(`http://localhost:9999/api/v1/admin/promotion/updatePromotion/${promotionId}`, payload, config);
-        alert('Cập nhật khuyến mãi thành công');
+        message.success('Cập nhật khuyến mãi thành công');
       } else {
         await axios.post('http://localhost:9999/api/v1/admin/promotion/createPromotion', payload, config);
-        alert('Tạo khuyến mãi thành công');
+        message.success('Tạo khuyến mãi thành công');
       }
       setRefreshTable(!refreshTable);
     } catch (error) {
-      console.error('Lỗi khi lưu khuyến mãi:', error);
-      alert('Lỗi khi lưu khuyến mãi');
-    }
+  console.error('Lỗi khi lưu khuyến mãi:', error);
+
+  if (
+    error.response &&
+    error.response.status === 422 &&
+    error.response.data?.errors
+  ) {
+    error.response.data.errors.forEach((err) => {
+      message.error(`${err.message}`, 3);
+    });
+  } else if (error.response?.data?.message) {
+    message.error(error.response.data.message);
+  } else {
+    message.error('Lỗi không xác định');
+  }
+}
   };
 
   const handleEdit = (promotion) => {
