@@ -1,2 +1,2 @@
-import ManagePromotion from "./ManagePromotion";
+import ManagePromotion from "./ManagePromotion.jsx";
 export default ManagePromotion;

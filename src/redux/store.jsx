@@ -4,9 +4,11 @@ import { categoryApi } from "./category/category.query";
 import { productApi } from "./product/product.query";
 import { brandApi } from "./brand/brand.query";
 import { reviewApi } from "./review/review.query";
+import reducer from "./reducer";
 
 export const store = configureStore({
   reducer: {
+    ...reducer,
     auth: authReducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,

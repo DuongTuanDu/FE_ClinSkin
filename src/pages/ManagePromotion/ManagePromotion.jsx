@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import TablePromotion from './TablePromotion';
+import AsyncSelect from 'react-select/async';
+import { useDebounce } from 'use-debounce';
+import TablePromotion from './TablePromotion.jsx';
+import { message } from "antd";
 
 // Modal Component for Creating/Updating Promotions
 const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts }) => {
@@ -12,7 +15,10 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
     endDate: '',
     products: []
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
 
+  // Populate form with promotion data when editing
   useEffect(() => {
     if (promotion) {
       setFormData({
@@ -41,6 +47,35 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
     }
   }, [promotion, allProducts]);
 
+  // Fetch product options asynchronously
+  const loadProductOptions = async (inputValue) => {
+  try {
+    const token = localStorage.getItem('token');
+    const params = new URLSearchParams({
+      page: 1,
+      limit: 20,
+      sort: 'name',
+    });
+    if (inputValue) {
+      params.append('name', inputValue);
+    }
+
+    const response = await axios.get(
+      `http://localhost:9999/api/v1/admin/product/search?${params.toString()}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return response.data.data.map(product => ({
+      value: product._id,
+      label: product.name,
+    }));
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách sản phẩm:', error);
+    return [];
+  }
+};
+
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -49,20 +84,23 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
     });
   };
 
-  const handleProductChange = (index, e) => {
-    const { name, value } = e.target;
+  const handleProductChange = (index, selectedOption) => {
     const newProducts = [...formData.products];
-    if (name === 'pid') {
-      const selectedProduct = allProducts.find(p => p._id === value);
-      newProducts[index] = {
-        ...newProducts[index],
-        pid: value,
-        productName: selectedProduct ? selectedProduct.name : ''
-      };
-    } else {
-      newProducts[index] = { ...newProducts[index], [name]: value };
-    }
+    newProducts[index] = {
+      ...newProducts[index],
+      pid: selectedOption ? selectedOption.value : '',
+      productName: selectedOption ? selectedOption.label : ''
+    };
     setFormData({ ...formData, products: newProducts });
+  };
+
+  const handleDiscountChange = (index, e) => {
+    const { value } = e.target;
+    if (value >= 0 && value <= 100) {
+      const newProducts = [...formData.products];
+      newProducts[index] = { ...newProducts[index], discount: value };
+      setFormData({ ...formData, products: newProducts });
+    }
   };
 
   const addProduct = () => {
@@ -89,11 +127,16 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
           .filter(p => p.pid && p.discount)
           .map(({ pid, discount }) => ({ pid, discount: Number(discount) }))
       };
-      await onSubmit(payload, promotion?._id);
-      onClose();
+      // await onSubmit(payload, promotion?._id);
+      // onClose();
+
+      const response = await onSubmit(payload, promotion?._id);
+      if (response) {
+        onClose();
+      }
     } catch (error) {
       console.error('Lỗi khi lưu khuyến mãi:', error);
-      alert('Lỗi khi lưu khuyến mãi');
+      message.error('Lỗi khi lưu khuyến mãi');
     }
   };
 
@@ -165,31 +208,32 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
               <p className="text-gray-500 mb-2">Chưa có sản phẩm nào được thêm.</p>
             )}
             {formData.products.map((product, index) => (
-              <div key={index} className="flex gap-2 mb-2">
+              <div key={index} className="flex gap-2 mb-2 items-center">
                 <div className="w-full">
-                  <select
-                    name="pid"
-                    value={product.pid}
-                    onChange={(e) => handleProductChange(index, e)}
-                    className="w-full p-2 border rounded"
-                    required={product.discount !== ''}
-                  >
-                    <option value="">Chọn sản phẩm</option>
-                    {allProducts.map((prod) => (
-                      <option key={prod._id} value={prod._id}>
-                        {prod.name}
-                      </option>
-                    ))}
-                  </select>
+                  <AsyncSelect
+                    cacheOptions
+                    defaultOptions = {true}
+                    loadOptions={loadProductOptions}
+                    value={product.pid ? { value: product.pid, label: product.productName } : null}
+                    onChange={(option) => handleProductChange(index, option)}
+                    onInputChange={(input) => setSearchQuery(input)}
+                    placeholder="Tìm kiếm sản phẩm..."
+                    isClearable
+                    loadingMessage={() => "Đang tải sản phẩm..."}
+                    noOptionsMessage={() => "Không tìm thấy sản phẩm"}
+                    className="w-full"
+                  />
                 </div>
                 <input
                   type="number"
                   name="discount"
                   value={product.discount}
-                  onChange={(e) => handleProductChange(index, e)}
+                  onChange={(e) => handleDiscountChange(index, e)}
                   placeholder="Giảm giá (%)"
                   className="w-1/4 p-2 border rounded"
                   required={product.pid !== ''}
+                  min="0"
+                  max="100"
                 />
                 <button
                   type="button"
@@ -239,13 +283,13 @@ const ManagePromotion = () => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:9999/api/v1/admin/product/search', {
+        const response = await axios.get('http://localhost:9999/api/v1/admin/product/search?page=1&limit=100&sort=name', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setAllProducts(response.data || []);
+        setAllProducts(response.data.data || []);
       } catch (error) {
         console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-        alert('Không thể lấy danh sách sản phẩm. Vui lòng kiểm tra đăng nhập.');
+        message.error('Không thể lấy danh sách sản phẩm. Vui lòng kiểm tra đăng nhập.');
       }
     };
     fetchProducts();
@@ -257,16 +301,29 @@ const ManagePromotion = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (promotionId) {
         await axios.put(`http://localhost:9999/api/v1/admin/promotion/updatePromotion/${promotionId}`, payload, config);
-        alert('Cập nhật khuyến mãi thành công');
+        message.success('Cập nhật khuyến mãi thành công');
       } else {
         await axios.post('http://localhost:9999/api/v1/admin/promotion/createPromotion', payload, config);
-        alert('Tạo khuyến mãi thành công');
+        message.success('Tạo khuyến mãi thành công');
       }
       setRefreshTable(!refreshTable);
     } catch (error) {
-      console.error('Lỗi khi lưu khuyến mãi:', error);
-      throw error; // Let the modal handle the error display
-    }
+  console.error('Lỗi khi lưu khuyến mãi:', error);
+
+  if (
+    error.response &&
+    error.response.status === 422 &&
+    error.response.data?.errors
+  ) {
+    error.response.data.errors.forEach((err) => {
+      message.error(`${err.message}`, 3);
+    });
+  } else if (error.response?.data?.message) {
+    message.error(error.response.data.message);
+  } else {
+    message.error('Lỗi không xác định');
+  }
+}
   };
 
   const handleEdit = (promotion) => {
