@@ -63,6 +63,9 @@ export const authSlice = createSlice({
             state.userInfo = {};
             window.location.reload();
         },
+        setUserInfo(state, action) {
+            state.userInfo = action.payload;
+        },
         logoutAdmin(state, action) {
             remove("ACCESS_TOKEN_ADMIN");
             state.isAuthenticatedAdmin = false;
@@ -189,6 +192,7 @@ export const {
     setOpenModelAuth,
     setIsLoading,
     setIsAuthenticated,
-    logoutAdmin
+    logoutAdmin,
+    setUserInfo
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -27,11 +27,19 @@ export const brandApi = createApi({
           method: "GET",
         };
       },
-    })
+    }),
+    getAllBrandByUser: builder.query({
+      query: () => ({
+        url: `/brands`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response.data,
+    }),
   }),
 });
 
 export const {
   useGetAllBrandsQuery,
   useGetBrandListQuery,
+  useGetAllBrandByUserQuery,
 } = brandApi;

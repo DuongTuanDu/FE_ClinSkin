@@ -1,90 +1,262 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaUser, FaHeart, FaBars, FaTimes, FaRegUserCircle } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { Input, Button, Badge, Menu, Drawer, Dropdown, Avatar } from "antd";
+import {
+    SearchOutlined,
+    MenuOutlined,
+    CloseOutlined,
+    LogoutOutlined,
+    UserOutlined,
+} from "@ant-design/icons";
+import { motion, AnimatePresence } from "framer-motion";
+import { LiaShoppingBasketSolid } from "react-icons/lia";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { isArray, isEmpty } from "lodash";
+import { logoutUser } from "@redux/auth/auth.slice";
+import { FaRegUserCircle, FaShoppingCart } from "react-icons/fa";
+import SearchHeader from "@components/Search/SearchHeader";
 import Logo from "./Logo";
-import { Button } from "antd";
-import { useSelector } from "react-redux";
+import { useGetAllCategoryUserQuery } from "@/redux/category/category.query";
+import { useGetAllBrandByUserQuery } from "@/redux/brand/brand.query";
+import Loading from "../Loading/Loading";
+import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
 
 const HeaderUser = () => {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { isAuthenticated } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const location = useLocation();
+    const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+    const [current, setCurrent] = useState("");
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // Handle scroll event to change header appearance
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.scrollY > 50) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
+    const {
+        data: categories = [],
+        isLoading: isLoadingCategories,
+        isFetching: isFetchingCategories,
+    } = useGetAllCategoryUserQuery();
+    const {
+        data: brands = [],
+        isLoading: isLoadingBrands,
+        isFetching: isFetchingBrands,
+    } = useGetAllBrandByUserQuery();
+
+    const createMenuCategoryItems = (items) => {
+        const menu = items.map((item) => {
+            const menuItem = {
+                key: item._id,
+                label: item.name,
+                path: `/categories/${item.slug}`,
+            };
+
+            if (item.children && item.children.length > 0) {
+                menuItem.children = item.children.map((child) => ({
+                    type: "group",
+                    label: child.name,
+                    children:
+                        child.children && child.children.length > 0
+                            ? child.children.map((grandChild) => ({
+                                key: grandChild._id,
+                                label: grandChild.name,
+                                path: `/categories/${grandChild.slug}`,
+                            }))
+                            : null,
+                }));
             }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Toggle mobile menu
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+            return menuItem;
+        });
+        return menu;
     };
 
+    const handleLogout = () => {
+        dispatch(logoutUser());
+        navigate("/");
+    };
+
+    const handleClick = (e) => {
+        if (e.key === "login") return navigate("/auth");
+        if (e.key === "account") return navigate("/account");
+        if (e.key === "logout") return handleLogout();
+        setCurrent(e.key);
+        const flattenMenu = (items) => {
+            return items.flatMap((item) => {
+                if (item.children) {
+                    return [item, ...flattenMenu(item.children)];
+                }
+                return item;
+            });
+        };
+        const flattenedMenu = flattenMenu(menuItems);
+        const selectedItem = flattenedMenu.find((item) => item.key === e.key);
+        if (selectedItem && selectedItem.path) {
+            navigate(selectedItem.path);
+        }
+    };
+
+    const menuItems = [
+        {
+            key: "brands",
+            label: "Thương hiệu",
+            path: "/brands",
+            children:
+                isArray(brands) && brands.length > 0
+                    ? brands.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="mt-2.5 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 font-extrabold text-sm text-center uppercase">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/brands/${item.slug}`,
+                    }))
+                    : [],
+        },
+        ...createMenuCategoryItems(categories),
+        {
+            key: "promotions",
+            label: "🎁 Khuyến mãi hot",
+            path: "/promotions",
+        },
+        {
+            key: "about-us",
+            label: "Về chúng tôi",
+            path: "/about-us",
+        },
+    ];
+
+    const authMenu = () => {
+        if (isAuthenticated) {
+            return {
+                label: userInfo.name,
+                key: "user",
+                children: [
+                    {
+                        label: "Tài khoản",
+                        key: "account",
+                        path: "/account",
+                    },
+                    {
+                        label: "Lịch sử đơn hàng",
+                        key: "orderHistory",
+                        path: "#",
+                    },
+                    {
+                        label: "Đăng xuất",
+                        key: "logout",
+                        path: "/logout",
+                    },
+                ],
+            };
+        } else {
+            return {
+                label: "Đăng nhập",
+                key: "login",
+                path: "/auth",
+            };
+        }
+    };
+
+    useEffect(() => {
+        const path = location.pathname;
+        const currentItem = menuItems.find((item) => {
+            const isParentMatch = item.path === path;
+            const isChildMatch =
+                item.children &&
+                item.children.some((child) => {
+                    const isChildPathMatch = child.path === path;
+                    const isGrandChildMatch =
+                        child.children &&
+                        child.children.some((grandChild) => grandChild.path === path);
+                    return isChildPathMatch || isGrandChildMatch;
+                });
+            return isParentMatch || isChildMatch;
+        });
+        setCurrent(currentItem ? currentItem.key : "");
+    }, [location.pathname, menuItems]);
+
+    if (
+        isLoadingCategories ||
+        isLoadingBrands ||
+        isFetchingCategories ||
+        isFetchingBrands
+    )
+        return <Loading />;
+
+    const accoutItems = [
+        {
+            key: "1",
+            label: (
+                <div
+                    className="flex items-center gap-4"
+                    onClick={() => navigate("/account")}
+                >
+                    <UserOutlined /> <span>Tài khoản</span>
+                </div>
+            ),
+        },
+        {
+            key: "2",
+            label: (
+                <div
+                    className="flex items-center gap-4"
+                    onClick={() => navigate("#")}
+                >
+                    <IoCartOutline /> <span>Lịch sử đơn hàng</span>
+                </div>
+            ),
+        },
+        {
+            key: "3",
+            label: (
+                <div className="flex items-center gap-4" onClick={handleLogout}>
+                    <LogoutOutlined /> <span>Đăng xuất</span>
+                </div>
+            ),
+        },
+    ];
+
     return (
-        <div
-            className={`w-full z-50 transition-all duration-300 ${isScrolled
-                ? "py-2 bg-white shadow-md"
-                : "py-4 bg-gradient-to-r from-pink-500 to-purple-500"
-                }`}
-        >
-            <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <Link to={"/"}>
-                            <Logo />
-                        </Link>
+        <>
+            <header className="bg-white shadow-md">
+                <div className="bg-gradient-to-r from-rose-300 via-[#a64478] to-[#f1b5b5] text-white text-center py-1 lg:py-2 text-base font-medium">
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="animate-bounce text-sm lg:text-base">
+                            Chào mừng bạn đến với ClinSkin ❤️
+                        </div>
+                    </motion.div>
+                </div>
+                <div className="container mx-auto px-12 py-4 flex items-center justify-between">
+                    <Link to={"/"}>
+                        <Logo />
+                    </Link>
+                    <div className="hidden md:block flex-grow max-w-xl mx-8">
+                        <SearchHeader />
                     </div>
 
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-8">
-                        <Link to="/" className={`font-medium hover:opacity-80 transition ${isScrolled ? "text-gray-800" : "text-white"}`}>
-                            Trang chủ
-                        </Link>
-                        <Link to="/products" className={`font-medium hover:opacity-80 transition ${isScrolled ? "text-gray-800" : "text-white"}`}>
-                            Sản phẩm
-                        </Link>
-                        <Link to="/skincare" className={`font-medium hover:opacity-80 transition ${isScrolled ? "text-gray-800" : "text-white"}`}>
-                            Chăm sóc da
-                        </Link>
-                        <Link to="/promotions" className={`font-medium hover:opacity-80 transition ${isScrolled ? "text-gray-800" : "text-white"}`}>
-                            Khuyến mãi
-                        </Link>
-                        <Link to="/about" className={`font-medium hover:opacity-80 transition ${isScrolled ? "text-gray-800" : "text-white"}`}>
-                            Về chúng tôi
-                        </Link>
-                    </nav>
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-4">
-                        {/* Search */}
-                        <button className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                            <FaSearch />
-                        </button>
-
-                        {/* Cart */}
-                        <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"} relative`}>
-                            <FaShoppingCart />
-                            <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                0
-                            </span>
-                        </Link>
-
-                        {/* User */}
+                    <div className="flex items-center space-x-6">
                         {isAuthenticated ? (
-                            <Link to="/account" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                                <FaUser />
-                            </Link>
+                            <Dropdown
+                                className="hidden md:flex"
+                                menu={{ items: accoutItems }}
+                            >
+                                <div
+                                    className="ant-dropdown-link flex items-center"
+                                    onClick={(e) => e.preventDefault()}
+                                >
+                                    <Avatar
+                                        src={userInfo.avatar.url}
+                                        size={"large"}
+                                        className="mr-2"
+                                    />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-rose-700 font-extrabold text-sm text-center uppercase">
+                                        {!isEmpty(userInfo) ? userInfo.name : ""}
+                                    </span>
+                                </div>
+                            </Dropdown>
                         ) : (
                             <Button
                                 onClick={() => navigate("/auth")}
@@ -96,86 +268,73 @@ const HeaderUser = () => {
                             </Button>
                         )}
 
+                        {isAuthenticated && <IoNotificationsOutline className="text-xl lg:text-3xl cursor-pointer" />}
 
-                        {/* Mobile menu button */}
-                        <button
-                            className={`md:hidden p-2 rounded-full ${isScrolled ? "text-gray-700" : "text-white"}`}
-                            onClick={toggleMenu}
-                        >
-                            {isMenuOpen ? <FaTimes /> : <FaBars />}
-                        </button>
+                        <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 text-gray-700 relative`}>
+                            <FaShoppingCart className="text-xl cursor-pointer"/>
+                            <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                0
+                            </span>
+                        </Link>
+
+                        <Button
+                            type="text"
+                            icon={<MenuOutlined />}
+                            onClick={() => setIsMenuOpen(true)}
+                            className="md:hidden"
+                        />
                     </div>
                 </div>
+                <nav className="bg-white border-t border-b border-gray-200 hidden md:block">
+                    <Menu
+                        mode="horizontal"
+                        className="container font-semibold mx-auto px-4 flex justify-between custom-menu custom-menu-item overflow-hidden hidden-scroll"
+                        selectedKeys={[current]}
+                        onClick={handleClick}
+                        items={menuItems}
+                    />
+                </nav>
+            </header>
 
-                {/* Mobile Navigation Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden bg-white mt-2 rounded-md shadow-lg py-4 absolute left-4 right-4">
-                        <nav className="flex flex-col space-y-3">
-                            <Link to="/" className="px-4 py-2 hover:bg-pink-50 text-gray-800">
-                                Trang chủ
-                            </Link>
-                            <Link to="/products" className="px-4 py-2 hover:bg-pink-50 text-gray-800">
-                                Sản phẩm
-                            </Link>
-                            <Link to="/skincare" className="px-4 py-2 hover:bg-pink-50 text-gray-800">
-                                Chăm sóc da
-                            </Link>
-                            <Link to="/about" className="px-4 py-2 hover:bg-pink-50 text-gray-800">
-                                Về chúng tôi
-                            </Link>
-                            <Link to="/blog" className="px-4 py-2 hover:bg-pink-50 text-gray-800">
-                                Blog
-                            </Link>
-                        </nav>
-                    </div>
+            <Drawer
+                title="Menu"
+                placement="right"
+                open={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                width={300}
+            >
+                <Menu
+                    mode="inline"
+                    items={[...menuItems, authMenu()]}
+                    onClick={handleClick}
+                    selectedKeys={[current]}
+                />
+            </Drawer>
+
+            <AnimatePresence>
+                {isSearchOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-0 left-0 right-0 bg-white p-4 shadow-md z-50"
+                    >
+                        <Input
+                            placeholder="Tìm kiếm..."
+                            prefix={<SearchOutlined />}
+                            size="large"
+                            className="rounded-full"
+                        />
+                        <Button
+                            type="text"
+                            icon={<CloseOutlined />}
+                            onClick={() => setIsSearchOpen(false)}
+                            className="absolute right-4 top-4"
+                        />
+                    </motion.div>
                 )}
-            </div>
-
-            {/* Secondary Navigation - Categories (only visible when scrolled) */}
-            {isScrolled && (
-                <div className="hidden md:block bg-gray-50 py-2 shadow-sm mt-1">
-                    <div className="container mx-auto px-4">
-                        <ul className="flex items-center justify-center space-x-8 text-sm">
-                            <li>
-                                <Link to="/category/face" className="text-gray-600 hover:text-pink-600 transition">
-                                    Chăm sóc mặt
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/body" className="text-gray-600 hover:text-pink-600 transition">
-                                    Chăm sóc cơ thể
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/makeup" className="text-gray-600 hover:text-pink-600 transition">
-                                    Trang điểm
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/sets" className="text-gray-600 hover:text-pink-600 transition">
-                                    Bộ sản phẩm
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/bestsellers" className="text-gray-600 hover:text-pink-600 transition">
-                                    Bán chạy
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/new" className="text-gray-600 hover:text-pink-600 transition">
-                                    Mới nhất
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/category/promotion" className="text-gray-600 hover:text-pink-600 transition">
-                                    Khuyến mãi
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            )}
-        </div>
+            </AnimatePresence>
+        </>
     );
 };
 
