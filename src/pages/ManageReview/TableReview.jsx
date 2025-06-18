@@ -75,18 +75,18 @@ const TableReview = ({
         width: 60,
         render: (_, __, index) => (page - 1) * pageSize + index + 1,
       },
- {
-  title: "Người dùng",
-  key: "user",
-  dataIndex: "userId",
-  render: (user) => user?.name ,
-},
-{
-  title: "Sản phẩm",
-  key: "product",
-  dataIndex: "productId",
-  render: (product) => product?.name ,
-},
+      {
+        title: "Người dùng",
+        key: "user",
+        dataIndex: "userId",
+        render: (user) => user?.name,
+      },
+      {
+        title: "Sản phẩm",
+        key: "product",
+        dataIndex: "productId",
+        render: (product) => product?.name,
+      },
 
 
 
@@ -94,18 +94,19 @@ const TableReview = ({
         title: "Nội dung",
         dataIndex: "comment",
         key: "comment",
+
         render: (text) => (
           <Tooltip title={text}>
             <div className="max-w-64 truncate">{text}</div>
           </Tooltip>
         ),
       },
-          {
-      title: "Ngày đánh giá",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => new Date(date).toLocaleDateString("vi-VN"),
-    },
+      {
+        title: "Ngày đánh giá",
+        dataIndex: "createdAt",
+        key: "createdAt",
+        render: (date) => new Date(date).toLocaleDateString("vi-VN"),
+      },
 
       {
         title: "Số sao",
@@ -154,7 +155,7 @@ const TableReview = ({
                   setReplyValue(record.reply);
                 }}
               >
-                
+
               </Button>
             </div>
           ) : (
