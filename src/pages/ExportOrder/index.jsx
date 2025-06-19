@@ -1,16 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGetBatchesByOrderIdQuery } from "@/redux/inventory/inventoryBatch.query";
-import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col } from "antd";
+import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col, message, Descriptions } from "antd";
 import { FaBoxOpen } from "react-icons/fa";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
+const OrderSummary = ({ orderData }) => {
+  const { id, user, totalAmount, status, note, paymentMethod, address } = orderData;
+  
+  return (
+    <Card className="mb-6 shadow-md">
+      <Title level={4}>Thông tin đơn hàng</Title>
+      <Descriptions bordered size="small" column={{ xs: 1, sm: 2, md: 3, lg: 4 }}>
+        <Descriptions.Item label="Mã đơn hàng" span={2}>{id}</Descriptions.Item>
+        <Descriptions.Item label="Trạng thái" span={2}>
+          <Tag color={
+            status === 'pending' ? 'orange' : 
+            status === 'delivered' ? 'green' : 
+            status === 'canceled' ? 'red' : 'blue'
+          }>
+            {status}
+          </Tag>
+        </Descriptions.Item>
+        
+        <Descriptions.Item label="Khách hàng" span={2}>{user?.name}</Descriptions.Item>
+        <Descriptions.Item label="Email" span={2}>{user?.email}</Descriptions.Item>
+        <Descriptions.Item label="Số điện thoại" span={2}>{user?.phone}</Descriptions.Item>
+        <Descriptions.Item label="Phương thức thanh toán" span={2}>{paymentMethod}</Descriptions.Item>
+        
+        <Descriptions.Item label="Tổng tiền" span={4}>
+          <Text type="danger" strong>{totalAmount?.toLocaleString('vi-VN')} ₫</Text>
+        </Descriptions.Item>
+        
+        <Descriptions.Item label="Địa chỉ" span={4}>
+          {address?.detail}, {address?.ward}, {address?.district}, {address?.province}
+        </Descriptions.Item>
+        
+        {note && (
+          <Descriptions.Item label="Ghi chú" span={4}>
+            {note}
+          </Descriptions.Item>
+        )}
+      </Descriptions>
+    </Card>
+  );
+};
+
 const ExportOrder = () => {
   const { orderId } = useParams();
   const { data, isLoading, error } = useGetBatchesByOrderIdQuery(orderId);
   const batchData = data?.data || [];
+  const orderData = data?.order || {};
 
   if (isLoading) {
     return (
@@ -30,10 +72,8 @@ const ExportOrder = () => {
 
   return (
     <div className="p-4">
-      <Title level={3} className="mb-6">
-        Chi tiết đơn xuất kho #{orderId}
-      </Title>
-      
+      <OrderSummary orderData={orderData} />
+      <Text className="text-lg font-semibold mb-4">Danh sách sản phẩm trong đơn hàng</Text>
       {batchData.length === 0 ? (
         <Empty description="Không có dữ liệu lô hàng cho đơn hàng này" />
       ) : (
@@ -43,6 +83,20 @@ const ExportOrder = () => {
           ))}
         </div>
       )}
+      
+      <div className="flex justify-end mt-4">
+        <button
+            type="button"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow transition"
+            onClick={() => {
+                // TODO: Implement delivery logic here
+                // You can open a modal, call an API, or show a notification
+                message.warning("doing")
+            }}
+        >
+            Giao hàng
+        </button>
+      </div>
     </div>
   );
 };
@@ -78,6 +132,21 @@ const ProductWithBatches = ({ productData }) => {
   // Calculate total quantity to be taken
   const totalToTake = Object.values(quantitiesToTake).reduce((sum, qty) => sum + qty, 0);
 
+  // Function to calculate days remaining before expiry
+  const calculateDaysRemaining = (endDate) => {
+    const today = dayjs();
+    const expiry = dayjs(endDate);
+    const daysRemaining = expiry.diff(today, 'day');
+    
+    if (daysRemaining < 7) {
+        return { text: `Còn ${daysRemaining} ngày`, color: "#f5222d", bgColor: "#fff2f0" };
+    } else if (daysRemaining <= 30) {
+        return { text: `Còn ${daysRemaining} ngày`, color: "#1677ff", bgColor: "#f6ffed" };
+    } else {
+        return { text: `Còn ${daysRemaining} ngày`, color: "#52c41a", bgColor: "#f6ffed" };
+    }
+  };
+
   const columns = [
     {
       title: 'Mã lô',
@@ -98,19 +167,8 @@ const ProductWithBatches = ({ productData }) => {
       key: 'toTake',
       width: 120,
       render: (_id) => (
-        <InputNumber
-          min={0}
-          max={items.find(item => item._id === _id)?.remainingQuantity || 0}
-          value={quantitiesToTake[_id] || 0}
-          onChange={(value) => {
-            setQuantitiesToTake(prev => ({
-              ...prev,
-              [_id]: value || 0
-            }));
-          }}
-          style={{ width: '100%' }}
-        />
-      ),
+            <Text>{quantitiesToTake[_id] || 0}</Text>
+        ),
     },
     {
       title: 'Hạn sử dụng',
@@ -123,6 +181,20 @@ const ProductWithBatches = ({ productData }) => {
         return (
           <Tag color={isExpiringSoon ? "orange" : "green"}>
             {expDate.format('DD/MM/YYYY')}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Thời hạn còn lại',
+      dataIndex: 'expiryDate',
+      key: 'daysRemaining',
+      width: 120,
+      render: (date) => {
+        const { text, color, bgColor } = calculateDaysRemaining(date);
+        return (
+          <Tag style={{ color: color, backgroundColor: bgColor, borderColor: color }}>
+            {text}
           </Tag>
         );
       },
@@ -157,8 +229,7 @@ const ProductWithBatches = ({ productData }) => {
                   width={80}
                   height={80}
                   className="object-cover rounded-md"
-                  fallback="data:image/png;base64,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"
-                />
+                  />
               ) : (
                 <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md">
                   <FaBoxOpen className="text-2xl text-gray-400" />
