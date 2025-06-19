@@ -4,7 +4,6 @@ import { SearchOutlined } from "@ant-design/icons";
 import debounce from "lodash/debounce";
 import TableReview from "./TableReview";
 import { useGetReviewListQuery } from "@/redux/review/review.query";
-import { comment } from "postcss";
 
 const ManageReview = () => {
   const [paginate, setPaginate] = useState({
@@ -27,10 +26,10 @@ const ManageReview = () => {
     setPaginate({ page, pageSize });
   };
 
-  const { data, isLoading, refetch } = useGetReviewListQuery({
-    ...paginate,
-    comment: searchText,
-  });
+ const { data, isLoading, refetch } = useGetReviewListQuery({
+  ...paginate,
+  content: searchText,
+});
 
   const reviews = data?.reviews || [];
 const pagination = data?.pagination || {};

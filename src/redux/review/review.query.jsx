@@ -8,21 +8,23 @@ export const reviewApi = createApi({
     return baseQuery({ url, method, data, params });
   },
   tagTypes: ["Review"],
+
   endpoints: (builder) => ({
     getReviewList: builder.query({
 
       query: ({ page = 1, pageSize = 10, content = "" }) => {
-        const queryStrings = new URLSearchParams({
-          page,
-          pageSize,
-          content,
-        }).toString();
+  const queryStrings = new URLSearchParams({
+    page,
+    pageSize,
+    content, 
+  }).toString();
         return {
           url: `/admin/reviews/getReview?${queryStrings}`,
           method: "GET",
         };
       },
       transformResponse: (response) => response.data,
+
       providesTags: ["Review"],
     }),
 
