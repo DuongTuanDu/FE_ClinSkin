@@ -50,6 +50,14 @@ export const inventoryBatchApi = createApi({
             providesTags: (result, error, productId) => [{ type: "InventoryBatch", id: `product-${productId}` }],
         }),
         
+        getBatchesByOrderId: builder.query({
+            query: (orderId) => ({
+                url: `/admin/inventory-batches/order/${orderId}`,
+                method: "GET",
+            }),
+            providesTags: (result, error, orderId) => [{ type: "InventoryBatch", id: `order-${orderId}` }],
+        }),
+        
         createBatch: builder.mutation({
             query: (batchData) => ({
                 url: `/admin/inventory-batches`,
@@ -85,6 +93,7 @@ export const {
     useGetAllBatchesQuery,
     useGetBatchByBatchNumberQuery,
     useGetBatchesByProductIdQuery,
+    useGetBatchesByOrderIdQuery,
     useCreateBatchMutation,
     useUpdateBatchMutation,
     useDeleteBatchMutation
