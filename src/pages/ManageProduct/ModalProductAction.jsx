@@ -1,17 +1,19 @@
 import { Input, message, Modal, Select, InputNumber, Upload, Form } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { isEmpty } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
 import ErrorMessage from "@components/Error/ErrorMessage";
 import { useGetAllCategoryQuery } from "@redux/category/category.query";
 import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
-import { createProduct } from "@redux/product/product.thunk";
+import { updateProduct, createProduct } from "@redux/product/product.thunk";
 import { validateForm, validateProductActionSchema } from "@validate/validate";
+import SelectBrandsAsyncInfinite from "@/components/CustomSelect/SelectBrandsAsyncInfinite";
 
 const { TextArea } = Input;
 const { Option } = Select;
 
-const ModalCreateProduct = ({ open, setOpen, refetch }) => {
+const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
   const [mainImage, setMainImage] = useState(null);
   const [errors, setErrors] = useState({});
   
+  // Use actual API queries
   const {
     data: categoriesData,
     isLoading: isLoadingCategories,
@@ -33,30 +36,76 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
   const brands = brandsData || [];
 
   useEffect(() => {
+    // Reset form when modal opens/closes
     if (open) {
-      form.resetFields();
-      setMainImage(null);
-      setFileList([]);
+      if (!isEmpty(product)) {
+        form.setFieldsValue({
+          name: product.name,
+          price: product.price,
+          currentStock: product.currentStock,
+          categories: product.categories?.map(cat => cat._id || cat),
+          brandId: product.brandId?._id || product.brandId,
+          description: product.description,
+          tags: product.tags?.join(", ")
+        });
+        
+        // Set main image
+        if (product.mainImage?.url) {
+          setMainImage({
+            uid: '-1',
+            name: 'main-image.png',
+            status: 'done',
+            url: product.mainImage.url,
+            thumbUrl: product.mainImage.url,
+          });
+        } else {
+          setMainImage(null);
+        }
+        
+        // Set additional images
+        if (product.images && product.images.length > 0) {
+          setFileList(
+            product.images.map((img, index) => ({
+              uid: `-${index + 2}`,
+              name: `image-${index}.png`,
+              status: 'done',
+              url: img.url,
+              thumbUrl: img.url,
+            }))
+          );
+        } else {
+          setFileList([]);
+        }
+      } else {
+        // Clear form for new product creation
+        form.resetFields();
+        setMainImage(null);
+        setFileList([]);
+      }
+      
       setErrors({});
     }
-  }, [open, form]);
+  }, [product, open, form]);
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
       
+      // Process tags (convert comma-separated string to array)
       const tags = values.tags ? values.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
       
+      // Add processed tags back to values for validation
       const processedValues = {
         ...values,
         tags: tags
       };
       
+      // Validate form with our schema
       const formErrors = await validateForm({
         input: processedValues,
         validateSchema: validateProductActionSchema,
-        context: { isNewProduct: true }
+        context: { isNewProduct: isEmpty(product) }
       });
       
       if (Object.keys(formErrors).length > 0) {
@@ -66,15 +115,21 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
         return;
       }
       
+      // Prepare form data
       const productData = {
         ...values,
         tags,
       };
       
+      // Handle main image
       if (mainImage?.originFileObj) {
         productData.mainImageBase64 = await getBase64(mainImage.originFileObj);
+      } else if (mainImage?.url) {
+        // For update with existing image
+        productData.mainImageUrl = mainImage.url;
       }
       
+      // Handle additional images
       const additionalImagesBase64 = await Promise.all(
         fileList.filter(file => file.originFileObj)
           .map(file => getBase64(file.originFileObj))
@@ -84,12 +139,25 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
         productData.additionalImagesBase64 = additionalImagesBase64;
       }
       
-      await dispatch(createProduct(productData)).unwrap();
+      // Keep track of existing images that weren't changed
+      productData.existingImages = fileList
+        .filter(file => file.url && !file.originFileObj)
+        .map(file => file.url);
       
-      setErrors({});
-      message.success("Thêm sản phẩm thành công");
-      setOpen(false);
+      // Either create or update based on whether product exists
+      let result;
+      if (isEmpty(product)) {
+        result = await dispatch(createProduct(productData)).unwrap();
+      } else {
+        result = await dispatch(updateProduct({ 
+          id: product._id, 
+          ...productData 
+        })).unwrap();
+      }
+      
       refetch();
+      setOpen(false);
+      setErrors({});
     } catch (error) {
       console.error("Form submission error:", error);
       message.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
@@ -98,6 +166,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
     }
   };
 
+  // Helper function to convert file to base64
   const getBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -109,9 +178,6 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
 
   const handleCancel = () => {
     setOpen(false);
-    form.resetFields();
-    setMainImage(null);
-    setFileList([]);
     setErrors({});
   };
 
@@ -120,6 +186,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
     maxCount: 1,
     fileList: mainImage ? [mainImage] : [],
     beforeUpload: (file) => {
+      // Return false to prevent auto-upload
       return false;
     },
     onChange({ fileList }) {
@@ -145,6 +212,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
     listType: "picture-card",
     fileList,
     beforeUpload: (file) => {
+      // Return false to prevent auto-upload
       return false;
     },
     onChange: ({ fileList: newFileList }) => {
@@ -174,7 +242,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
       open={open}
       title={
         <div className="text-lg md:text-2xl font-bold text-center">
-          Thêm mới sản phẩm
+          {isEmpty(product) ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
         </div>
       }
       onOk={handleSubmit}
@@ -193,7 +261,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
           onClick={handleSubmit}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full transition duration-300 ease-in-out mx-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Thêm
+          {isEmpty(product) ? "Thêm" : "Cập nhật"}
         </button>,
       ]}
       width={800}
@@ -229,7 +297,6 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
               className="w-full"
             />
           </Form.Item>
-          
         </div>
         
         <Form.Item
@@ -238,15 +305,12 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
           validateStatus={errors.brandId ? "error" : ""}
           help={errors.brandId ? <ErrorMessage message={errors.brandId} /> : ""}
         >
-          <Select 
-            size="large"
-            placeholder="Chọn thương hiệu"
-            loading={isLoadingBrands}
-          >
-            {brands.map(brand => (
-              <Option key={brand._id} value={brand._id}>{brand.name}</Option>
-            ))}
-          </Select>
+          <SelectBrandsAsyncInfinite
+          defaultBrand={product?.brandId}
+          onSelectChange={(option) => {
+            form.setFieldsValue({ brandId: option?.value });
+          }}
+          />
         </Form.Item>
 
         <Form.Item
@@ -309,4 +373,4 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
   );
 };
 
-export default ModalCreateProduct;
+export default ModalProductAction;

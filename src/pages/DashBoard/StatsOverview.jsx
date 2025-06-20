@@ -193,7 +193,7 @@ const StatsOverview = () => {
                             icon={FaDollarSign}
                             title="Doanh thu"
                             value={order?.revenue || 0}
-                            subTitle="Doanh số"
+                            subTitle="Lợi nhuận gộp"
                             subValue={order?.totalAmount || 0}
                             color="#1677ff"
                         />
