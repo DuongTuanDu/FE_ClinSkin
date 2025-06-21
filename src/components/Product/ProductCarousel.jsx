@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Slider from "react-slick";
 import { defaultProduct } from "@const/defaultProduct";
 import { formatPrice } from "@helpers/formatPrice";
@@ -10,6 +10,7 @@ import ImageCarousel from "@components/ImageCarousel";
 import { Link } from "react-router-dom";
 import QuickViewOverlay from "./QuickViewOverlay";
 import Loading from "../Loading/Loading";
+import ProductDrawer from "./ProductDrawer";
 
 const ProductCarousel = ({
   products = defaultProduct,
@@ -19,6 +20,9 @@ const ProductCarousel = ({
   auto = true,
   scroll = 1,
 }) => {
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -80,8 +84,6 @@ const ProductCarousel = ({
   if (products.length === 0 && !isLoading) return null;
 
   const ProductItem = ({ item }) => {
-    console.log("item", item);
-
     const discountPercentage = item.promotion
       ? item.promotion.discountPercentage
       : 0;
@@ -122,6 +124,8 @@ const ProductCarousel = ({
               <QuickViewOverlay
                 onClick={(e) => {
                   e.stopPropagation();
+                  setSelectedProduct(item);
+                  setDrawerVisible(true);
                 }}
               />
             </div>
@@ -168,6 +172,18 @@ const ProductCarousel = ({
 
   return (
     <div className="relative px-6 py-8">
+      {open && selectedProduct && (
+        <ProductDrawer
+          {...{
+            open: drawerVisible,
+            product: selectedProduct,
+            onClose: () => {
+              setDrawerVisible(false);
+              setSelectedProduct(null);
+            },
+          }}
+        />
+      )}
       <motion.div
         initial="hidden"
         animate="visible"
