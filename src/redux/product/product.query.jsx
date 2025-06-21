@@ -89,6 +89,14 @@ export const productApi = createApi({
             }),
             transformResponse: (response) => response.data,
         }),
+
+        getProductDetail: builder.query({
+            query: ({ slug }) => ({
+                url: `/products/detail/${slug}`,
+                method: "GET",
+            }),
+            transformResponse: (response) => response.data,
+        }),
     }),
 });
 
@@ -100,5 +108,6 @@ export const {
     useUpdateProductMutation,
     useDeleteProductMutation,
     useRestoreProductMutation,
-    useGetProductHomeQuery
+    useGetProductHomeQuery,
+    useGetProductDetailQuery,
 } = productApi;
