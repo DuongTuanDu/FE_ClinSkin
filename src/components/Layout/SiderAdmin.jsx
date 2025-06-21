@@ -42,8 +42,14 @@ const MENU_ITEMS = [
       {
         key: "sub1-2",
         icon: <AppstoreOutlined />,
-        label: "Tất cả sản phẩm",
+        label: "Quản lý Sản phẩm",
         path: "/admin/products",
+      },
+      {
+        key: "sub1-1",
+        icon: <AppstoreOutlined />,
+        label: "Quản lý Lô hàng",
+        path: "/admin/inventory",
       },
       {
         key: "sub1-3",

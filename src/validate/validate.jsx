@@ -71,3 +71,27 @@ export const validateBrandActionSchema = Yup.object().shape({
     .trim()
     .required("Vui lòng nhập tên thương hiệu")
 });
+
+export const validateInventoryBatchActionSchema = Yup.object().shape({
+  productId: Yup.string()
+    .required("Vui lòng chọn sản phẩm"),
+  
+  quantity: Yup.number()
+    .required("Vui lòng nhập số lượng")
+    .min(1, "Số lượng phải lớn hơn 0")
+    .integer("Số lượng phải là số nguyên")
+    .typeError("Số lượng phải là số"),
+  
+  costPrice: Yup.number()
+    .required("Vui lòng nhập giá nhập")
+    .min(0, "Giá nhập không được âm")
+    .typeError("Giá nhập phải là số"),
+  
+  expiryDate: Yup.string()
+    .required("Vui lòng chọn ngày hết hạn")
+    .test('is-future-date', 'Ngày hết hạn phải sau ngày hiện tại', 
+      value => value ? new Date(value) > new Date() : false),
+  
+  receivedDate: Yup.string()
+    .nullable(),
+});

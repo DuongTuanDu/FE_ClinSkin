@@ -259,7 +259,7 @@ const StatsRevenueOrder = () => {
                             <div className="mb-4">
                                 <div className="flex items-center gap-2">
                                     <MdTrendingUp className="text-[#1677ff] text-xl" />
-                                    <span className="font-medium">Doanh thu & Doanh số</span>
+                                    <span className="font-medium">Doanh thu & Lợi thuận</span>
                                 </div>
                             </div>
                             <div className="h-[400px]">
@@ -282,7 +282,7 @@ const StatsRevenueOrder = () => {
                                         <Line
                                             type="monotone"
                                             dataKey="revenue"
-                                            name="Doanh thu"
+                                            name="Lợi nhuận gộp"
                                             stroke="#f25055"
                                             strokeWidth={3}
                                             dot={true}

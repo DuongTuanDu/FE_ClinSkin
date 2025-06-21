@@ -4,9 +4,6 @@ import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import TableProduct from "@/pages/ManageProduct/TableProduct";
 import debounce from "lodash/debounce";
 import { useGetProductListQuery } from "@redux/product/product.query";
-import ModalCreateProduct from "./ModalCreateProduct";
-import ModalUpdateProduct from "./ModalUpdateProduct";
-import { isEmpty } from "lodash";
 
 const ManageProduct = () => {
   const [paginate, setPaginate] = useState({
@@ -16,9 +13,7 @@ const ManageProduct = () => {
   const [filter, setFilter] = useState({
     name: "",
   });
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState({});
+  const [showAddModal, setShowAddModal] = useState(false);
   const [isFetch, setIsFetch] = useState(false);
 
   // Use a stable reference for the query parameters
@@ -49,32 +44,8 @@ const ManageProduct = () => {
     setPaginate({ page: newPage, pageSize: newPageSize });
   };
 
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product);
-    setUpdateModalOpen(true);
-  };
-
-  const handleAddProduct = () => {
-    setCreateModalOpen(true);
-  };
-
   return (
     <div className="mt-4">
-      {/* Create Product Modal */}
-      <ModalCreateProduct
-        open={createModalOpen}
-        setOpen={setCreateModalOpen}
-        refetch={refetch}
-      />
-
-      {/* Update Product Modal */}
-      <ModalUpdateProduct
-        open={updateModalOpen}
-        setOpen={setUpdateModalOpen}
-        product={selectedProduct}
-        refetch={refetch}
-      />
-
       <div className="mb-4 bg-white p-4 rounded-md shadow-lg flex gap-4 items-center">
         <Input
           size="middle"
@@ -85,7 +56,7 @@ const ManageProduct = () => {
         />
         <Button
           size="middle"
-          onClick={handleAddProduct}
+          onClick={() => setShowAddModal(true)}
           type="primary"
           icon={<PlusOutlined />}
           className="bg-indigo-600 hover:bg-indigo-700"
@@ -103,7 +74,8 @@ const ManageProduct = () => {
         setPaginate={handlePageChange}
         refetch={refetch}
         setIsFetch={setIsFetch}
-        onEdit={handleEditProduct}
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
       />
     </div>
   );
