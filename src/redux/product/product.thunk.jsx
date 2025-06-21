@@ -7,7 +7,6 @@ export const createProduct = createAsyncThunk(
     async (payload, { rejectWithValue }) => {
         try {
             const response = await axios.post("/admin/product", payload);
-            message.success("Tạo sản phẩm thành công");
             return response;
         } catch (error) {
             message.error(error.response.data.message || "Lỗi khi tạo sản phẩm");
@@ -21,7 +20,6 @@ export const updateProduct = createAsyncThunk(
     async ({ id, ...payload }, { rejectWithValue }) => {
         try {
             const response = await axios.put(`/admin/product/${id}`, payload);
-            message.success("Cập nhật sản phẩm thành công");
             return response;
         } catch (error) {
             message.error(error.response.data.message || "Lỗi khi cập nhật sản phẩm");
