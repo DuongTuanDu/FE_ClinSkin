@@ -7,6 +7,7 @@ import { useGetAllCategoryQuery } from "@redux/category/category.query";
 import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
 import { createProduct } from "@redux/product/product.thunk";
 import { validateForm, validateProductActionSchema } from "@validate/validate";
+import { tags } from "@/const/tags";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -18,17 +19,17 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
   const [fileList, setFileList] = useState([]);
   const [mainImage, setMainImage] = useState(null);
   const [errors, setErrors] = useState({});
-  
+
   const {
     data: categoriesData,
     isLoading: isLoadingCategories,
   } = useGetAllCategoryQuery();
-  
+
   const {
     data: brandsData,
     isLoading: isLoadingBrands,
   } = useGetAllBrandsQuery();
-  
+
   const categories = categoriesData || [];
   const brands = brandsData || [];
 
@@ -45,47 +46,56 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
-      const tags = values.tags ? values.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
-      
+
+      let tags = [];
+      if (values.tags) {
+        if (Array.isArray(values.tags)) {
+          // Nếu là mảng (từ Select mode="tags")
+          tags = values.tags.filter(tag => tag && tag.trim());
+        } else if (typeof values.tags === 'string') {
+          // Nếu là string (trường hợp nhập thủ công)
+          tags = values.tags.split(",").map(tag => tag.trim()).filter(tag => tag);
+        }
+      }
+
       const processedValues = {
         ...values,
         tags: tags
       };
-      
+
       const formErrors = await validateForm({
         input: processedValues,
         validateSchema: validateProductActionSchema,
         context: { isNewProduct: true }
       });
-      
+
       if (Object.keys(formErrors).length > 0) {
         console.log("Validation errors:", formErrors);
         setErrors(formErrors);
         setLoading(false);
         return;
       }
-      
+
       const productData = {
         ...values,
         tags,
       };
-      
+
       if (mainImage?.originFileObj) {
         productData.mainImageBase64 = await getBase64(mainImage.originFileObj);
       }
-      
+
       const additionalImagesBase64 = await Promise.all(
         fileList.filter(file => file.originFileObj)
           .map(file => getBase64(file.originFileObj))
       );
-      
+
       if (additionalImagesBase64.length > 0) {
         productData.additionalImagesBase64 = additionalImagesBase64;
       }
-      
+
       await dispatch(createProduct(productData)).unwrap();
-      
+
       setErrors({});
       message.success("Thêm sản phẩm thành công");
       setOpen(false);
@@ -140,7 +150,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
       imgWindow?.document.write(image.outerHTML);
     },
   };
-  
+
   const additionalImagesUploadProps = {
     listType: "picture-card",
     fileList,
@@ -213,14 +223,14 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
           >
             <Input size="large" />
           </Form.Item>
-          
+
           <Form.Item
             name="price"
             label="Giá"
             validateStatus={errors.price ? "error" : ""}
             help={errors.price ? <ErrorMessage message={errors.price} /> : ""}
           >
-            <InputNumber 
+            <InputNumber
               size="large"
               min={0}
               formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -229,16 +239,16 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
               className="w-full"
             />
           </Form.Item>
-          
+
         </div>
-        
+
         <Form.Item
           name="brandId"
           label="Thương hiệu"
           validateStatus={errors.brandId ? "error" : ""}
           help={errors.brandId ? <ErrorMessage message={errors.brandId} /> : ""}
         >
-          <Select 
+          <Select
             size="large"
             placeholder="Chọn thương hiệu"
             loading={isLoadingBrands}
@@ -266,15 +276,17 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
             ))}
           </Select>
         </Form.Item>
-        
-        <Form.Item
-          name="tags"
-          label="Tags"
-          help="Nhập các tags cách nhau bởi dấu phẩy (vd: mỹ phẩm, kem dưỡng, spa)"
-        >
-          <Input size="large" />
+
+        <Form.Item label="Tags" name="tags">
+          <Select placeholder="Chọn tags" size="middle" mode="tags">
+            {tags?.map((item) => (
+              <Select.Option key={item.key} value={item.value}>
+                {item.value}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
-        
+
         <Form.Item
           name="description"
           label="Mô tả sản phẩm"
@@ -283,7 +295,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
         >
           <TextArea rows={4} />
         </Form.Item>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Hình ảnh chính <span className="text-red-600">*</span>
@@ -293,7 +305,7 @@ const ModalCreateProduct = ({ open, setOpen, refetch }) => {
           </Upload>
           {errors.mainImageBase64 && <ErrorMessage message={errors.mainImageBase64} />}
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Hình ảnh bổ sung

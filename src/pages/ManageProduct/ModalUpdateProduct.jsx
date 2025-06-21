@@ -8,6 +8,7 @@ import { useGetAllCategoryQuery } from "@redux/category/category.query";
 import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
 import { updateProduct } from "@redux/product/product.thunk";
 import { validateForm, validateProductActionSchema } from "@validate/validate";
+import { tags } from "@/const/tags";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -19,18 +20,18 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
   const [fileList, setFileList] = useState([]);
   const [mainImage, setMainImage] = useState(null);
   const [errors, setErrors] = useState({});
-  
+
   // Use actual API queries
   const {
     data: categoriesData,
     isLoading: isLoadingCategories,
   } = useGetAllCategoryQuery();
-  
+
   const {
     data: brandsData,
     isLoading: isLoadingBrands,
   } = useGetAllBrandsQuery();
-  
+
   const categories = categoriesData || [];
   const brands = brandsData || [];
 
@@ -46,7 +47,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
         description: product.description,
         tags: product.tags?.join(", ")
       });
-      
+
       // Set main image
       if (product.mainImage?.url) {
         setMainImage({
@@ -57,7 +58,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
           thumbUrl: product.mainImage.url,
         });
       }
-      
+
       // Set additional images
       if (product.images && product.images.length > 0) {
         setFileList(
@@ -72,7 +73,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
       } else {
         setFileList([]);
       }
-      
+
       setErrors({});
     }
   }, [product, open, form]);
@@ -81,36 +82,45 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
-      // Process tags (convert comma-separated string to array)
-      const tags = values.tags ? values.tags.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
-      
+      console.log("values", values);
+
+      let tags = [];
+      if (values.tags) {
+        if (Array.isArray(values.tags)) {
+          // Nếu là mảng (từ Select mode="tags")
+          tags = values.tags.filter(tag => tag && tag.trim());
+        } else if (typeof values.tags === 'string') {
+          // Nếu là string (trường hợp nhập thủ công)
+          tags = values.tags.split(",").map(tag => tag.trim()).filter(tag => tag);
+        }
+      }
+
       // Add processed tags back to values for validation
       const processedValues = {
         ...values,
         tags: tags
       };
-      
+
       // Validate form with our schema
       const formErrors = await validateForm({
         input: processedValues,
         validateSchema: validateProductActionSchema,
         context: { isNewProduct: false }
       });
-      
+
       if (Object.keys(formErrors).length > 0) {
         console.log("Validation errors:", formErrors);
         setErrors(formErrors);
         setLoading(false);
         return;
       }
-      
+
       // Prepare form data
       const productData = {
         ...values,
         tags,
       };
-      
+
       // Handle main image - if changing image in update
       if (mainImage?.originFileObj) {
         productData.mainImageBase64 = await getBase64(mainImage.originFileObj);
@@ -118,28 +128,28 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
         // For update with existing image
         productData.mainImageUrl = mainImage.url;
       }
-      
+
       // Handle additional images
       const additionalImagesBase64 = await Promise.all(
         fileList.filter(file => file.originFileObj)
           .map(file => getBase64(file.originFileObj))
       );
-      
+
       if (additionalImagesBase64.length > 0) {
         productData.additionalImagesBase64 = additionalImagesBase64;
       }
-      
+
       // Keep track of existing images that weren't changed
       productData.existingImages = fileList
         .filter(file => file.url && !file.originFileObj)
         .map(file => file.url);
-      
+
       // Update existing product
-      await dispatch(updateProduct({ 
-        id: product._id, 
-        ...productData 
+      await dispatch(updateProduct({
+        id: product._id,
+        ...productData
       })).unwrap();
-      
+
       message.success("Cập nhật sản phẩm thành công");
       refetch();
       setOpen(false);
@@ -193,7 +203,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
       imgWindow?.document.write(image.outerHTML);
     },
   };
-  
+
   const additionalImagesUploadProps = {
     listType: "picture-card",
     fileList,
@@ -267,14 +277,14 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
           >
             <Input size="large" />
           </Form.Item>
-          
+
           <Form.Item
             name="price"
             label="Giá"
             validateStatus={errors.price ? "error" : ""}
             help={errors.price ? <ErrorMessage message={errors.price} /> : ""}
           >
-            <InputNumber 
+            <InputNumber
               size="large"
               min={0}
               formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -284,14 +294,14 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
             />
           </Form.Item>
         </div>
-        
+
         <Form.Item
           name="brandId"
           label="Thương hiệu"
           validateStatus={errors.brandId ? "error" : ""}
           help={errors.brandId ? <ErrorMessage message={errors.brandId} /> : ""}
         >
-          <Select 
+          <Select
             size="large"
             placeholder="Chọn thương hiệu"
             loading={isLoadingBrands}
@@ -319,15 +329,17 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
             ))}
           </Select>
         </Form.Item>
-        
-        <Form.Item
-          name="tags"
-          label="Tags"
-          help="Nhập các tags cách nhau bởi dấu phẩy (vd: mỹ phẩm, kem dưỡng, spa)"
-        >
-          <Input size="large" />
+
+        <Form.Item label="Tags" name="tags">
+          <Select placeholder="Chọn tags" size="middle" mode="tags">
+            {tags?.map((item) => (
+              <Select.Option key={item.key} value={item.value}>
+                {item.value}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
-        
+
         <Form.Item
           name="description"
           label="Mô tả sản phẩm"
@@ -336,7 +348,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
         >
           <TextArea rows={4} />
         </Form.Item>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Hình ảnh chính <span className="text-red-600">*</span>
@@ -346,7 +358,7 @@ const ModalUpdateProduct = ({ open, setOpen, product, refetch }) => {
           </Upload>
           {errors.mainImageBase64 && <ErrorMessage message={errors.mainImageBase64} />}
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Hình ảnh bổ sung
