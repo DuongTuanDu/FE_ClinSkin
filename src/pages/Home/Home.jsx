@@ -10,7 +10,6 @@ import Loading from "@/components/Loading/Loading";
 const Home = () => {
     const { isMobile } = useScreen();
     const { data, isLoading, isFetching } = useGetProductHomeQuery();
-    console.log("data", data);
 
     const productData = useMemo(() => {
         if (data?.length === 0) return {};
@@ -20,10 +19,7 @@ const Home = () => {
         }, {});
     }, [data]);
 
-    console.log("productData", productData);
-
     const { HOT = [], NEW = [] } = productData || {};
-    console.log("HOT", HOT);
 
     if (isLoading || isFetching) return <Loading />;
 

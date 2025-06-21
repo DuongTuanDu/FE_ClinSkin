@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge, List, Pagination, Rate, Skeleton, Tag } from "antd";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -6,6 +6,7 @@ import { formatPrice } from "@helpers/formatPrice";
 import { createAverageRate } from "@utils/createIcon";
 import ImageCarousel from "@components/ImageCarousel";
 import QuickViewOverlay from "./QuickViewOverlay";
+import ProductDrawer from "./ProductDrawer";
 
 const ProductList = ({
   isLoading,
@@ -15,6 +16,8 @@ const ProductList = ({
   paginate = { page: 1, pageSize: 10, totalPage: 0, totalItems: 0 },
   isPagination = true,
 }) => {
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -82,6 +85,8 @@ const ProductList = ({
               <QuickViewOverlay
                 onClick={(e) => {
                   e.stopPropagation();
+                  setSelectedProduct(item);
+                  setDrawerVisible(true);
                 }}
               />
             </div>
@@ -164,6 +169,18 @@ const ProductList = ({
       variants={containerVariants}
       className="mx-auto px-4 py-8 md:px-8"
     >
+      {open && selectedProduct && (
+        <ProductDrawer
+          {...{
+            open: drawerVisible,
+            product: selectedProduct,
+            onClose: () => {
+              setDrawerVisible(false);
+              setSelectedProduct(null);
+            },
+          }}
+        />
+      )}
       {title && (
         <motion.h2
           initial={{ opacity: 0, y: -20 }}
