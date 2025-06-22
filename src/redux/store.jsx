@@ -6,6 +6,9 @@ import { brandApi } from "./brand/brand.query";
 import { reviewApi } from "./review/review.query";
 import { orderApi } from "./order/order.query";
 import reducer from "./reducer";
+import { inventoryBatchApi } from "./inventory/inventoryBatch.query";
+import { productSearchApi } from "./product/productSearch.query";
+
 
 export const store = configureStore({
   reducer: {
@@ -15,13 +18,16 @@ export const store = configureStore({
     [reviewApi.reducerPath]: reviewApi.reducer,
     [productApi.reducerPath]: productApi.reducer,
     [brandApi.reducerPath]: brandApi.reducer,
-    [orderApi.reducerPath]: orderApi.reducer
+    [orderApi.reducerPath]: orderApi.reducer,
+    [inventoryBatchApi.reducerPath]: inventoryBatchApi.reducer,
+    [productSearchApi.reducerPath]: productSearchApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
     }).concat(categoryApi.middleware, reviewApi.middleware)
     .concat(productApi.middleware)
-    .concat(brandApi.middleware).concat(orderApi.middleware),
+    .concat(brandApi.middleware).concat(orderApi.middleware).
+    concat(inventoryBatchApi.middleware).concat(productSearchApi.middleware),
 
 });

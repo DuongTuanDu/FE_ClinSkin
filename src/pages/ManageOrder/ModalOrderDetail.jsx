@@ -1,13 +1,17 @@
 // 📁 src/pages/ManageOrder/ModalOrderDetail.jsx
 
 import React from "react";
-import { Modal, Descriptions, Tag, Divider, Image } from "antd";
+import { Modal, Descriptions, Tag, Divider, Image, Button } from "antd";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const ModalOrderDetail = ({ open, setOpen, order }) => {
+  const navigate = useNavigate();
+  
   if (!order) return null;
 
   const {
+    _id,
     userId,
     items = [],
     address = {},
@@ -20,13 +24,26 @@ const ModalOrderDetail = ({ open, setOpen, order }) => {
     stripeSessionId,
   } = order || {};
 
+  const handleGetItems = () => {
+    navigate(`/admin/export-order/${_id}`);
+    setOpen(false);
+  };
+
   return (
     <Modal
       open={open}
       onCancel={() => setOpen(false)}
       onOk={() => setOpen(false)}
       title={`Chi tiết đơn hàng`}
-      footer={null}
+      footer={
+        status === "pending" ? (
+          <div className="flex justify-end">
+            <Button type="primary" onClick={handleGetItems}>
+              Lấy hàng
+            </Button>
+          </div>
+        ) : null
+      }
       width={800}
     >
       <Descriptions bordered column={2} size="small">

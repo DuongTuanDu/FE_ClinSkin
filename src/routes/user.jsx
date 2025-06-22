@@ -7,7 +7,9 @@ const LayoutUser = lazy(() => import("@components/Layout/LayoutUser"));
 const Home = lazy(() => import("@pages/Home/index"));
 const Auth = lazy(() => import("@pages/Auth/index"));
 const Account = lazy(() => import("@pages/Account/Account"));
+const Detail = lazy(() => import("@pages/Detail/Detail"));
 const AuthUserWapper = lazy(() => import("@components/Auth/AuthUserWapper"));
+const SearchProduct = lazy(() => import("@pages/SearchProduct/UserSearchPageProducts"));
 
 
 const WrapRoute = ({ element: Element }) => (
@@ -30,7 +32,9 @@ const routes = [
     path: "/auth",
     element: Auth,
     title: "Đăng nhập - Đăng ký",
-  }
+  },
+  { path: "/detail/:slug", element: Detail, title: "Chi tiết sản phẩm" },
+  {path:"/searchProduct", element: SearchProduct, title: "Tim kiem san pham"},
 ];
 
 const UserRoutes = routes.map(
