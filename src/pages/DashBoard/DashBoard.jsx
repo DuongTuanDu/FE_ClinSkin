@@ -51,6 +51,7 @@ const DashBoard = () => {
     }, [paginate.page, paginate.pageSize, selectedDays]);
 
     const daysOptions = [
+        { label: '1 ngày tới', value: 1 },
         { label: '30 ngày tới', value: 30 },
         { label: '60 ngày tới', value: 60 },
         { label: '90 ngày tới', value: 90 },

@@ -38,7 +38,7 @@ const TableProductAlmostExpired = ({
             title: "Mã lô hàng",
             dataIndex: "batchNumber",
             key: "batchNumber",
-            width: 120,
+            width: 100,
             render: (text) => (
                 <span className="font-mono text-xs">{text}</span>
             ),
