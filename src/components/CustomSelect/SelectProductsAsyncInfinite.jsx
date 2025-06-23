@@ -66,6 +66,7 @@ const SelectProductsAsyncInfinite = ({ defaultProduct, onSelectChange }) => {
       placeholder="Chọn sản phẩm..."
       isClearable={true}
       noOptionsMessage={() => "Không tìm thấy sản phẩm"}
+      className='z-10'
     />
   );
 };
