@@ -124,10 +124,12 @@ const TableProductAlmostExpired = ({
                                 <div>
                                     <span className="font-bold">Tổng số lượng:</span>
                                     <span className="ml-1 text-blue-600">{record.currentStock}</span>
+                                    <span className="text-gray-500"> sản phẩm</span>
                                 </div>
                                 <div>
                                     <span className="font-bold">Sắp hết hạn:</span>
                                     <span className="ml-1 text-orange-600">{record.nearExpiryQuantity}</span>
+                                    <span className="text-gray-500"> sản phẩm</span>
                                 </div>
                                 <div>
                                     <span className="font-bold">Giá bán:</span>
