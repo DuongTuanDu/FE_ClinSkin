@@ -6,6 +6,8 @@ import { message } from "antd";
 
 const TablePromotion = ({ refreshTable, onEdit }) => {
   const [promotions, setPromotions] = useState([]);
+  console.log("promotions", promotions);
+  
   const [page, setPage] = useState(1);
   const [limit] = useState(5);
   const [isActive, setIsActive] = useState('all'); // Default to 'all'
@@ -85,6 +87,10 @@ const TablePromotion = ({ refreshTable, onEdit }) => {
     setIsModalOpen(false);
     setSelectedPromotion(null);
   };
+
+  if (!promotions) {
+    return null;
+  }
 
   return (
     <div className="bg-white p-6 rounded shadow">
