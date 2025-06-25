@@ -8,6 +8,7 @@ import { orderApi } from "./order/order.query";
 import reducer from "./reducer";
 import { inventoryBatchApi } from "./inventory/inventoryBatch.query";
 import { productSearchApi } from "./product/productSearch.query";
+import { userApi } from "./user/user.query";
 
 
 export const store = configureStore({
@@ -28,6 +29,6 @@ export const store = configureStore({
     }).concat(categoryApi.middleware, reviewApi.middleware)
     .concat(productApi.middleware)
     .concat(brandApi.middleware).concat(orderApi.middleware).
-    concat(inventoryBatchApi.middleware).concat(productSearchApi.middleware),
+    concat(inventoryBatchApi.middleware).concat(productSearchApi.middleware).concat(userApi.middleware),
 
 });

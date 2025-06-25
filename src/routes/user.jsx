@@ -35,6 +35,7 @@ const routes = [
   },
   { path: "/detail/:slug", element: Detail, title: "Chi tiết sản phẩm" },
   {path:"/searchProduct", element: SearchProduct, title: "Tim kiem san pham"},
+  {path:"/account", element: Account, title: "Tài khoản"},
 ];
 
 const UserRoutes = routes.map(
