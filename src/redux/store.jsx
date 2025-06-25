@@ -21,7 +21,8 @@ export const store = configureStore({
     [brandApi.reducerPath]: brandApi.reducer,
     [orderApi.reducerPath]: orderApi.reducer,
     [inventoryBatchApi.reducerPath]: inventoryBatchApi.reducer,
-    [productSearchApi.reducerPath]: productSearchApi.reducer
+    [productSearchApi.reducerPath]: productSearchApi.reducer,
+    [userApi.reducerPath]: userApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
