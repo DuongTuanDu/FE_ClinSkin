@@ -8,6 +8,8 @@ import { setEmailVerify } from "@redux/auth/auth.slice";
 import Cookies from "js-cookie";
 import CustomButton from "../CustomButton";
 
+const BE_URL = import.meta.env.VITE_APP_API_BASE_URL;
+
 const Login = ({ setStep, isModel, onClose }) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
@@ -45,6 +47,10 @@ const Login = ({ setStep, isModel, onClose }) => {
                 return;
             }
         });
+    };
+
+    const handleLoginGoogle = () => {
+        window.location.href = `${BE_URL}/auth/google`;
     };
 
     return (
@@ -116,6 +122,7 @@ const Login = ({ setStep, isModel, onClose }) => {
                 <button
                     type="button"
                     className="p-3 w-full flex justify-center items-center gap-2 bg-white text-sm text-gray-600 rounded-md hover:bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300"
+                    onClick={handleLoginGoogle}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

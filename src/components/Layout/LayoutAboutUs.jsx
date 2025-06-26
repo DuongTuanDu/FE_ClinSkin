@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import HeaderUser from "@components/Header/HeaderUser";
-import FooterUser from "@components/Footer/FooterUser";
 import { useDispatch, useSelector } from "react-redux";
 import ModalAuth from "../Modal/ModalAuth";
 import { setOpenModelAuth } from "@/redux/auth/auth.slice";
 import ClickSpark from "../ClickSpark";
 
-const LayoutUser = ({ children }) => {
+const LayoutAboutUs = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { openModelAuth } = useSelector((state) => state.auth);
@@ -35,12 +33,10 @@ const LayoutUser = ({ children }) => {
         sparkCount={8}
         duration={400}
       >
-        <HeaderUser />
-        <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
-        <FooterUser />
+        <main className="flex-grow">{children}</main>
       </ClickSpark>
     </div>
   );
 };
 
-export default LayoutUser;
+export default LayoutAboutUs;

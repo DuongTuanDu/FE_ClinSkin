@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Breadcrumb,
     Carousel,
@@ -11,6 +11,7 @@ import {
     Tag,
     Progress,
     Button,
+    notification,
 } from "antd";
 import {
     HeartOutlined,
@@ -22,21 +23,35 @@ import {
 } from "@ant-design/icons";
 import { LiaShoppingBasketSolid } from "react-icons/lia";
 import { createAverageRate } from "@utils/createIcon";
-import { FaShippingFast } from "react-icons/fa";
+import { FaCheckCircle, FaShippingFast } from "react-icons/fa";
 import { MdOutlineSwapHorizontalCircle } from "react-icons/md";
 import {
     IoShieldCheckmark,
     IoPricetagOutline,
+    IoNotifications,
 } from "react-icons/io5";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { formatPrice } from "@helpers/formatPrice";
 import { GiDiamondTrophy } from "react-icons/gi";
 import { useGetProductDetailQuery } from "@/redux/product/product.query";
 import Loading from "@/components/Loading/Loading";
 import CustomButton from "@/components/CustomButton";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/redux/cart/cart.slice";
+import confetti from "canvas-confetti";
 
 const Detail = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1);
+    const [product, setProduct] = useState({
+        productId: "",
+        name: "",
+        image: "",
+        price: "",
+        brand: "",
+        quantity: 1,
+    });
 
     const { slug } = useParams();
 
@@ -46,6 +61,24 @@ const Detail = () => {
         error: errorProduct,
         refetch,
     } = useGetProductDetailQuery({ slug }, { skip: !slug });
+
+    console.log("dataProduct", dataProduct);
+    
+
+    useEffect(() => {
+        if (dataProduct) {
+            setProduct((prev) => ({
+                ...prev,
+                productId: dataProduct._id,
+                name: dataProduct.name,
+                image: dataProduct.mainImage.url,
+                price: dataProduct.promotion
+                    ? dataProduct.finalPrice
+                    : dataProduct.price,
+                brand: dataProduct.brandInfo.name,
+            }));
+        }
+    }, [dataProduct]);
 
     if (errorProduct) return <Empty className="mt-24" />;
 
@@ -63,6 +96,7 @@ const Detail = () => {
         const availableQty = getAvailableQuantity();
         const newQty = Math.min(value, availableQty);
         setQuantity(newQty);
+        handleProduct("quantity", newQty);
     };
 
     const isOutOfStock = getAvailableQuantity() <= 0;
@@ -83,7 +117,7 @@ const Detail = () => {
         const availableQty = getAvailableQuantity();
 
         console.log("availableQty", availableQty);
-        
+
 
         if (isOutOfStock) {
             return (
@@ -106,6 +140,82 @@ const Detail = () => {
                 Còn hàng
             </Tag>
         );
+    };
+
+    const openNotification = () => {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FCD25A", "#FF8C42"],
+        });
+
+        notification.success({
+            message: (
+                <div className="text-base md:text-lg mb-2 animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-rose-700 font-extrabold">
+                    Thông báo thêm giỏ hàng thành công
+                </div>
+            ),
+            description: (
+                <>
+                    <div className="flex items-center space-x-4 mt-4">
+                        <div className="relative flex-shrink-0">
+                            <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-24 h-24 object-cover rounded-lg shadow-md transform transition-all duration-300 hover:scale-105"
+                            />
+                            <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce shadow-lg">
+                                <FaCheckCircle className="inline-block mr-1" /> Đã thêm
+                            </div>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="truncate-2-lines text-sm font-semibold mb-2 text-gray-800 line-clamp-2 hover:line-clamp-none transition-all duration-300">
+                                {product.name}
+                            </h4>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">
+                                    {formatPrice(product.price)} đ
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    Số lượng: {product.quantity}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <CustomButton
+                        onClick={() => {
+                            navigate("/cart");
+                        }}
+                        icon={<LiaShoppingBasketSolid className="mr-2 text-xl" />}
+                        variant="primary"
+                        className="w-full mt-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white !rounded-full hover:from-pink-600 hover:to-purple-600"
+                    >
+                        Xem giỏ hàng
+                    </CustomButton>
+                </>
+            ),
+            icon: <IoNotifications className="animate-pulse text-[#f59c23]" />,
+            placement: "top",
+            duration: 5,
+            className: "custom-notification",
+            style: {
+                width: "600px",
+            },
+        });
+    };
+
+    const handleProduct = (key, value) => {
+        setProduct((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const handleAddCart = () => {
+        console.log("Add to cart");
+        dispatch(addToCart(product));
+        openNotification();
     };
 
     const RatingSection = () => {
@@ -326,6 +436,7 @@ const Detail = () => {
                                 <LiaShoppingBasketSolid className="text-3xl cursor-pointer" />
                             }
                             disabled={isOutOfStock}
+                            onClick={handleAddCart}
                             variant="primary"
                             className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600"
                         >
