@@ -10,7 +10,7 @@ const Account = lazy(() => import("@pages/Account/Account"));
 const Detail = lazy(() => import("@pages/Detail/Detail"));
 const AuthUserWapper = lazy(() => import("@components/Auth/AuthUserWapper"));
 const SearchProduct = lazy(() => import("@pages/SearchProduct/UserSearchPageProducts"));
-
+const Cart = lazy(() => import("@pages/Cart/Cart"));
 
 const WrapRoute = ({ element: Element }) => (
   <Suspense fallback={<Loading />}>
@@ -34,8 +34,9 @@ const routes = [
     title: "Đăng nhập - Đăng ký",
   },
   { path: "/detail/:slug", element: Detail, title: "Chi tiết sản phẩm" },
-  {path:"/searchProduct", element: SearchProduct, title: "Tim kiem san pham"},
-  {path:"/account", element: Account, title: "Tài khoản"},
+  { path: "/searchProduct", element: SearchProduct, title: "Tim kiem san pham" },
+  { path: "/account", element: Account, title: "Tài khoản" },
+  { path: "/cart", element: Cart, title: "Giỏ hàng" },
 ];
 
 const UserRoutes = routes.map(

@@ -30,7 +30,7 @@ import {
     IoPricetagOutline,
     IoNotifications,
 } from "react-icons/io5";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { formatPrice } from "@helpers/formatPrice";
 import { GiDiamondTrophy } from "react-icons/gi";
 import { useGetProductDetailQuery } from "@/redux/product/product.query";
@@ -42,6 +42,7 @@ import confetti from "canvas-confetti";
 
 const Detail = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState({
         productId: "",
