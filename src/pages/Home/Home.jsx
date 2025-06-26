@@ -6,6 +6,8 @@ import { useGetProductHomeQuery } from "@/redux/product/product.query";
 import useScreen from "@/hook/useScreen";
 import { useMemo } from "react";
 import Loading from "@/components/Loading/Loading";
+import SliderList from "@/components/Slider/SliderList";
+import { sliderPromotion } from "@/const/dataDefault";
 
 const Home = () => {
     const { isMobile } = useScreen();
@@ -40,6 +42,7 @@ const Home = () => {
                             />
                         ))}
                 </Spin>
+                <SliderList {...{ slides: sliderPromotion }} />
                 <Spin spinning={isLoading} tip="Đang tải...">
                     {NEW &&
                         NEW.length >= 5 &&
