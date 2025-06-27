@@ -24,8 +24,6 @@ const Home = () => {
     const { data: products, isLoading: isLoadingOther, isFetching: isFetchingOther } = useGetProductOtherQuery({
         ...paginate,
     });
-    console.log("products", products);
-    
 
     const { data: productList = [], pagination = {} } = products || {};
 

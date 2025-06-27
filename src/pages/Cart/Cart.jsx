@@ -18,6 +18,8 @@ import {
 import { formatPrice } from "@helpers/formatPrice";
 import { isEmpty } from "lodash";
 import CustomButton from "@/components/CustomButton";
+import ProductList from "@/components/Product/ProductList";
+import { useGetProductOtherQuery } from "@/redux/product/product.query";
 
 const { Text } = Typography;
 
@@ -26,6 +28,18 @@ const Cart = ({ isHiden = false }) => {
     const { products } = useSelector((state) => state.cart.cart);
     const [selectedItems, setSelectedItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [paginate, setPaginate] = useState({
+        page: 1,
+        pageSize: 10,
+        totalPage: 0,
+        totalItems: 0,
+    });
+
+    const { data, isLoading, isFetching } = useGetProductOtherQuery({
+        ...paginate,
+    });
+
+    const { data: productList = [], pagination = {} } = data || {};
 
     useEffect(() => {
         const newTotalPrice = selectedItems.reduce((total, itemId) => {
@@ -232,6 +246,20 @@ const Cart = ({ isHiden = false }) => {
                     </Card>
                 </>
             )}
+            <ProductList
+                {...{
+                    isLoading: isLoading || isFetching,
+                    products: productList,
+                    title: "Sản phẩm khác",
+                    setPaginate,
+                    paginate: {
+                        page: pagination?.page,
+                        pageSize: pagination?.pageSize,
+                        totalPage: pagination?.totalPage,
+                        totalItems: pagination?.totalItems,
+                    },
+                }}
+            />
         </div>
     );
 };

@@ -141,12 +141,13 @@ const ProductDrawer = ({ open, onClose, product = null }) => {
                         <div className="flex items-center gap-2">
                             <Rate
                                 disabled
+                                value={4.5}
                                 character={({ index }) =>
                                     createAverageRate({
                                         index: index + 1,
-                                        rate: parseFloat(product.averageRating),
-                                        width: "16px",
-                                        height: "16px",
+                                        rate: 4.5,
+                                        width: "12px",
+                                        height: "12px",
                                     })
                                 }
                             />
