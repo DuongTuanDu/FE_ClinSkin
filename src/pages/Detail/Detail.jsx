@@ -62,9 +62,6 @@ const Detail = () => {
         refetch,
     } = useGetProductDetailQuery({ slug }, { skip: !slug });
 
-    console.log("dataProduct", dataProduct);
-    
-
     useEffect(() => {
         if (dataProduct) {
             setProduct((prev) => ({

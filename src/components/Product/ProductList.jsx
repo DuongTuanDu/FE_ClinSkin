@@ -186,7 +186,7 @@ const ProductList = ({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-base lg:text-2xl font-bold uppercase mb-6"
+          className="text-base lg:text-2xl font-bold uppercase mb-6 text-center"
         >
           {title}
         </motion.h2>

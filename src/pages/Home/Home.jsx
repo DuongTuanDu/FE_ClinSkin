@@ -2,16 +2,32 @@ import { Spin } from "antd";
 import Banner from "./Banner";
 import ProductCarousel from "@/components/Product/ProductCarousel";
 import ProductList from "@/components/Product/ProductList";
-import { useGetProductHomeQuery } from "@/redux/product/product.query";
+import { useGetProductHomeQuery, useGetProductOtherQuery } from "@/redux/product/product.query";
 import useScreen from "@/hook/useScreen";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Loading from "@/components/Loading/Loading";
 import SliderList from "@/components/Slider/SliderList";
 import { sliderPromotion } from "@/const/dataDefault";
+import ProductListViewMore from "@/components/Product/ProductListViewMore";
 
 const Home = () => {
     const { isMobile } = useScreen();
+    const [paginate, setPaginate] = useState({
+        page: 1,
+        pageSize: 15,
+        totalPage: 0,
+        totalItems: 0,
+    });
+
     const { data, isLoading, isFetching } = useGetProductHomeQuery();
+
+    const { data: products, isLoading: isLoadingOther, isFetching: isFetchingOther } = useGetProductOtherQuery({
+        ...paginate,
+    });
+    console.log("products", products);
+    
+
+    const { data: productList = [], pagination = {} } = products || {};
 
     const productData = useMemo(() => {
         if (data?.length === 0) return {};
@@ -56,6 +72,13 @@ const Home = () => {
                             />
                         ))}
                 </Spin>
+                <ProductListViewMore
+                    {...{
+                        isLoading: isLoadingOther || isFetchingOther,
+                        products: productList,
+                        title: "Sản phẩm khác",
+                    }}
+                />
             </div>
         </div>
     );
