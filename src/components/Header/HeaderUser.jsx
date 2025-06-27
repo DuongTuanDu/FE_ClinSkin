@@ -25,7 +25,6 @@ const HeaderUser = () => {
     const location = useLocation();
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.cart.cart);
-    console.log("products", products);
     
     const navigate = useNavigate();
     const [current, setCurrent] = useState("");
