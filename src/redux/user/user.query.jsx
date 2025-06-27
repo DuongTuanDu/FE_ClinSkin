@@ -15,9 +15,19 @@ export const userApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
+
+        updateAccountUser: builder.mutation({
+      query: ({id, ...data}) => ({
+        url: `/auth/updateProfile/${id}`,
+        method: "PUT",
+        data,
+      }),
+      transformResponse: (response) => response.data,
+    }),
   }),
 });
 
 export const {
   useGetAccountUserQuery,
+  useUpdateAccountUserMutation,
 } = userApi;
