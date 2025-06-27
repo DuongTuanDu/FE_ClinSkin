@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dayjs from "@utils/dayjsTz";
 import { formatPrice } from "@/helpers/formatPrice";
 import { Card, Row, Col, Select, Statistic, Spin, Progress, Empty } from "antd";
@@ -10,6 +10,7 @@ import {
     MdTrendingUp,
 } from "react-icons/md";
 import { motion } from "framer-motion";
+import axiosInstance from "@/axios/axios";
 
 const { Option } = Select;
 
@@ -58,6 +59,8 @@ const StatCard = ({
                                     }
                                     return formatPrice(val);
                                 }
+                                : prefix === "%"
+                                ? (val) => `${val}%`
                                 : undefined
                         }
                     />
@@ -79,6 +82,8 @@ const StatCard = ({
                     {subTitle}:{" "}
                     {typeof subValue === "number" && subValue > 100
                         ? formatPrice(subValue) + " VND"
+                        : typeof subValue === "number" && subTitle === "Tỷ lệ hoàn thành"
+                        ? subValue + "%"
                         : subValue}
                 </div>
             )}
@@ -91,29 +96,41 @@ const StatsOverview = () => {
         year: dayjs().year(),
         month: dayjs().month() + 1,
     });
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Mock data - replace with actual API call later
-    const mockData = {
-        order: {
-            total: 156,
-            totalAmount: 85600000,
-            totalCost: 68400000,
-            revenue: 17200000,
-            status: {
-                delivered: {
-                    count: 132,
-                    amount: 72800000
-                },
-                pending: {
-                    count: 18,
-                    amount: 8950000
-                },
-                cancelled: {
-                    count: 6,
-                    amount: 3850000
+    // API call function
+    const fetchMonthlyStatistics = async (year, month) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await axiosInstance.get('/admin/dashboard/monthly-statistic', {
+                params: {
+                    year,
+                    month
                 }
+            });
+            if (response.success) {
+                setData(response.data);
+            } else {
+                setError('Failed to fetch data');
             }
-        },
+        } catch (err) {
+            console.error('Error fetching monthly statistics:', err);
+            setError(err.message || 'Đã có lỗi xảy ra');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch data when component mounts or query changes
+    useEffect(() => {
+        fetchMonthlyStatistics(query.year, query.month);
+    }, [query.year, query.month]);
+
+    // Mock data for features not yet implemented (sản phẩm, người dùng, đánh giá)
+    const mockAdditionalData = {
         product: {
             total: 247,
             almostExpired: 12,
@@ -132,16 +149,12 @@ const StatsOverview = () => {
         }
     };
 
-    // Simulate loading state
-    const [isLoading] = useState(false);
-    const [error] = useState(null);
-
-    const data = mockData;
-
     if ((!isLoading && !data) || error)
-        return <Empty description="Đã có lỗi xảy ra" />;
+        return <Empty description={error || "Đã có lỗi xảy ra"} />;
 
-    const { order = {}, product = {}, user = {}, review = {} } = data || {};
+    // Destructure API data
+    const { revenue = {}, orders = {} } = data || {};
+    const { product = {}, user = {}, review = {} } = mockAdditionalData;
 
     return (
         <div className="mt-2">
@@ -192,9 +205,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={FaDollarSign}
                             title="Doanh thu"
-                            value={order?.revenue || 0}
+                            value={revenue?.totalRevenue || 0}
                             subTitle="Lợi nhuận gộp"
-                            subValue={order?.totalAmount || 0}
+                            subValue={revenue?.grossProfit || 0}
                             color="#1677ff"
                         />
                     </Col>
@@ -203,12 +216,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={FaShoppingBag}
                             title="Đơn hàng"
-                            value={order?.total || 0}
+                            value={orders?.totalOrders || 0}
                             subTitle="Tỷ lệ hoàn thành"
-                            subValue={(
-                                ((order?.status?.delivered?.count || 0) / (order?.total || 1)) *
-                                100
-                            ).toFixed(1)}
+                            subValue={orders?.completionRate || 0}
                             color="#52c41a"
                         />
                     </Col>
@@ -217,9 +227,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={MdPayment}
                             title="Thanh toán thành công"
-                            value={order?.status?.delivered?.amount || 0}
+                            value={orders?.totalCompletedAmount || 0}
                             subTitle="Chờ xử lý"
-                            subValue={order?.status?.pending?.amount || 0}
+                            subValue={orders?.totalPendingAmount || 0}
                             color="#722ed1"
                         />
                     </Col>
