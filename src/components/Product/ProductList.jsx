@@ -115,12 +115,12 @@ const ProductList = ({
             </div>
             <div className="py-2 flex items-center justify-center gap-2">
               <Rate
-                allowHalf
                 disabled
+                value={4.5}
                 character={({ index }) =>
                   createAverageRate({
                     index: index + 1,
-                    rate: parseFloat(item.averageRating),
+                    rate: 4.5,
                     width: "12px",
                     height: "12px",
                   })
@@ -186,7 +186,7 @@ const ProductList = ({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-base lg:text-2xl font-bold uppercase mb-6"
+          className="text-base lg:text-2xl font-bold uppercase mb-6 text-center"
         >
           {title}
         </motion.h2>

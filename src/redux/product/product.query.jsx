@@ -97,6 +97,19 @@ export const productApi = createApi({
             }),
             transformResponse: (response) => response.data,
         }),
+
+        getProductOther: builder.query({
+            query: ({ page = 1, pageSize = 15 }) => {
+                const queryString = new URLSearchParams({
+                    page,
+                    pageSize,
+                }).toString();
+                return {
+                    url: `/products/all-other?${queryString}`,
+                    method: "GET",
+                };
+            },
+        }),
     }),
 });
 
@@ -110,4 +123,5 @@ export const {
     useRestoreProductMutation,
     useGetProductHomeQuery,
     useGetProductDetailQuery,
+    useGetProductOtherQuery,
 } = productApi;
