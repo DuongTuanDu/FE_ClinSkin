@@ -34,28 +34,40 @@ const StatsRevenueOrder = () => {
         try {
             setIsLoading(true);
             setError(null);
-            let response;
+            let revenueResponse, orderResponse;
 
             const { type, year, month } = query;
 
             if (type === "date") {
-                // Daily data
-                response = await axiosInstance.get(`/admin/dashboard/revenue/daily/${year}/${month}`);
-                const { dailyData, month: responseMonth, year: responseYear } = response.data;
+                // Daily data - fetch both revenue and order data
+                [revenueResponse, orderResponse] = await Promise.all([
+                    axiosInstance.get(`/admin/dashboard/revenue/daily/${year}/${month}`),
+                    axiosInstance.get(`/admin/dashboard/orders/daily/${year}/${month}`)
+                ]);
                 
-                const stats = dailyData.map(item => ({
-                    name: `${item.day}/${responseMonth}`,
-                    totalAmount: item.totalRevenue,
-                    totalCost: item.totalCost,
-                    revenue: item.grossProfit,
-                    orders: item.totalOrders,
-                    // Mock order status data for chart display
-                    delivered: Math.floor(item.totalOrders * 0.8),
-                    pending: Math.floor(item.totalOrders * 0.05),
-                    processing: Math.floor(item.totalOrders * 0.1),
-                    cancelled: Math.floor(item.totalOrders * 0.05),
-                    totalOrders: item.totalOrders
-                }));
+                const { dailyData: revenueData, month: responseMonth, year: responseYear } = revenueResponse.data;
+                const { dailyData: orderData } = orderResponse.data;
+                
+                const orderMap = orderData.reduce((acc, item) => {
+                    acc[item.day] = item;
+                    return acc;
+                }, {});
+                
+                const stats = revenueData.map(item => {
+                    const orderInfo = orderMap[item.day] || {};
+                    return {
+                        name: `${item.day}/${responseMonth}`,
+                        totalAmount: item.totalRevenue,
+                        totalCost: item.totalCost,
+                        revenue: item.grossProfit,
+                        orders: item.totalOrders,
+                        delivered: orderInfo.completedOrders || 0,
+                        processing: orderInfo.processingOrders || 0,
+                        cancelled: orderInfo.cancelledOrders || 0,
+                        pending: Math.max(0, item.totalOrders - (orderInfo.completedOrders || 0) - (orderInfo.processingOrders || 0) - (orderInfo.cancelledOrders || 0)),
+                        totalOrders: item.totalOrders
+                    };
+                });
 
                 const daysInMonth = dayjs(`${responseYear}-${responseMonth}`).daysInMonth();
                 setData({
@@ -67,23 +79,36 @@ const StatsRevenueOrder = () => {
                     stats
                 });
             } else if (type === "month") {
-                // Monthly data
-                response = await axiosInstance.get(`/admin/dashboard/revenue/monthly/${year}`);
-                const { monthlyData, year: responseYear } = response.data;
+                // Monthly data - fetch both revenue and order data
+                [revenueResponse, orderResponse] = await Promise.all([
+                    axiosInstance.get(`/admin/dashboard/revenue/monthly/${year}`),
+                    axiosInstance.get(`/admin/dashboard/orders/monthly/${year}`)
+                ]);
                 
-                const stats = monthlyData.map(item => ({
-                    name: `Tháng ${item.month}`,
-                    totalAmount: item.totalRevenue,
-                    totalCost: item.totalCost,
-                    revenue: item.grossProfit,
-                    orders: item.totalOrders,
-                    // Mock order status data for chart display
-                    delivered: Math.floor(item.totalOrders * 0.8),
-                    pending: Math.floor(item.totalOrders * 0.05),
-                    processing: Math.floor(item.totalOrders * 0.1),
-                    cancelled: Math.floor(item.totalOrders * 0.05),
-                    totalOrders: item.totalOrders
-                }));
+                const { monthlyData: revenueData, year: responseYear } = revenueResponse.data;
+                const { monthlyData: orderData } = orderResponse.data;
+                
+                // Create a map for order data by month for easy lookup
+                const orderMap = orderData.reduce((acc, item) => {
+                    acc[item.month] = item;
+                    return acc;
+                }, {});
+                
+                const stats = revenueData.map(item => {
+                    const orderInfo = orderMap[item.month] || {};
+                    return {
+                        name: `Tháng ${item.month}`,
+                        totalAmount: item.totalRevenue,
+                        totalCost: item.totalCost,
+                        revenue: item.grossProfit,
+                        orders: item.totalOrders,
+                        delivered: orderInfo.completedOrders || 0,
+                        processing: orderInfo.processingOrders || 0,
+                        cancelled: orderInfo.cancelledOrders || 0,
+                        pending: Math.max(0, item.totalOrders - (orderInfo.completedOrders || 0) - (orderInfo.processingOrders || 0) - (orderInfo.cancelledOrders || 0)),
+                        totalOrders: item.totalOrders
+                    };
+                });
 
                 setData({
                     type: "month",
@@ -94,23 +119,36 @@ const StatsRevenueOrder = () => {
                     stats
                 });
             } else {
-                // Yearly data
-                response = await axiosInstance.get(`/admin/dashboard/revenue/yearly`);
-                const { yearlyData, yearRange } = response.data;
+                // Yearly data - fetch both revenue and order data
+                [revenueResponse, orderResponse] = await Promise.all([
+                    axiosInstance.get(`/admin/dashboard/revenue/yearly`),
+                    axiosInstance.get(`/admin/dashboard/orders/yearly`)
+                ]);
                 
-                const stats = yearlyData.map(item => ({
-                    name: `${item.year}`,
-                    totalAmount: item.totalRevenue,
-                    totalCost: item.totalCost,
-                    revenue: item.grossProfit,
-                    orders: item.totalOrders,
-                    // Mock order status data for chart display
-                    delivered: Math.floor(item.totalOrders * 0.8),
-                    pending: Math.floor(item.totalOrders * 0.05),
-                    processing: Math.floor(item.totalOrders * 0.1),
-                    cancelled: Math.floor(item.totalOrders * 0.05),
-                    totalOrders: item.totalOrders
-                }));
+                const { yearlyData: revenueData, yearRange } = revenueResponse.data;
+                const { yearlyData: orderData } = orderResponse.data;
+                
+                // Create a map for order data by year for easy lookup
+                const orderMap = orderData.reduce((acc, item) => {
+                    acc[item.year] = item;
+                    return acc;
+                }, {});
+                
+                const stats = revenueData.map(item => {
+                    const orderInfo = orderMap[item.year] || {};
+                    return {
+                        name: `${item.year}`,
+                        totalAmount: item.totalRevenue,
+                        totalCost: item.totalCost,
+                        revenue: item.grossProfit,
+                        orders: item.totalOrders,
+                        delivered: orderInfo.completedOrders || 0,
+                        processing: orderInfo.processingOrders || 0,
+                        cancelled: orderInfo.cancelledOrders || 0,
+                        pending: Math.max(0, item.totalOrders - (orderInfo.completedOrders || 0) - (orderInfo.processingOrders || 0) - (orderInfo.cancelledOrders || 0)),
+                        totalOrders: item.totalOrders
+                    };
+                });
 
                 const [startYear, endYear] = yearRange.split('-');
                 setData({
@@ -123,7 +161,7 @@ const StatsRevenueOrder = () => {
                 });
             }
         } catch (err) {
-            console.error("Error fetching revenue data:", err);
+            console.error("Error fetching dashboard data:", err);
             setError(err.response?.data?.message || "Đã có lỗi xảy ra khi tải dữ liệu");
         } finally {
             setIsLoading(false);
