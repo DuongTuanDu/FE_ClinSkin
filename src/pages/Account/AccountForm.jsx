@@ -73,6 +73,7 @@ const AccountForm = ({ userInfo, isAuthenticated }) => {
 
       if (p) setDistrictList(getDistrictsByProvinceCode(p));
       if (d) setWardList(getWardsByDistrictCode(d));
+      console.log(p,d,w);
     }
   }, [userInfo]);
 
