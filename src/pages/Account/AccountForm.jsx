@@ -1,100 +1,68 @@
-import React, { useState, useEffect } from "react";
-import { Button, Input, Upload, message, Select } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { useUpdateAccountUserMutation } from "@/redux/user/user.query";
+import React, { useEffect, useState } from "react";
+import { Form, Input, Button, Select, Upload, Avatar, message } from "antd";
+import { UploadOutlined, UserOutlined } from "@ant-design/icons";
 import {
   getProvinces,
-  getDistrictsByProvinceCode,
-  getWardsByDistrictCode,
-} from "sub-vn";
+  getDistrictsByProvinceId,
+  getWardsByDistrictId,
+} from "@/axios/ghn.api.js";
+import { useUpdateAccountUserMutation } from "@/redux/user/user.query";
 
 const { Option } = Select;
 
 const AccountForm = ({ userInfo, isAuthenticated }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [form] = Form.useForm();
+  const [updateAccountUser, { isLoading }] = useUpdateAccountUserMutation();
+
   const [avatarBase64, setAvatarBase64] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
 
-  const [province, setProvince] = useState("");
-  const [district, setDistrict] = useState("");
-  const [ward, setWard] = useState("");
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
 
-  const [districtList, setDistrictList] = useState([]);
-  const [wardList, setWardList] = useState([]);
-
-  const [updateAccountUser, { isLoading }] = useUpdateAccountUserMutation();
-
-  // Fallback: Chuyển name => code nếu DB cũ
-  const findProvinceCodeByName = (name) => {
-    const found = getProvinces().find((p) => p.name === name);
-    return found?.code || "";
-  };
-
-  const findDistrictCodeByName = (provinceCode, name) => {
-    const found = getDistrictsByProvinceCode(provinceCode).find(
-      (d) => d.name === name
-    );
-    return found?.code || "";
-  };
-
-  const findWardCodeByName = (districtCode, name) => {
-    const found = getWardsByDistrictCode(districtCode).find(
-      (w) => w.name === name
-    );
-    return found?.code || "";
-  };
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      const data = await getProvinces();
+      setProvinces(data);
+    };
+    fetchProvinces();
+  }, []);
 
   useEffect(() => {
     if (userInfo) {
-      setName(userInfo.name || "");
-      setEmail(userInfo.email || "");
-      setPhone(userInfo.phone || "");
+      const address = userInfo.address || {};
+      form.setFieldsValue({
+        name: userInfo.name,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        province: address.province,
+        district: address.district,
+        ward: address.ward,
+      });
       setPreviewAvatar(userInfo.avatar?.url || null);
 
-      let p = userInfo.address?.province || "";
-      let d = userInfo.address?.district || "";
-      let w = userInfo.address?.ward || "";
-
-      if (p && isNaN(p)) {
-        p = findProvinceCodeByName(p);
+      if (address.province) {
+        getDistrictsByProvinceId(parseInt(address.province)).then(setDistricts);
       }
-      if (d && isNaN(d)) {
-        d = findDistrictCodeByName(p, d);
+      if (address.district) {
+        getWardsByDistrictId(parseInt(address.district)).then(setWards);
       }
-      if (w && isNaN(w)) {
-        w = findWardCodeByName(d, w);
-      }
-
-      setProvince(p);
-      setDistrict(d);
-      setWard(w);
-
-      if (p) setDistrictList(getDistrictsByProvinceCode(p));
-      if (d) setWardList(getWardsByDistrictCode(d));
-      console.log(p,d,w);
     }
   }, [userInfo]);
 
-  useEffect(() => {
-    if (province) {
-      setDistrictList(getDistrictsByProvinceCode(province));
-    } else {
-      setDistrictList([]);
-    }
-    setDistrict("");
-    setWard("");
-  }, [province]);
+  const handleProvinceChange = async (provinceId) => {
+    const districts = await getDistrictsByProvinceId(parseInt(provinceId));
+    setDistricts(districts);
+    form.setFieldsValue({ district: undefined, ward: undefined });
+    setWards([]);
+  };
 
-  useEffect(() => {
-    if (district) {
-      setWardList(getWardsByDistrictCode(district));
-    } else {
-      setWardList([]);
-    }
-    setWard("");
-  }, [district]);
+  const handleDistrictChange = async (districtId) => {
+    const wards = await getWardsByDistrictId(parseInt(districtId));
+    setWards(wards);
+    form.setFieldsValue({ ward: undefined });
+  };
 
   const handleFileChange = ({ file }) => {
     const reader = new FileReader();
@@ -105,123 +73,112 @@ const AccountForm = ({ userInfo, isAuthenticated }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleUpdate = async () => {
+  const onFinish = async (values) => {
     try {
       await updateAccountUser({
         id: userInfo._id,
-        name,
-        email,
-        phone,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
         avatar: avatarBase64 || userInfo.avatar,
         address: {
-          province,
-          district,
-          ward,
-          detail: "", // Có thể cho nhập thêm nếu muốn
+          province: values.province,
+          district: values.district,
+          ward: values.ward,
+          detail: "",
         },
       }).unwrap();
+
       message.success("Cập nhật thành công!");
       window.location.reload();
     } catch (err) {
-      console.error("Update error:", err);
-      message.error("Đã xảy ra lỗi khi cập nhật.");
+      console.error("Update failed:", err);
+      message.error("Cập nhật thất bại.");
     }
   };
 
-  const provinceList = getProvinces();
-
-  if (!isAuthenticated)
-    return <div>Không thể tải thông tin tài khoản.</div>;
+  if (!isAuthenticated) {
+    return <p>Không thể tải thông tin tài khoản.</p>;
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow max-w-md mx-auto">
-      <h2 className="text-xl font-semibold mb-4">Thông tin cá nhân</h2>
+      <h2 className="text-xl font-semibold mb-4 text-center">Thông tin cá nhân</h2>
 
-      {previewAvatar && (
-        <img
-          src={previewAvatar}
-          alt="Avatar preview"
-          className="w-24 h-24 rounded-full object-cover mb-4 border"
-        />
-      )}
+      <div className="flex justify-center mb-4">
+        <Avatar size={80} src={previewAvatar} icon={<UserOutlined />} />
+      </div>
 
-      <Input
-        className="mb-2"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Họ và tên"
-      />
-      <Input
-        className="mb-2"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-      />
-      <Input
-        className="mb-2"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        placeholder="Số điện thoại"
-      />
-
-      <Select
-        className="mb-2 w-full"
-        value={province}
-        onChange={(value) => setProvince(value)}
-        placeholder="Chọn Tỉnh / Thành phố"
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{}}
       >
-        {provinceList.map((p) => (
-          <Option key={p.code} value={p.code}>
-            {p.name}
-          </Option>
-        ))}
-      </Select>
+        <Form.Item label="Họ và tên" name="name" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-      <Select
-        className="mb-2 w-full"
-        value={district}
-        onChange={(value) => setDistrict(value)}
-        placeholder="Chọn Quận / Huyện"
-        disabled={!province}
-      >
-        {districtList.map((d) => (
-          <Option key={d.code} value={d.code}>
-            {d.name}
-          </Option>
-        ))}
-      </Select>
+        <Form.Item label="Email" name="email" rules={[{ type: "email" }]}>
+          <Input disabled />
+        </Form.Item>
 
-      <Select
-        className="mb-2 w-full"
-        value={ward}
-        onChange={(value) => setWard(value)}
-        placeholder="Chọn Phường / Xã"
-        disabled={!district}
-      >
-        {wardList.map((w) => (
-          <Option key={w.code} value={w.code}>
-            {w.name}
-          </Option>
-        ))}
-      </Select>
+        <Form.Item label="Số điện thoại" name="phone">
+          <Input />
+        </Form.Item>
 
-      <Upload
-        showUploadList={false}
-        beforeUpload={() => false}
-        onChange={handleFileChange}
-        accept="image/*"
-      >
-        <Button icon={<UploadOutlined />}>Tải ảnh đại diện mới</Button>
-      </Upload>
+        <Form.Item label="Tỉnh / Thành phố" name="province" rules={[{ required: true }]}>
+          <Select onChange={handleProvinceChange} placeholder="Chọn tỉnh/thành">
+            {provinces.map((p) => (
+              <Option key={p.ProvinceID} value={p.ProvinceID.toString()}>
+                {p.ProvinceName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-      <Button
-        type="primary"
-        onClick={handleUpdate}
-        className="mt-4 w-full"
-        loading={isLoading}
-      >
-        Cập nhật
-      </Button>
+        <Form.Item label="Quận / Huyện" name="district" rules={[{ required: true }]}>
+          <Select onChange={handleDistrictChange} placeholder="Chọn quận/huyện" disabled={!districts.length}>
+            {districts.map((d) => (
+              <Option key={d.DistrictID} value={d.DistrictID.toString()}>
+                {d.DistrictName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item label="Phường / Xã" name="ward" rules={[{ required: true }]}>
+          <Select placeholder="Chọn phường/xã" disabled={!wards.length}>
+            {wards.map((w) => (
+              <Option key={w.WardCode} value={w.WardCode.toString()}>
+                {w.WardName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item label="Ảnh đại diện">
+          <Upload
+            showUploadList={false}
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>Tải ảnh mới</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isLoading}
+            className="w-full"
+          >
+            Cập nhật
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   );
 };

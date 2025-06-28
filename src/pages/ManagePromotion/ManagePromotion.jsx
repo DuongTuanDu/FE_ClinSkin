@@ -5,8 +5,8 @@ import { useDebounce } from 'use-debounce';
 import TablePromotion from './TablePromotion.jsx';
 import { message } from "antd";
 
-// Modal Component for Creating/Updating Promotions
-const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts }) => {
+// Modal Component for Creating Promotions Only
+const PromotionFormModal = ({ isOpen, onClose, onSubmit, allProducts }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -15,27 +15,12 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
     endDate: '',
     products: []
   });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
 
-  // Populate form with promotion data when editing
   useEffect(() => {
-    if (promotion) {
-      setFormData({
-        name: promotion.name,
-        description: promotion.description,
-        isActive: promotion.isActive,
-        startDate: promotion.startDate.split('T')[0],
-        endDate: promotion.endDate.split('T')[0],
-        products: promotion.products.length > 0
-          ? promotion.products.map(p => ({
-              pid: p.pid._id || p.pid,
-              discount: p.discount,
-              productName: allProducts.find(prod => prod._id === (p.pid._id || p.pid))?.name || ''
-            }))
-          : []
-      });
-    } else {
+    if (isOpen) {
       setFormData({
         name: '',
         description: '',
@@ -45,36 +30,34 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
         products: []
       });
     }
-  }, [promotion, allProducts]);
+  }, [isOpen]);
 
-  // Fetch product options asynchronously
   const loadProductOptions = async (inputValue) => {
-  try {
-    const token = localStorage.getItem('token');
-    const params = new URLSearchParams({
-      page: 1,
-      limit: 20,
-      sort: 'name',
-    });
-    if (inputValue) {
-      params.append('name', inputValue);
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({
+        page: 1,
+        limit: 20,
+        sort: 'name',
+      });
+      if (inputValue) {
+        params.append('name', inputValue);
+      }
+
+      const response = await axios.get(
+        `http://localhost:9999/api/v1/admin/product/search?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return response.data.data.map(product => ({
+        value: product._id,
+        label: product.name,
+      }));
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách sản phẩm:', error);
+      return [];
     }
-
-    const response = await axios.get(
-      `http://localhost:9999/api/v1/admin/product/search?${params.toString()}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    return response.data.data.map(product => ({
-      value: product._id,
-      label: product.name,
-    }));
-  } catch (error) {
-    console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-    return [];
-  }
-};
-
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -120,23 +103,20 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       const payload = {
         ...formData,
         products: formData.products
           .filter(p => p.pid && p.discount)
           .map(({ pid, discount }) => ({ pid, discount: Number(discount) }))
       };
-      // await onSubmit(payload, promotion?._id);
-      // onClose();
 
-      const response = await onSubmit(payload, promotion?._id);
+      const response = await onSubmit(payload);
       if (response) {
         onClose();
       }
     } catch (error) {
-      console.error('Lỗi khi lưu khuyến mãi:', error);
-      message.error('Lỗi khi lưu khuyến mãi');
+      console.error('Lỗi khi tạo khuyến mãi:', error);
+      message.error('Lỗi khi tạo khuyến mãi');
     }
   };
 
@@ -144,8 +124,8 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
-        <h2 className="text-2xl font-bold mb-4">{promotion ? 'Cập nhật khuyến mãi' : 'Tạo khuyến mãi'}</h2>
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4">Tạo khuyến mãi</h2>
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700">Tên khuyến mãi</label>
@@ -212,7 +192,7 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
                 <div className="w-full">
                   <AsyncSelect
                     cacheOptions
-                    defaultOptions = {true}
+                    defaultOptions={true}
                     loadOptions={loadProductOptions}
                     value={product.pid ? { value: product.pid, label: product.productName } : null}
                     onChange={(option) => handleProductChange(index, option)}
@@ -264,7 +244,7 @@ const PromotionFormModal = ({ isOpen, onClose, onSubmit, promotion, allProducts 
               type="submit"
               className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
             >
-              {promotion ? 'Cập nhật' : 'Tạo'}
+              Tạo
             </button>
           </div>
         </form>
@@ -277,7 +257,6 @@ const ManagePromotion = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [refreshTable, setRefreshTable] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPromotion, setSelectedPromotion] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -295,50 +274,23 @@ const ManagePromotion = () => {
     fetchProducts();
   }, []);
 
-  const handleSubmit = async (payload, promotionId) => {
+  const handleSubmit = async (payload) => {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      if (promotionId) {
-        await axios.put(`http://localhost:9999/api/v1/admin/promotion/updatePromotion/${promotionId}`, payload, config);
-        message.success('Cập nhật khuyến mãi thành công');
-      } else {
-        await axios.post('http://localhost:9999/api/v1/admin/promotion/createPromotion', payload, config);
-        message.success('Tạo khuyến mãi thành công');
-      }
-      setRefreshTable(!refreshTable);
+      await axios.post('http://localhost:9999/api/v1/admin/promotion/createPromotion', payload, config);
+      message.success('Tạo khuyến mãi thành công');
+      setRefreshTable(prev => !prev);
+      return true;
     } catch (error) {
-  console.error('Lỗi khi lưu khuyến mãi:', error);
-
-  if (
-    error.response &&
-    error.response.status === 422 &&
-    error.response.data?.errors
-  ) {
-    error.response.data.errors.forEach((err) => {
-      message.error(`${err.message}`, 3);
-    });
-  } else if (error.response?.data?.message) {
-    message.error(error.response.data.message);
-  } else {
-    message.error('Lỗi không xác định');
-  }
-}
-  };
-
-  const handleEdit = (promotion) => {
-    setSelectedPromotion(promotion);
-    setIsModalOpen(true);
-  };
-
-  const handleCreate = () => {
-    setSelectedPromotion(null);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedPromotion(null);
+      console.error('Lỗi khi tạo khuyến mãi:', error);
+      if (error.response?.status === 422 && error.response.data?.errors) {
+        error.response.data.errors.forEach(err => message.error(err.message));
+      } else {
+        message.error(error.response?.data?.message || 'Lỗi không xác định');
+      }
+      return false;
+    }
   };
 
   return (
@@ -346,18 +298,17 @@ const ManagePromotion = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Quản lý khuyến mãi</h1>
         <button
-          onClick={handleCreate}
+          onClick={() => setIsModalOpen(true)}
           className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
         >
           Tạo khuyến mãi
         </button>
       </div>
-      <TablePromotion refreshTable={refreshTable} onEdit={handleEdit} />
+      <TablePromotion refreshTable={refreshTable} />
       <PromotionFormModal
         isOpen={isModalOpen}
-        onClose={closeModal}
+        onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
-        promotion={selectedPromotion}
         allProducts={allProducts}
       />
     </div>
