@@ -97,10 +97,11 @@ const StatsOverview = () => {
         month: dayjs().month() + 1,
     });
     const [data, setData] = useState(null);
+    const [overallStats, setOverallStats] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // API call function
+    // API call function for monthly statistics
     const fetchMonthlyStatistics = async (year, month) => {
         try {
             setIsLoading(true);
@@ -114,13 +115,27 @@ const StatsOverview = () => {
             if (response.success) {
                 setData(response.data);
             } else {
-                setError('Failed to fetch data');
+                setError('Failed to fetch monthly data');
             }
         } catch (err) {
             console.error('Error fetching monthly statistics:', err);
-            setError(err.message || 'Đã có lỗi xảy ra');
+            setError(err.message || 'Đã có lỗi xảy ra khi tải dữ liệu tháng');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // API call function for overall statistics
+    const fetchOverallStatistics = async () => {
+        try {
+            const response = await axiosInstance.get('/admin/dashboard/overall-statistic');
+            if (response.success) {
+                setOverallStats(response.data);
+            } else {
+                console.error('Failed to fetch overall statistics');
+            }
+        } catch (err) {
+            console.error('Error fetching overall statistics:', err);
         }
     };
 
@@ -129,32 +144,17 @@ const StatsOverview = () => {
         fetchMonthlyStatistics(query.year, query.month);
     }, [query.year, query.month]);
 
-    // Mock data for features not yet implemented (sản phẩm, người dùng, đánh giá)
-    const mockAdditionalData = {
-        product: {
-            total: 247,
-            almostExpired: 12,
-            expired: 3,
-            totalInventoryCost: 2845000000,
-            averageProductCost: 695000
-        },
-        user: {
-            total: 1842,
-            active: 1654,
-            new: 23
-        },
-        review: {
-            total: 389,
-            averageRating: 4.2
-        }
-    };
+    // Fetch overall statistics on component mount
+    useEffect(() => {
+        fetchOverallStatistics();
+    }, []);
 
     if ((!isLoading && !data) || error)
         return <Empty description={error || "Đã có lỗi xảy ra"} />;
 
     // Destructure API data
     const { revenue = {}, orders = {} } = data || {};
-    const { product = {}, user = {}, review = {} } = mockAdditionalData;
+    const { inventory = {}, users = {}, reviews = {} } = overallStats || {};
 
     return (
         <div className="mt-2">
@@ -238,9 +238,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={MdOutlineInventory}
                             title="Sản phẩm"
-                            value={product?.total || 0}
+                            value={inventory?.totalBatches || 0}
                             subTitle="Sắp hết hạn"
-                            subValue={product?.almostExpired || 0}
+                            subValue={inventory?.nearExpiry?.totalBatches || 0}
                             color="#13c2c2"
                         />
                     </Col>
@@ -249,12 +249,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={FaUsers}
                             title="Người dùng"
-                            value={user?.total || 0}
-                            subTitle="Hoạt động"
-                            subValue={(
-                                ((user?.active || 0) / (user?.total || 1)) *
-                                100
-                            ).toFixed(1)}
+                            value={users?.totalUsers || 0}
+                            subTitle="Mới (30 ngày)"
+                            subValue={users?.newUsersLast30Days || 0}
                             color="#fa8c16"
                         />
                     </Col>
@@ -263,9 +260,9 @@ const StatsOverview = () => {
                         <StatCard
                             icon={MdStarRate}
                             title="Đánh giá"
-                            value={review?.averageRating || 0}
+                            value={reviews?.averageRating || 0}
                             subTitle="Tổng đánh giá"
-                            subValue={review?.total || 0}
+                            subValue={reviews?.totalReviews || 0}
                             color="#eb2f96"
                         />
                     </Col>
