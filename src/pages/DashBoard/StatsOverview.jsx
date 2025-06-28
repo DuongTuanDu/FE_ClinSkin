@@ -22,74 +22,138 @@ const StatCard = ({
     subValue,
     color,
     prefix,
-}) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-    >
-        <Card
-            bordered={false}
-            className="hover:shadow-lg shadow-md cursor-pointer transition-shadow duration-300"
-            style={{
-                background: `linear-gradient(135deg, ${color}15 0%, white 100%)`,
-                borderTop: `3px solid ${color}`,
-            }}
+}) => {
+    // Format value display
+    const formatValue = (val) => {
+        if (typeof val !== "number") return val || "0";
+        
+        if (title.trim() === "Doanh thu" || title.trim() === "Thanh toán thành công") {
+            return formatPrice(val);
+        }
+        if (title.trim() === "Đánh giá") {
+            return val.toFixed(1);
+        }
+        return formatPrice(val);
+    };
+
+    // Format subtitle value
+    const formatSubValue = (val) => {
+        if (typeof val !== "number") return val || "0";
+        
+        if (subTitle === "Tỷ lệ hoàn thành") {
+            return `${val}%`;
+        }
+        if (subTitle === "Lợi nhuận gộp" || subTitle === "Chờ xử lý") {
+            return formatPrice(val);
+        }
+        return formatPrice(val);
+    };
+
+    // Determine if we should show progress circle
+    const shouldShowProgress = subTitle === "Tỷ lệ hoàn thành" && typeof subValue === "number" && subValue <= 100;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
         >
-            <div className="flex justify-between">
-                <div className="flex-grow">
-                    <Statistic
-                        title={
-                            <div className="flex items-center gap-2 text-gray-600 mb-1">
+            <Card
+                bordered={false}
+                className="hover:shadow-lg shadow-md cursor-pointer transition-all duration-300 h-full"
+                style={{
+                    background: `linear-gradient(135deg, ${color}08 0%, white 100%)`,
+                    borderLeft: `4px solid ${color}`,
+                    borderRadius: "12px",
+                }}
+                bodyStyle={{ padding: "20px" }}
+            >
+                <div className="flex justify-between items-start h-full">
+                    <div className="flex-grow">
+                        {/* Header with icon and title */}
+                        <div className="flex items-center gap-3 mb-3">
+                            <div 
+                                className="p-2 rounded-lg flex items-center justify-center"
+                                style={{ backgroundColor: `${color}15` }}
+                            >
                                 <Icon className="text-xl" style={{ color }} />
-                                <span className="font-medium">{title}</span>
                             </div>
-                        }
-                        value={value}
-                        prefix={prefix}
-                        valueStyle={{ color: color, fontWeight: "bold" }}
-                        formatter={
-                            typeof value === "number" && !prefix
-                                ? (val) => {
-                                    if (
-                                        title.trim() === "Doanh thu" ||
-                                        title.trim() === "Thanh toán thành công"
-                                    ) {
-                                        return formatPrice(val) + " VND";
-                                    }
-                                    return formatPrice(val);
-                                }
-                                : prefix === "%"
-                                ? (val) => `${val}%`
-                                : undefined
-                        }
-                    />
+                            <span className="font-medium text-gray-700 text-sm">{title}</span>
+                        </div>
+
+                        {/* Main value */}
+                        <div className="mb-3">
+                            <div 
+                                className="text-2xl font-bold mb-1"
+                                style={{ color }}
+                            >
+                                {formatValue(value)}
+                                {(title.trim() === "Doanh thu" || title.trim() === "Thanh toán thành công") && (
+                                    <span className="text-sm font-normal text-gray-500 ml-1">VND</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Subtitle information */}
+                        {subTitle && (
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <MdTrendingUp 
+                                        className={`text-sm ${
+                                            subTitle === "Tỷ lệ hoàn thành" && subValue >= 80 ? "text-green-500" :
+                                            subTitle === "Tỷ lệ hoàn thành" && subValue >= 60 ? "text-yellow-500" :
+                                            subTitle === "Tỷ lệ hoàn thành" ? "text-red-500" : "text-blue-500"
+                                        }`}
+                                    />
+                                    <span className="text-xs text-gray-500">{subTitle}</span>
+                                </div>
+                                <span 
+                                    className="text-sm font-semibold"
+                                    style={{ 
+                                        color: subTitle === "Tỷ lệ hoàn thành" && subValue >= 80 ? "#52c41a" :
+                                               subTitle === "Tỷ lệ hoàn thành" && subValue >= 60 ? "#faad14" :
+                                               subTitle === "Tỷ lệ hoàn thành" ? "#ff4d4f" : color
+                                    }}
+                                >
+                                    {formatSubValue(subValue)}
+                                    {(subTitle === "Lợi nhuận gộp" || subTitle === "Chờ xử lý") && (
+                                        <span className="text-xs font-normal text-gray-500 ml-1">VND</span>
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Progress circle for completion rate */}
+                    {shouldShowProgress && (
+                        <div className="ml-3">
+                            <Progress
+                                type="circle"
+                                percent={subValue}
+                                size={55}
+                                strokeColor={{
+                                    '0%': subValue >= 80 ? '#52c41a' : subValue >= 60 ? '#faad14' : '#ff4d4f',
+                                    '100%': subValue >= 80 ? '#73d13d' : subValue >= 60 ? '#ffc53d' : '#ff7875',
+                                }}
+                                strokeWidth={6}
+                                format={(percent) => (
+                                    <span 
+                                        className="text-xs font-bold"
+                                        style={{ 
+                                            color: percent >= 80 ? '#52c41a' : percent >= 60 ? '#faad14' : '#ff4d4f'
+                                        }}
+                                    >
+                                        {percent}%
+                                    </span>
+                                )}
+                            />
+                        </div>
+                    )}
                 </div>
-                {/* Progress circle for percentage metrics */}
-                {subValue && typeof subValue === "number" && subValue <= 100 && (
-                    <Progress
-                        type="circle"
-                        percent={subValue}
-                        size={50}
-                        strokeColor={color}
-                        className="opacity-80"
-                    />
-                )}
-            </div>
-            {subTitle && (
-                <div className="mt-2 text-gray-500 flex items-center gap-1">
-                    <MdTrendingUp className="text-green-500" />
-                    {subTitle}:{" "}
-                    {typeof subValue === "number" && subValue > 100
-                        ? formatPrice(subValue) + " VND"
-                        : typeof subValue === "number" && subTitle === "Tỷ lệ hoàn thành"
-                        ? subValue + "%"
-                        : subValue}
-                </div>
-            )}
-        </Card>
-    </motion.div>
-);
+            </Card>
+        </motion.div>
+    );
+};
 
 const StatsOverview = () => {
     const [query, setQuery] = useState({
