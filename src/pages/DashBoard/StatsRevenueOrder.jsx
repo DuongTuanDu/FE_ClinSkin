@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dayjs from "@utils/dayjsTz";
 import { formatPrice } from "@/helpers/formatPrice";
 import { Card, Row, Col, Select, Spin, Empty, Segmented } from "antd";
@@ -15,6 +15,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { MdTrendingUp, MdTrendingDown } from "react-icons/md";
+import axiosInstance from "@/axios/axios";
 
 const { Option } = Select;
 
@@ -24,117 +25,118 @@ const StatsRevenueOrder = () => {
         month: dayjs().month() + 1,
         type: "date",
     });
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Mock data generator based on query type
-    const generateMockData = (query) => {
-        const { type, year, month } = query;
+    // Fetch data from API based on query type
+    const fetchData = async (query) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            let response;
 
-        if (type === "date") {
-            // Generate daily data for the selected month
-            const daysInMonth = dayjs(`${year}-${month}`).daysInMonth();
-            const stats = [];
+            const { type, year, month } = query;
 
-            for (let day = 1; day <= daysInMonth; day++) {
-                const baseRevenue = Math.random() * 5000000 + 1000000; // 1M - 6M VND
-                const totalAmount = baseRevenue * (1.2 + Math.random() * 0.3); // 20-50% markup
-                const totalOrders = Math.floor(Math.random() * 25) + 5; // 5-30 orders
+            if (type === "date") {
+                // Daily data
+                response = await axiosInstance.get(`/admin/dashboard/revenue/daily/${year}/${month}`);
+                const { dailyData, month: responseMonth, year: responseYear } = response.data;
+                
+                const stats = dailyData.map(item => ({
+                    name: `${item.day}/${responseMonth}`,
+                    totalAmount: item.totalRevenue,
+                    totalCost: item.totalCost,
+                    revenue: item.grossProfit,
+                    orders: item.totalOrders,
+                    // Mock order status data for chart display
+                    delivered: Math.floor(item.totalOrders * 0.8),
+                    pending: Math.floor(item.totalOrders * 0.05),
+                    processing: Math.floor(item.totalOrders * 0.1),
+                    cancelled: Math.floor(item.totalOrders * 0.05),
+                    totalOrders: item.totalOrders
+                }));
 
-                stats.push({
-                    name: `${day}/${month}`,
-                    totalAmount: Math.round(totalAmount),
-                    totalCost: Math.round(baseRevenue),
-                    revenue: Math.round(totalAmount - baseRevenue),
-                    orders: totalOrders,
-                    delivered: Math.floor(totalOrders * (0.7 + Math.random() * 0.2)), // 70-90%
-                    pending: Math.floor(totalOrders * (Math.random() * 0.15)), // 0-15%
-                    processing: Math.floor(totalOrders * (Math.random() * 0.15)), // 0-15%
-                    cancelled: Math.floor(totalOrders * (Math.random() * 0.1)), // 0-10%
-                    totalOrders: totalOrders
+                const daysInMonth = dayjs(`${responseYear}-${responseMonth}`).daysInMonth();
+                setData({
+                    type: "date",
+                    timeRange: {
+                        start: `01/${responseMonth}/${responseYear}`,
+                        end: `${daysInMonth}/${responseMonth}/${responseYear}`
+                    },
+                    stats
+                });
+            } else if (type === "month") {
+                // Monthly data
+                response = await axiosInstance.get(`/admin/dashboard/revenue/monthly/${year}`);
+                const { monthlyData, year: responseYear } = response.data;
+                
+                const stats = monthlyData.map(item => ({
+                    name: `Tháng ${item.month}`,
+                    totalAmount: item.totalRevenue,
+                    totalCost: item.totalCost,
+                    revenue: item.grossProfit,
+                    orders: item.totalOrders,
+                    // Mock order status data for chart display
+                    delivered: Math.floor(item.totalOrders * 0.8),
+                    pending: Math.floor(item.totalOrders * 0.05),
+                    processing: Math.floor(item.totalOrders * 0.1),
+                    cancelled: Math.floor(item.totalOrders * 0.05),
+                    totalOrders: item.totalOrders
+                }));
+
+                setData({
+                    type: "month",
+                    timeRange: {
+                        start: `01/01/${responseYear}`,
+                        end: `31/12/${responseYear}`
+                    },
+                    stats
+                });
+            } else {
+                // Yearly data
+                response = await axiosInstance.get(`/admin/dashboard/revenue/yearly`);
+                const { yearlyData, yearRange } = response.data;
+                
+                const stats = yearlyData.map(item => ({
+                    name: `${item.year}`,
+                    totalAmount: item.totalRevenue,
+                    totalCost: item.totalCost,
+                    revenue: item.grossProfit,
+                    orders: item.totalOrders,
+                    // Mock order status data for chart display
+                    delivered: Math.floor(item.totalOrders * 0.8),
+                    pending: Math.floor(item.totalOrders * 0.05),
+                    processing: Math.floor(item.totalOrders * 0.1),
+                    cancelled: Math.floor(item.totalOrders * 0.05),
+                    totalOrders: item.totalOrders
+                }));
+
+                const [startYear, endYear] = yearRange.split('-');
+                setData({
+                    type: "year",
+                    timeRange: {
+                        start: `01/01/${startYear}`,
+                        end: `31/12/${endYear}`
+                    },
+                    stats
                 });
             }
-
-            return {
-                type: "date",
-                timeRange: {
-                    start: `01/${month}/${year}`,
-                    end: `${daysInMonth}/${month}/${year}`
-                },
-                stats
-            };
-        } else if (type === "month") {
-            // Generate monthly data for the selected year
-            const stats = [];
-
-            for (let m = 1; m <= 12; m++) {
-                const baseRevenue = Math.random() * 150000000 + 50000000; // 50M - 200M VND
-                const totalAmount = baseRevenue * (1.2 + Math.random() * 0.3);
-                const totalOrders = Math.floor(Math.random() * 500) + 200; // 200-700 orders
-
-                stats.push({
-                    name: `Tháng ${m}`,
-                    totalAmount: Math.round(totalAmount),
-                    totalCost: Math.round(baseRevenue),
-                    revenue: Math.round(totalAmount - baseRevenue),
-                    orders: totalOrders,
-                    delivered: Math.floor(totalOrders * (0.75 + Math.random() * 0.15)),
-                    pending: Math.floor(totalOrders * (Math.random() * 0.1)),
-                    processing: Math.floor(totalOrders * (Math.random() * 0.1)),
-                    cancelled: Math.floor(totalOrders * (Math.random() * 0.05)),
-                    totalOrders: totalOrders
-                });
-            }
-
-            return {
-                type: "month",
-                timeRange: {
-                    start: `01/01/${year}`,
-                    end: `31/12/${year}`
-                },
-                stats
-            };
-        } else {
-            // Generate yearly data for the last 5 years
-            const stats = [];
-            const currentYear = dayjs().year();
-
-            for (let i = 4; i >= 0; i--) {
-                const y = currentYear - i;
-                const baseRevenue = Math.random() * 1000000000 + 500000000; // 500M - 1.5B VND
-                const totalAmount = baseRevenue * (1.25 + Math.random() * 0.2);
-                const totalOrders = Math.floor(Math.random() * 3000) + 2000; // 2000-5000 orders
-
-                stats.push({
-                    name: `${y}`,
-                    totalAmount: Math.round(totalAmount),
-                    totalCost: Math.round(baseRevenue),
-                    revenue: Math.round(totalAmount - baseRevenue),
-                    orders: totalOrders,
-                    delivered: Math.floor(totalOrders * (0.8 + Math.random() * 0.1)),
-                    pending: Math.floor(totalOrders * (Math.random() * 0.05)),
-                    processing: Math.floor(totalOrders * (Math.random() * 0.05)),
-                    cancelled: Math.floor(totalOrders * (Math.random() * 0.05)),
-                    totalOrders: totalOrders
-                });
-            }
-
-            return {
-                type: "year",
-                timeRange: {
-                    start: `01/01/${currentYear - 4}`,
-                    end: `31/12/${currentYear}`
-                },
-                stats
-            };
+        } catch (err) {
+            console.error("Error fetching revenue data:", err);
+            setError(err.response?.data?.message || "Đã có lỗi xảy ra khi tải dữ liệu");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Mock API simulation
-    const [isLoading] = useState(false);
-    const [error] = useState(null);
-    const data = generateMockData(query);
+    // Fetch data when query changes
+    useEffect(() => {
+        fetchData(query);
+    }, [query]);
 
     if ((!isLoading && !data) || error)
-        return <Empty description="Đã có lỗi xảy ra" />;
+        return <Empty description={error || "Đã có lỗi xảy ra"} />;
 
     // Custom Tooltip component
     const CustomRevenueTooltip = ({ active, payload, label }) => {
