@@ -129,7 +129,7 @@ const AccountForm = ({ userInfo, isAuthenticated }) => {
 
         <Form.Item label="Tỉnh / Thành phố" name="province" rules={[{ required: true }]}>
           <Select onChange={handleProvinceChange} placeholder="Chọn tỉnh/thành">
-            {provinces.map((p) => (
+            {provinces?.map((p) => (
               <Option key={p.ProvinceID} value={p.ProvinceID.toString()}>
                 {p.ProvinceName}
               </Option>
@@ -139,7 +139,7 @@ const AccountForm = ({ userInfo, isAuthenticated }) => {
 
         <Form.Item label="Quận / Huyện" name="district" rules={[{ required: true }]}>
           <Select onChange={handleDistrictChange} placeholder="Chọn quận/huyện" disabled={!districts.length}>
-            {districts.map((d) => (
+            {districts?.map((d) => (
               <Option key={d.DistrictID} value={d.DistrictID.toString()}>
                 {d.DistrictName}
               </Option>
@@ -149,7 +149,7 @@ const AccountForm = ({ userInfo, isAuthenticated }) => {
 
         <Form.Item label="Phường / Xã" name="ward" rules={[{ required: true }]}>
           <Select placeholder="Chọn phường/xã" disabled={!wards.length}>
-            {wards.map((w) => (
+            {wards?.map((w) => (
               <Option key={w.WardCode} value={w.WardCode.toString()}>
                 {w.WardName}
               </Option>
