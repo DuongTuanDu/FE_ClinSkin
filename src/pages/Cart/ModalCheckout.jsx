@@ -10,6 +10,7 @@ import { formatPrice } from "@helpers/formatPrice";
 import CustomButton from "@/components/CustomButton";
 import { useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery } from "@/redux/ship/ship.query";
 import { setOpenModelAuth } from "@/redux/auth/auth.slice";
+import { removeProductAfterOrderSuccess } from "@/redux/cart/cart.slice";
 const { Option } = Select;
 
 const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
@@ -91,37 +92,60 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
             }
             setIsLoading(true);
             const order = {
-                ...values,
-                ...location,
+                name: values.name,
+                phone: values.phone,
+                address: {
+                    province: {
+                        id: parseInt(location.province.id),
+                        name: location.province.name
+                    },
+                    district: {
+                        id: parseInt(location.district.id),
+                        name: location.district.name
+                    },
+                    ward: {
+                        id: parseInt(location.ward.id),
+                        name: location.ward.name
+                    },
+                },
+                addressDetail: values.addressDetail,
+                note: values.note || "",
+                paymentMethod: values.paymentMethod?.toLowerCase() || "cod",
                 products,
                 totalAmount,
             };
 
             switch (order.paymentMethod) {
-                case "COD":
-                    // dispatch(orderCod(order)).then((res) => {
-                    //     if (res.payload.success) {
-                    //         setLoacation((prev) => ({
-                    //             ...prev,
-                    //             province: {
-                    //                 id: "",
-                    //                 name: "",
-                    //             },
-                    //             district: {
-                    //                 id: "",
-                    //                 name: "",
-                    //             },
-                    //             ward: {
-                    //                 id: "",
-                    //                 name: "",
-                    //             },
-                    //         }));
-                    //         form.resetFields();
-                    //         dispatch(setOrderReturn(res.payload.data));
-                    //         navigate(`/order-return`);
-                    //     }
-                    // });
-                    console.log("order", order);
+                case "cod":
+                    dispatch(orderCod(order)).then((res) => {
+                        if (res.payload.success) {
+                            products.forEach((item) =>
+                                dispatch(
+                                    removeProductAfterOrderSuccess({
+                                        productId: item.productId
+                                    })
+                                )
+                            );
+                            setLoacation((prev) => ({
+                                ...prev,
+                                province: {
+                                    id: "",
+                                    name: "",
+                                },
+                                district: {
+                                    id: "",
+                                    name: "",
+                                },
+                                ward: {
+                                    id: "",
+                                    name: "",
+                                },
+                            }));
+                            form.resetFields();
+                            dispatch(setOrderReturn(res.payload.data));
+                            navigate("/order-return");
+                        }
+                    });
                     break;
 
                 default:
@@ -261,7 +285,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
                 </Form.Item>
 
                 <Form.Item
-                    name="address"
+                    name="addressDetail"
                     label="Địa chỉ"
                     rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
                 >
