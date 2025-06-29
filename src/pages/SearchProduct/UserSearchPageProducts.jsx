@@ -36,8 +36,6 @@ const UserProductSearchPage = () => {
 
   return (
     <div style={{ padding: "24px" }}>
-      <h2>Tìm kiếm sản phẩm</h2>
-
       <Row gutter={[16, 16]}>
         <Col span={6}>
           <Input
@@ -79,8 +77,10 @@ const UserProductSearchPage = () => {
             ))}
           </Select>
         </Col>
-        <Col span={10}>
+        <Col span={2} className="flex items-center" style={{paddingRight: "0px"}}>
           <span>Khoảng giá:</span>
+        </Col>
+        <Col span={8} style={{paddingLeft: "0px"}}>
           <Slider
             range
             min={0}
