@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { Card, Row, Col, Select, Spin, Segmented } from "antd";
+import React, { useState, useEffect } from "react";
+import { Card, Row, Col, Select, Spin, Segmented, message } from "antd";
 import {
     LineChart,
     Line,
@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { MdStarRate, MdTrendingUp } from "react-icons/md";
 import dayjs from "@utils/dayjsTz";
+import axiosInstance from "@axios/axios";
 
 const { Option } = Select;
 
@@ -42,125 +43,35 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-// Mock data generator
-const generateMockData = (query) => {
-    const { year, month, type } = query;
-    
-    // Generate time stats based on type
-    const generateTimeStats = () => {
-        const stats = [];
-        let period = 30; // default for date
-        let format = "DD/MM";
-        
-        if (type === "month") {
-            period = 12;
-            format = "MM/YYYY";
-        } else if (type === "year") {
-            period = 5;
-            format = "YYYY";
-        }
-        
-        for (let i = 1; i <= period; i++) {
-            let name = "";
-            let total = Math.floor(Math.random() * 50) + 5; // 5-55 reviews
-            let avgRating = (Math.random() * 2 + 3).toFixed(1); // 3.0-5.0 rating
-            
-            if (type === "date") {
-                name = `${i}/${month}`;
-            } else if (type === "month") {
-                name = `${i}/${year}`;
-            } else {
-                name = `${year - period + i}`;
-            }
-            
-            // Some days might have no reviews
-            if (Math.random() < 0.3) {
-                total = 0;
-                avgRating = 0;
-            }
-            
-            stats.push({
-                name,
-                total,
-                avgRating: parseFloat(avgRating),
-                ratingCounts: {
-                    "1": Math.floor(total * 0.05),
-                    "2": Math.floor(total * 0.1),
-                    "3": Math.floor(total * 0.15),
-                    "4": Math.floor(total * 0.3),
-                    "5": Math.floor(total * 0.4)
-                }
-            });
-        }
-        
-        return stats;
-    };
-    
-    // Generate product stats
-    const generateProductStats = () => {
-        const products = [
-            "iPhone 15 Pro Max",
-            "Samsung Galaxy S24",
-            "MacBook Air M3",
-            "AirPods Pro 2",
-            "iPad Pro 12.9",
-            "Dell XPS 13",
-            "Sony WH-1000XM5",
-            "Nintendo Switch OLED"
-        ];
-        
-        return products.slice(0, 6).map(name => ({
-            name,
-            total: Math.floor(Math.random() * 100) + 20,
-            avgRating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
-            ratingCounts: {
-                "1": Math.floor(Math.random() * 5),
-                "2": Math.floor(Math.random() * 8),
-                "3": Math.floor(Math.random() * 15),
-                "4": Math.floor(Math.random() * 30),
-                "5": Math.floor(Math.random() * 40)
-            }
-        }));
-    };
-    
-    // Generate rating distribution
-    const generateRatingDistribution = () => {
-        return [
-            { rating: 1, count: Math.floor(Math.random() * 20) + 5 },
-            { rating: 2, count: Math.floor(Math.random() * 30) + 10 },
-            { rating: 3, count: Math.floor(Math.random() * 50) + 20 },
-            { rating: 4, count: Math.floor(Math.random() * 80) + 40 },
-            { rating: 5, count: Math.floor(Math.random() * 100) + 60 }
-        ];
-    };
-    
-    const timeStats = generateTimeStats();
-    const productStats = generateProductStats();
-    const ratingDistribution = generateRatingDistribution();
-    
-    const totalReviews = timeStats.reduce((sum, item) => sum + item.total, 0);
-    const avgRating = totalReviews > 0 
-        ? (timeStats.reduce((sum, item) => sum + (item.avgRating * item.total), 0) / totalReviews).toFixed(1)
-        : 0;
-    
-    return {
-        timeStats,
-        productStats,
-        ratingDistribution,
-        totals: {
-            totalReviews,
-            avgRating: parseFloat(avgRating)
-        },
-        timeRange: {
-            start: type === "date" ? `01/${month}/${year}` : 
-                   type === "month" ? `01/01/${year}` : 
-                   `01/01/${year-4}`,
-            end: type === "date" ? `30/${month}/${year}` : 
-                 type === "month" ? `31/12/${year}` : 
-                 `31/12/${year}`,
-            type
-        }
-    };
+// API service functions
+const fetchReviewsDaily = async (year, month) => {
+    try {
+        const response = await axiosInstance.get(`/admin/dashboard/reviews/daily/${year}/${month}`);
+        return response;
+    } catch (error) {
+        message.error("Không thể tải dữ liệu đánh giá theo ngày");
+        throw error;
+    }
+};
+
+const fetchReviewsMonthly = async (year) => {
+    try {
+        const response = await axiosInstance.get(`/admin/dashboard/reviews/monthly/${year}`);
+        return response;
+    } catch (error) {
+        message.error("Không thể tải dữ liệu đánh giá theo tháng");
+        throw error;
+    }
+};
+
+const fetchReviewsYearly = async () => {
+    try {
+        const response = await axiosInstance.get("/admin/dashboard/reviews/yearly");
+        return response;
+    } catch (error) {
+        message.error("Không thể tải dữ liệu đánh giá theo năm");
+        throw error;
+    }
 };
 
 const StatsReview = () => {
@@ -170,11 +81,89 @@ const StatsReview = () => {
         type: "date",
     });
 
-    // Mock loading state
-    const [isLoading] = useState(false);
-    
-    // Generate mock data based on current query
-    const data = useMemo(() => generateMockData(query), [query]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState(null);
+
+    // Function to transform API data for chart
+    const transformData = (apiData, type) => {
+        if (!apiData) return { timeStats: [], totals: { totalReviews: 0, avgRating: 0 } };
+
+        let timeStats = [];
+        let rawData = [];
+
+        if (type === "date" && apiData.dailyData) {
+            rawData = apiData.dailyData;
+            timeStats = rawData.map(item => ({
+                name: `${item.day}/${query.month}`,
+                total: item.totalReviews,
+                avgRating: parseFloat(item.averageRating) || 0
+            }));
+        } else if (type === "month" && apiData.monthlyData) {
+            rawData = apiData.monthlyData;
+            timeStats = rawData.map(item => ({
+                name: `${item.month}/${query.year}`,
+                total: item.totalReviews,
+                avgRating: parseFloat(item.averageRating) || 0
+            }));
+        } else if (type === "year" && apiData.yearlyData) {
+            rawData = apiData.yearlyData;
+            timeStats = rawData.map(item => ({
+                name: `${item.year}`,
+                total: item.totalReviews,
+                avgRating: parseFloat(item.averageRating) || 0
+            }));
+        }
+
+        const totalReviews = timeStats.reduce((sum, item) => sum + item.total, 0);
+        const avgRating = totalReviews > 0 
+            ? (timeStats.reduce((sum, item) => sum + (item.avgRating * item.total), 0) / totalReviews).toFixed(1)
+            : 0;
+
+        return {
+            timeStats,
+            totals: {
+                totalReviews,
+                avgRating: parseFloat(avgRating)
+            }
+        };
+    };
+
+    // Fetch data based on query
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            let response;
+            
+            switch (query.type) {
+                case "date":
+                    response = await fetchReviewsDaily(query.year, query.month);
+                    break;
+                case "month":
+                    response = await fetchReviewsMonthly(query.year);
+                    break;
+                case "year":
+                    response = await fetchReviewsYearly();
+                    break;
+                default:
+                    response = await fetchReviewsDaily(query.year, query.month);
+            }
+
+            if (response.success) {
+                const transformedData = transformData(response.data, query.type);
+                setData(transformedData);
+            }
+        } catch (error) {
+            console.error("Error fetching review data:", error);
+            setData({ timeStats: [], totals: { totalReviews: 0, avgRating: 0 } });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch data when query changes
+    useEffect(() => {
+        fetchData();
+    }, [query]);
 
     const COLORS = ["#52c41a", "#1677ff", "#722ed1", "#faad14", "#f5222d"];
 
