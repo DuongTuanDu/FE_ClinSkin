@@ -5,7 +5,7 @@ import {
   getProvinces,
   getDistrictsByProvinceId,
   getWardsByDistrictId,
-} from "@/axios/ghn.api.js";
+} from "@/redux/profile/ghn.api";
 import { useUpdateAccountUserMutation } from "@/redux/user/user.query";
 
 const { Option } = Select;
