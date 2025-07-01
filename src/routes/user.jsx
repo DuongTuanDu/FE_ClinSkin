@@ -14,6 +14,7 @@ const SearchProduct = lazy(() => import("@pages/SearchProduct/UserSearchPageProd
 const Cart = lazy(() => import("@pages/Cart/Cart"));
 const AboutUs = lazy(() => import("@pages/About-us/index"));
 const OrderReturn = lazy(() => import("@pages/OrderReturn/OrderReturn"));
+const Brand = lazy(() => import("@pages/Brand/index"));
 
 const WrapRoute = ({ element: Element }) => (
   <Suspense fallback={<Loading />}>
@@ -84,6 +85,12 @@ const routes = [
     title: "Thông tin kết quả đặt hàng",
     isProtected: true,
     wrapper: WrapRoute,
+  },
+  {
+    path: "/brands/:slug",
+    element: Brand,
+    title: "Thương hiệu",
+    wrapper: WrapRoute
   },
 ];
 
