@@ -2,7 +2,6 @@ import React, { memo, useCallback } from "react";
 import { Collapse, Empty, Skeleton } from "antd";
 import CategoryTree from "./CategoryTree";
 import PriceRangeFilter from "./PriceRangeFilter";
-import BrandFilter from "./BrandFilter";
 import TagFilter from "./TagFilter";
 
 const FilterPanelProduct = memo(
