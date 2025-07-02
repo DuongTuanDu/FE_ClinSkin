@@ -7,7 +7,7 @@ export const productApi = createApi({
         const { url, method, data, params } = args;
         return baseQuery({ url, method, data, params });
     },
-    tagTypes: ["Product"], 
+    tagTypes: ["Product"],
     endpoints: (builder) => ({
         getAllProducts: builder.query({
             query: () => ({
@@ -17,17 +17,17 @@ export const productApi = createApi({
             transformResponse: (response) => response.data,
             providesTags: ["Product"],
         }),
-        
+
         getProductList: builder.query({
             query: ({ page = 1, pageSize = 10, name = "", category = "", brandId = "", minPrice = "", maxPrice = "" }) => {
                 const queryParams = { page, pageSize };
-                
+
                 if (name) queryParams.name = name;
                 if (category) queryParams.category = category;
                 if (brandId) queryParams.brandId = brandId;
                 if (minPrice) queryParams.minPrice = minPrice;
                 if (maxPrice) queryParams.maxPrice = maxPrice;
-                
+
                 const queryStrings = new URLSearchParams(queryParams).toString();
                 return {
                     url: `/admin/product?${queryStrings}`,
@@ -36,7 +36,7 @@ export const productApi = createApi({
             },
             providesTags: ["Product"],
         }),
-        
+
         getProductById: builder.query({
             query: (id) => ({
                 url: `/admin/product/${id}`,
@@ -44,7 +44,7 @@ export const productApi = createApi({
             }),
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
-        
+
         createProduct: builder.mutation({
             query: (productData) => ({
                 url: `/admin/product`,
@@ -53,7 +53,7 @@ export const productApi = createApi({
             }),
             invalidatesTags: ["Product"],
         }),
-        
+
         updateProduct: builder.mutation({
             query: ({ id, ...productData }) => ({
                 url: `/admin/product/${id}`,
@@ -65,7 +65,7 @@ export const productApi = createApi({
                 "Product",
             ],
         }),
-        
+
         deleteProduct: builder.mutation({
             query: (id) => ({
                 url: `/admin/product/${id}`,
@@ -73,13 +73,42 @@ export const productApi = createApi({
             }),
             invalidatesTags: ["Product"],
         }),
-        
+
         restoreProduct: builder.mutation({
             query: (id) => ({
                 url: `/admin/product/${id}/restore`,
                 method: "POST",
             }),
             invalidatesTags: ["Product"],
+        }),
+
+        getProductHome: builder.query({
+            query: () => ({
+                url: "/products/home?tags=HOT,NEW",
+                method: "GET",
+            }),
+            transformResponse: (response) => response.data,
+        }),
+
+        getProductDetail: builder.query({
+            query: ({ slug }) => ({
+                url: `/products/detail/${slug}`,
+                method: "GET",
+            }),
+            transformResponse: (response) => response.data,
+        }),
+
+        getProductOther: builder.query({
+            query: ({ page = 1, pageSize = 15 }) => {
+                const queryString = new URLSearchParams({
+                    page,
+                    pageSize,
+                }).toString();
+                return {
+                    url: `/products/all-other?${queryString}`,
+                    method: "GET",
+                };
+            },
         }),
     }),
 });
@@ -91,5 +120,8 @@ export const {
     useCreateProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
-    useRestoreProductMutation
+    useRestoreProductMutation,
+    useGetProductHomeQuery,
+    useGetProductDetailQuery,
+    useGetProductOtherQuery,
 } = productApi;

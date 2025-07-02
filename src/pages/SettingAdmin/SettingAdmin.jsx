@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { IoCloudUpload } from "react-icons/io5";
 import axios from "@/axios/axios";
 import { getAccountAdmin } from "@/redux/auth/auth.thunk";
+import { color } from "framer-motion";
 
 const SettingAdmin = () => {
     const dispatch = useDispatch();
@@ -164,7 +165,7 @@ const SettingAdmin = () => {
                 />
             </Form.Item>
 
-            <CustomButton variant="primary" type="submit" className="w-full">
+            <CustomButton variant="primary" type="submit" className="w-full" >
                 Cập nhật tài khoản
             </CustomButton>
         </Form>

@@ -8,7 +8,6 @@ import {
     UserOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { LiaShoppingBasketSolid } from "react-icons/lia";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { isArray, isEmpty } from "lodash";
@@ -25,6 +24,8 @@ const HeaderUser = () => {
     const dispatch = useDispatch();
     const location = useLocation();
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
+    const { products } = useSelector((state) => state.cart.cart);
+    
     const navigate = useNavigate();
     const [current, setCurrent] = useState("");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -273,7 +274,7 @@ const HeaderUser = () => {
                         <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 text-gray-700 relative`}>
                             <FaShoppingCart className="text-xl cursor-pointer"/>
                             <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                0
+                                {products.length}
                             </span>
                         </Link>
 

@@ -5,6 +5,7 @@ import FooterUser from "@components/Footer/FooterUser";
 import { useDispatch, useSelector } from "react-redux";
 import ModalAuth from "../Modal/ModalAuth";
 import { setOpenModelAuth } from "@/redux/auth/auth.slice";
+import ClickSpark from "../ClickSpark";
 
 const LayoutUser = ({ children }) => {
   const dispatch = useDispatch();
@@ -27,9 +28,17 @@ const LayoutUser = ({ children }) => {
           onClose: () => dispatch(setOpenModelAuth(false)),
         }}
       />
-      <HeaderUser />
-      <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
-      <FooterUser />
+      <ClickSpark
+        sparkColor='#FFB6C1'
+        sparkSize={15}
+        sparkRadius={20}
+        sparkCount={8}
+        duration={400}
+      >
+        <HeaderUser />
+        <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
+        <FooterUser />
+      </ClickSpark>
     </div>
   );
 };

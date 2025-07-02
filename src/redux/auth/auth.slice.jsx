@@ -21,6 +21,7 @@ const initialState = {
             publicId: "",
         },
         googleId: "",
+        createdAt: "",
     },
     isLoading: false,
     error: {},

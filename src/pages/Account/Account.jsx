@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "@redux/auth/auth.slice";
 import { clearCart } from "@redux/cart/cart.slice";
-import AccountForm from "./components/AccountForm";
-import UserInfo from "./components/UserInfo";
-import AccountMenu from "./components/AccountMenu";
+import AccountForm from "./AccountForm";
+import UserInfo from "./UserInfo";
+import AccountMenu from "./AccountMenu";
 
 const CONTENT_TYPES = {
   PROFILE: "profile",
@@ -19,7 +19,9 @@ const Account = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const [contentType, setContentType] = useState(CONTENT_TYPES.PROFILE);
-  const { userInfo } = useSelector((state) => state.auth);
+  const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
+  const products = useSelector((state) => state.cart.cart.products); 
+
   const queryParams = new URLSearchParams(location.search);
   const tab = queryParams.get("tab") || CONTENT_TYPES.PROFILE;
 
@@ -44,7 +46,7 @@ const Account = () => {
   const renderContent = () => {
     switch (contentType) {
       case CONTENT_TYPES.PROFILE:
-        return <AccountForm />;
+        return <AccountForm userInfo={userInfo} isAuthenticated={isAuthenticated} />;
       default:
         return <></>;
     }
