@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     Checkbox,
     InputNumber,
@@ -20,6 +20,7 @@ import { isEmpty } from "lodash";
 import CustomButton from "@/components/CustomButton";
 import ProductList from "@/components/Product/ProductList";
 import { useGetProductOtherQuery } from "@/redux/product/product.query";
+import ModalCheckout from "./ModalCheckout";
 
 const { Text } = Typography;
 
@@ -34,12 +35,19 @@ const Cart = ({ isHiden = false }) => {
         totalPage: 0,
         totalItems: 0,
     });
+    const [open, setOpen] = useState(false);
 
     const { data, isLoading, isFetching } = useGetProductOtherQuery({
         ...paginate,
     });
 
     const { data: productList = [], pagination = {} } = data || {};
+
+    const selectedProducts = useMemo(() => {
+        return products.filter((product) =>
+            selectedItems.includes(product.productId)
+        );
+    }, [products, selectedItems]);
 
     useEffect(() => {
         const newTotalPrice = selectedItems.reduce((total, itemId) => {
@@ -93,6 +101,7 @@ const Cart = ({ isHiden = false }) => {
             message.warning("Vui lòng chọn sản phẩm để thanh toán");
             return;
         }
+        setOpen(true);
     };
 
     const groupedProducts = Object.values(
@@ -131,6 +140,14 @@ const Cart = ({ isHiden = false }) => {
                 </>
             ) : (
                 <>
+                    <ModalCheckout
+                        {...{
+                            open,
+                            setOpen,
+                            products: selectedProducts,
+                            totalAmount: totalPrice,
+                        }}
+                    />
                     {!isHiden && (
                         <Breadcrumb
                             className="pb-4"

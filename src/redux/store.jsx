@@ -9,6 +9,7 @@ import reducer from "./reducer";
 import { inventoryBatchApi } from "./inventory/inventoryBatch.query";
 import { productSearchApi } from "./product/productSearch.query";
 import { userApi } from "./user/user.query";
+import { shipApi } from "./ship/ship.query";
 
 
 export const store = configureStore({
@@ -22,14 +23,12 @@ export const store = configureStore({
     [orderApi.reducerPath]: orderApi.reducer,
     [inventoryBatchApi.reducerPath]: inventoryBatchApi.reducer,
     [productSearchApi.reducerPath]: productSearchApi.reducer,
-    [userApi.reducerPath]: userApi.reducer
+    [userApi.reducerPath]: userApi.reducer,
+    [shipApi.reducerPath]: shipApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(categoryApi.middleware, reviewApi.middleware)
-    .concat(productApi.middleware)
-    .concat(brandApi.middleware).concat(orderApi.middleware).
-    concat(inventoryBatchApi.middleware).concat(productSearchApi.middleware).concat(userApi.middleware),
+    }).concat(categoryApi.middleware, reviewApi.middleware, productApi.middleware, brandApi.middleware, orderApi.middleware, inventoryBatchApi.middleware, productSearchApi.middleware, userApi.middleware, shipApi.middleware)
 
 });
