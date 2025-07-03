@@ -20,6 +20,12 @@ const initialState = {
             url: "",
             publicId: "",
         },
+        address: {
+            province: "",
+            district: "",
+            ward: "",
+            detail: "",
+        },
         googleId: "",
         createdAt: "",
     },
