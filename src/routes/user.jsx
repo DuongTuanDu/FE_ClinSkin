@@ -1,6 +1,8 @@
 import React, { lazy, Suspense } from "react";
 import Loading from "@components/Loading";
 import LayoutAboutUs from "@/components/Layout/LayoutAboutUs";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const LayoutUser = lazy(() => import("@components/Layout/LayoutUser"));
 
@@ -16,11 +18,35 @@ const AboutUs = lazy(() => import("@pages/About-us/index"));
 const OrderReturn = lazy(() => import("@pages/OrderReturn/OrderReturn"));
 const Brand = lazy(() => import("@pages/Brand/index"));
 
-const WrapRoute = ({ element: Element }) => (
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
+  return !isAuthenticated && !isLoading ? (
+    <Navigate to="/auth" replace />
+  ) : (
+    children
+  );
+};
+
+const AuthRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
+  return isAuthenticated && !isLoading ? <Navigate to="/" replace /> : children;
+};
+
+const WrapRoute = ({ element: Element, isProtected, isAuthRoute }) => (
   <Suspense fallback={<Loading />}>
     <AuthUserWapper>
       <LayoutUser>
-        <Element />
+        {isProtected ? (
+          <ProtectedRoute>
+            <Element />
+          </ProtectedRoute>
+        ) : isAuthRoute ? (
+          <AuthRoute>
+            <Element />
+          </AuthRoute>
+        ) : (
+          <Element />
+        )}
       </LayoutUser>
     </AuthUserWapper>
   </Suspense>
@@ -47,6 +73,7 @@ const routes = [
     path: "/auth",
     element: Auth,
     title: "Đăng nhập - Đăng ký",
+    isAuthRoute: true,
     wrapper: WrapRoute,
   },
   {
@@ -95,12 +122,14 @@ const routes = [
 ];
 
 const UserRoutes = routes.map(
-  ({ path, element, title, wrapper: WrapRoute }) => ({
+  ({ path, element, title, isProtected, isAuthRoute, wrapper: WrapRoute }) => ({
     path,
     element: (
       <WrapRoute
         element={element}
         title={title}
+        isProtected={isProtected}
+        isAuthRoute={isAuthRoute}
       />
     ),
   })
