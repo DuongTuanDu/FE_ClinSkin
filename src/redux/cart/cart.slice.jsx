@@ -91,6 +91,15 @@ export const cartSlice = createSlice({
       };
       set("cart", state.cart);
     },
+    removeProductAfterOrderSuccess: (state, action) => {
+      const { productId } = action.payload;
+      state.cart.products = state.cart.products.filter((item) => {
+        const idMatch = item.productId !== productId;
+        return idMatch;
+      });
+      state.cart.totalAmount = calculateTotalAmount(state.cart.products);
+      set("cart", state.cart);
+    },
   },
 });
 
@@ -99,7 +108,8 @@ export const {
   clearCart,
   incrementQuantity,
   decrementQuantity,
-  removeFromCart
+  removeFromCart,
+  removeProductAfterOrderSuccess
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

@@ -62,9 +62,6 @@ const Detail = () => {
         refetch,
     } = useGetProductDetailQuery({ slug }, { skip: !slug });
 
-    console.log("dataProduct", dataProduct);
-    
-
     useEffect(() => {
         if (dataProduct) {
             setProduct((prev) => ({
@@ -75,7 +72,7 @@ const Detail = () => {
                 price: dataProduct.promotion
                     ? dataProduct.finalPrice
                     : dataProduct.price,
-                brand: dataProduct.brandInfo.name,
+                brand: dataProduct.brand.name,
             }));
         }
     }, [dataProduct]);

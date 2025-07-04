@@ -97,6 +97,53 @@ export const productApi = createApi({
             }),
             transformResponse: (response) => response.data,
         }),
+
+        getProductOther: builder.query({
+            query: ({ page = 1, pageSize = 15 }) => {
+                const queryString = new URLSearchParams({
+                    page,
+                    pageSize,
+                }).toString();
+                return {
+                    url: `/products/all-other?${queryString}`,
+                    method: "GET",
+                };
+            },
+        }),
+
+        getFilterOptions: builder.query({
+            query: () => ({
+                url: "/products/filter-options",
+                method: "GET",
+            }),
+            transformResponse: (response) => response.data,
+        }),
+
+        getProductFromBrand: builder.query({
+            query: ({
+                page = 1,
+                pageSize = 12,
+                priceRange = "",
+                categories = [],
+                tags = [],
+                sortOrder = "",
+                slug,
+            }) => {
+                const queryString = new URLSearchParams({
+                    priceRange,
+                    categories,
+                    tags,
+                    sortOrder,
+                    page,
+                    pageSize,
+                }).toString();
+                return {
+                    url: `/products/brands/${slug}?${queryString}`,
+                    method: "GET",
+                };
+            },
+            transformResponse: (response) => response.data,
+        }),
     }),
 });
 
@@ -110,4 +157,7 @@ export const {
     useRestoreProductMutation,
     useGetProductHomeQuery,
     useGetProductDetailQuery,
+    useGetProductOtherQuery,
+    useGetFilterOptionsQuery,
+    useGetProductFromBrandQuery,
 } = productApi;

@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Upload } from "antd";
+import { Form, Input, Upload, message } from "antd";
 import CustomButton from "@/components/CustomButton";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { IoCloudUpload } from "react-icons/io5";
+import axios from "@/axios/axios";
+import { getAccountAdmin } from "@/redux/auth/auth.thunk";
+import { color } from "framer-motion";
 
 const SettingAdmin = () => {
+    const dispatch = useDispatch();
     const { adminInfo } = useSelector((state) => state.auth);
     const [form] = Form.useForm();
     const [avatar, setAvatar] = useState([]);
@@ -13,19 +17,53 @@ const SettingAdmin = () => {
         if (adminInfo) {
             form.setFieldsValue({
                 name: adminInfo.name,
-                avatar: {
-                    url: adminInfo.avatar.url,
-                    publicId: adminInfo.avatar.publicId,
-                },
             });
-            setAvatar([
-                { url: adminInfo.avatar.url, publicId: adminInfo.avatar.publicId },
-            ]);
+
+            if (adminInfo.avatar?.url) {
+                setAvatar([
+                    {
+                        uid: "-1",
+                        name: "avatar.png",
+                        status: "done",
+                        url: adminInfo.avatar.url,
+                    },
+                ]);
+            }
         }
     }, [adminInfo, form]);
 
     const handleSubmit = async (values) => {
-        console.log("values", values);
+        const formData = new FormData();
+        formData.append("name", values.name);
+
+        if (avatar.length > 0 && avatar[0].originFileObj) {
+            formData.append("avatar", avatar[0].originFileObj);
+        }
+
+        if (values.password && values.newPassword) {
+            formData.append("password", values.password);
+            formData.append("newPassword", values.newPassword);
+        }
+
+        try {
+            const res = await axios.put(
+                `/admin/auth/update-profile/${adminInfo._id}`,
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
+            );
+
+            if (res.data.success) {
+                message.success("Cập nhật tài khoản thành công");
+                dispatch(getAccountAdmin());
+                form.resetFields(["password", "newPassword"]);
+            } else {
+                message.success("Cập nhật tài khoản thành công");
+            }
+        } catch (error) {
+            message.error(error?.response?.data?.message || "Đã xảy ra lỗi");
+        }
     };
 
     return (
@@ -38,7 +76,6 @@ const SettingAdmin = () => {
         >
             <Form.Item
                 name="avatar"
-                rules={[{ required: true, message: "Vui lòng chọn ảnh đại diện" }]}
                 className="flex items-center justify-center w-full"
             >
                 <Upload
@@ -57,10 +94,10 @@ const SettingAdmin = () => {
                     )}
                 </Upload>
             </Form.Item>
+
             <Form.Item
                 name="name"
                 label="Họ và tên"
-                className="w-full lg:flex-1"
                 rules={[
                     { required: true, message: "Vui lòng nhập họ và tên" },
                     { min: 3, message: "Họ và tên phải có ít nhất 3 ký tự" },
@@ -72,10 +109,10 @@ const SettingAdmin = () => {
                     className="w-full mt-1"
                 />
             </Form.Item>
+
             <Form.Item
                 name="password"
                 label="Mật khẩu cũ"
-                className="w-full lg:flex-1"
                 dependencies={["newPassword"]}
                 rules={[
                     ({ getFieldValue }) => ({
@@ -101,16 +138,13 @@ const SettingAdmin = () => {
             <Form.Item
                 name="newPassword"
                 label="Mật khẩu mới"
-                className="w-full lg:flex-1"
                 dependencies={["password"]}
                 rules={[
                     ({ getFieldValue }) => ({
                         validator(_, value) {
                             if (!value && getFieldValue("password")) {
                                 return Promise.reject(
-                                    new Error(
-                                        "Vui lòng nhập mật khẩu mới nếu đã nhập mật khẩu cũ"
-                                    )
+                                    new Error("Vui lòng nhập mật khẩu mới nếu đã nhập mật khẩu cũ")
                                 );
                             }
                             if (value && value === getFieldValue("password")) {
@@ -131,11 +165,7 @@ const SettingAdmin = () => {
                 />
             </Form.Item>
 
-            <CustomButton
-                variant="primary"
-                type="submit"
-                className="w-full"
-            >
+            <CustomButton variant="primary" type="submit" className="w-full" >
                 Cập nhật tài khoản
             </CustomButton>
         </Form>
