@@ -33,6 +33,61 @@ const TableProductAlmostExpired = ({
         }
     };
 
+    const batchColumns = [
+        {
+            title: "Mã lô hàng",
+            dataIndex: "batchNumber",
+            key: "batchNumber",
+            width: 100,
+            render: (text) => (
+                <span className="font-mono text-xs">{text}</span>
+            ),
+        },
+        {
+            title: "Số lượng còn lại",
+            dataIndex: "remainingQuantity",
+            key: "remainingQuantity",
+            width: 100,
+            render: (quantity) => (
+                <span className="text-sm">{quantity}</span>
+            ),
+        },
+        {
+            title: "Ngày hết hạn",
+            dataIndex: "expiryDate",
+            key: "expiryDate",
+            width: 140,
+            render: (expiryDate) => {
+                const daysInfo = calculateDaysRemaining(expiryDate);
+                return (
+                    <div className="space-y-1">
+                        <div className="text-xs">{formatDateReview(expiryDate)}</div>
+                        <Tag 
+                            size="small"
+                            style={{ 
+                                color: daysInfo.color,
+                                backgroundColor: daysInfo.bgColor,
+                                border: `1px solid ${daysInfo.color}`,
+                                fontSize: '10px'
+                            }}
+                        >
+                            {daysInfo.text}
+                        </Tag>
+                    </div>
+                );
+            },
+        },
+        {
+            title: "Giá nhập",
+            dataIndex: "costPrice",
+            key: "costPrice",
+            width: 100,
+            render: (price) => (
+                <span className="text-xs">{formatPrice(price)} đ</span>
+            ),
+        },
+    ];
+
     const columns = useMemo(
         () => [
             {
@@ -43,7 +98,7 @@ const TableProductAlmostExpired = ({
                 render: (mainImage) => (
                     <Image
                         className="rounded-md"
-                        src={mainImage.url}
+                        src={mainImage?.url}
                         alt="Product"
                         width={80}
                         height={80}
@@ -52,92 +107,120 @@ const TableProductAlmostExpired = ({
                 ),
             },
             {
-                title: "Tên sản phẩm",
+                title: "Thông tin sản phẩm",
                 dataIndex: "name",
                 key: "name",
-                render: (_, record) => (
-                    <div className="space-y-1">
-                        <Tooltip title={record.name}>
-                            <div className="text-sm truncate-2-lines">{record.name}</div>
-                        </Tooltip>
-                        <div className="flex flex-col sm:flex-row sm:items-center">
-                            <span className="font-bold mr-1">Hạn sử dụng:</span>
-                            <span className="mr-2">{formatDateReview(record.expiry)}</span>
-                            {(() => {
-                                const daysInfo = calculateDaysRemaining(record.expiry);
-                                return (
-                                    <Tag 
-                                        size="small"
-                                        style={{ 
-                                            color: daysInfo.color,
-                                            backgroundColor: daysInfo.bgColor,
-                                            border: `1px solid ${daysInfo.color}`,
-                                            fontSize: '11px'
-                                        }}
-                                    >
-                                        {daysInfo.text}
-                                    </Tag>
-                                );
-                            })()}
-                        </div>
-                        <div className="text-sm truncate-2-lines">
-                            <span className="font-bold mr-1">Giá:</span>
-                            <span>{formatPrice(record.price)} đ</span>
-                        </div>
-                        {record.promotion && (
-                            <>
-                                <div className="text-sm truncate-2-lines">
-                                    <span className="font-bold mr-1">Khuyến mãi:</span>
-                                    <span className="italic">
-                                        {record.promotion.name}{" "}
-                                        <Tag color="#fc541e">
-                                            - {record.promotion.discountPercentage} %
+                width: 400,
+                render: (_, record) => {
+                    const daysInfo = calculateDaysRemaining(record.nearExpiryDate);
+                    
+                    return (
+                        <div className="space-y-2">
+                            <Tooltip title={record.name}>
+                                <div className="text-sm font-medium truncate-2-lines">{record.name}</div>
+                            </Tooltip>
+                            
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span className="font-bold">Tổng số lượng:</span>
+                                    <span className="ml-1 text-blue-600">{record.currentStock}</span>
+                                    <span className="text-gray-500"> sản phẩm</span>
+                                </div>
+                                <div>
+                                    <span className="font-bold">Sắp hết hạn:</span>
+                                    <span className="ml-1 text-orange-600">{record.nearExpiryQuantity}</span>
+                                    <span className="text-gray-500"> sản phẩm</span>
+                                </div>
+                                <div>
+                                    <span className="font-bold">Giá bán:</span>
+                                    <span className="ml-1 text-green-600">{formatPrice(record.price)} đ</span>
+                                </div>
+                                <div>
+                                    <span className="font-bold">Hết hạn gần nhất:</span>
+                                    <div className="mt-1">
+                                        <div className="text-xs">{formatDateReview(record.nearExpiryDate)}</div>
+                                        <Tag 
+                                            size="small"
+                                            style={{ 
+                                                color: daysInfo.color,
+                                                backgroundColor: daysInfo.bgColor,
+                                                border: `1px solid ${daysInfo.color}`,
+                                                fontSize: '10px'
+                                            }}
+                                        >
+                                            {daysInfo.text}
                                         </Tag>
-                                    </span>
+                                    </div>
                                 </div>
-                                <div className="text-sm truncate-2-lines">
-                                    <span className="font-bold mr-1">Thời gian:</span>
-                                    <span className="italic">
-                                        {formatDateReview(record.promotion.startDate)} -
-                                        {formatDateReview(record.promotion.endDate)}
-                                    </span>
+                            </div>
+
+                            {record.promotion && (
+                                <div className="border-t pt-2 mt-2">
+                                    <div className="text-xs">
+                                        <span className="font-bold text-red-600">Khuyến mãi:</span>
+                                        <span className="ml-1 italic">
+                                            {record.promotion.name}{" "}
+                                            <Tag color="#fc541e" size="small">
+                                                - {record.promotion.discountPercentage} %
+                                            </Tag>
+                                        </span>
+                                    </div>
+                                    <div className="text-xs mt-1">
+                                        <span className="font-bold">Thời gian:</span>
+                                        <span className="ml-1 italic">
+                                            {formatDateReview(record.promotion.startDate)} - {formatDateReview(record.promotion.endDate)}
+                                        </span>
+                                    </div>
                                 </div>
-                            </>
-                        )}
-                    </div>
-                ),
+                            )}
+                        </div>
+                    );
+                },
+            },
+            {
+                title: "Danh sách lô hàng sắp hết hạn",
+                key: "batches",
+                width: 500,
+                render: (_, record) => {
+                    return (
+                        <div className="max-w-full">
+                            <Table
+                                columns={batchColumns}
+                                dataSource={record.nearExpiryBatches}
+                                pagination={false}
+                                size="small"
+                                rowKey="batchId"
+                                className="border border-gray-200 rounded"
+                                scroll={{ x: 400 }}
+                            />
+                        </div>
+                    );
+                },
             },
         ],
         []
     );
 
-    // Sort products by expiry date (closest expiry first)
-    const sortedProducts = useMemo(() => {
-        return [...products].sort((a, b) => {
-            const dateA = dayjs(a.expiry);
-            const dateB = dayjs(b.expiry);
-            return dateA.diff(dateB); // Ascending: closest expiry first
-        });
-    }, [products]);
-
     const rowSelection = {
-        selectedRowKeys: selectedProducts.map((p) => p.product),
+        selectedRowKeys: selectedProducts.map((p) => p.name),
         onChange: (_, selectedRows) => {
-            const currentPageProducts = sortedProducts.map((p) => p._id);
+            const currentPageProducts = products.map((p) => p.name);
 
             const productsFromOtherPages = selectedProducts.filter(
-                (p) => !currentPageProducts.includes(p.product)
+                (p) => !currentPageProducts.includes(p.name)
             );
 
             const updatedCurrentPageProducts = selectedRows.map((row) => {
                 const existingProduct = selectedProducts.find(
-                    (p) => p.product === row._id
+                    (p) => p.name === row.name
                 );
                 return {
-                    image: row.mainImage.url,
-                    product: row._id,
+                    image: row.mainImage?.url,
                     name: row.name,
                     price: row.price,
+                    currentStock: row.currentStock,
+                    nearExpiryQuantity: row.nearExpiryQuantity,
+                    nearExpiryDate: row.nearExpiryDate,
                     discountPercentage: existingProduct
                         ? existingProduct.discountPercentage
                         : 0,
@@ -158,9 +241,9 @@ const TableProductAlmostExpired = ({
     return (
         <>
             <Table
-                rowKey={(record) => record._id}
+                rowKey={(record) => record.name}
                 columns={columns}
-                dataSource={sortedProducts}
+                dataSource={products}
                 loading={isLoading}
                 rowSelection={{
                     type: "checkbox",
