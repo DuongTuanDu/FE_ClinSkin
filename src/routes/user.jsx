@@ -3,6 +3,7 @@ import Loading from "@components/Loading";
 import LayoutAboutUs from "@/components/Layout/LayoutAboutUs";
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import ProviderSocket from "@/components/Layout/ProviderSocket";
 
 const LayoutUser = lazy(() => import("@components/Layout/LayoutUser"));
 
@@ -35,19 +36,21 @@ const AuthRoute = ({ children }) => {
 const WrapRoute = ({ element: Element, isProtected, isAuthRoute }) => (
   <Suspense fallback={<Loading />}>
     <AuthUserWapper>
-      <LayoutUser>
-        {isProtected ? (
-          <ProtectedRoute>
+      <ProviderSocket>
+        <LayoutUser>
+          {isProtected ? (
+            <ProtectedRoute>
+              <Element />
+            </ProtectedRoute>
+          ) : isAuthRoute ? (
+            <AuthRoute>
+              <Element />
+            </AuthRoute>
+          ) : (
             <Element />
-          </ProtectedRoute>
-        ) : isAuthRoute ? (
-          <AuthRoute>
-            <Element />
-          </AuthRoute>
-        ) : (
-          <Element />
-        )}
-      </LayoutUser>
+          )}
+        </LayoutUser>
+      </ProviderSocket>
     </AuthUserWapper>
   </Suspense>
 );

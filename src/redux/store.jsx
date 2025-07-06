@@ -10,6 +10,7 @@ import { inventoryBatchApi } from "./inventory/inventoryBatch.query";
 import { productSearchApi } from "./product/productSearch.query";
 import { userApi } from "./user/user.query";
 import { shipApi } from "./ship/ship.query";
+import { notificationApi } from "./notification/notification.query";
 
 
 export const store = configureStore({
@@ -25,10 +26,22 @@ export const store = configureStore({
     [productSearchApi.reducerPath]: productSearchApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [shipApi.reducerPath]: shipApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(categoryApi.middleware, reviewApi.middleware, productApi.middleware, brandApi.middleware, orderApi.middleware, inventoryBatchApi.middleware, productSearchApi.middleware, userApi.middleware, shipApi.middleware)
+    }).concat(
+      categoryApi.middleware,
+      reviewApi.middleware,
+      productApi.middleware,
+      brandApi.middleware,
+      orderApi.middleware,
+      inventoryBatchApi.middleware,
+      productSearchApi.middleware,
+      userApi.middleware,
+      shipApi.middleware,
+      notificationApi.middleware,
+    )
 
 });

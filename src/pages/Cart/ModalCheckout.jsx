@@ -19,7 +19,7 @@
 //     const { isAuthenticated } = useSelector((state) => state.auth);
 //     const { address } = useSelector((state) => state.user);
 //     console.log("address", address);
-    
+
 //     const [location, setLoacation] = useState({
 //         province: {
 //             id: "",
@@ -366,7 +366,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const address = userInfo?.address;
     console.log("address", address);
-    
+
     const [location, setLoacation] = useState({
         province: {
             id: "",
@@ -381,7 +381,9 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
             name: "",
         },
     });
-    
+
+    const { socketCustomer: socket } = useSelector((state) => state.socket);
+
     const [hasUserInteracted, setHasUserInteracted] = useState(false); // Flag để track user interaction
 
     // Queries for location data
@@ -405,7 +407,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
         if (address && provinces.length > 0 && !hasUserInteracted) {
             // Find province name by ID
             const selectedProvince = provinces.find(p => p.ProvinceID.toString() === address.province);
-            
+
             if (selectedProvince) {
                 setLoacation(prev => ({
                     ...prev,
@@ -414,7 +416,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
                         name: selectedProvince.ProvinceName,
                     }
                 }));
-                
+
                 // Set form values
                 form.setFieldsValue({
                     province: parseInt(address.province)
@@ -427,7 +429,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
     useEffect(() => {
         if (address && districts.length > 0 && location.province.id && !hasUserInteracted) {
             const selectedDistrict = districts.find(d => d.DistrictID.toString() === address.district);
-            
+
             if (selectedDistrict) {
                 setLoacation(prev => ({
                     ...prev,
@@ -436,7 +438,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
                         name: selectedDistrict.DistrictName,
                     }
                 }));
-                
+
                 form.setFieldsValue({
                     district: parseInt(address.district)
                 });
@@ -448,7 +450,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
     useEffect(() => {
         if (address && wards.length > 0 && location.district.id && !hasUserInteracted) {
             const selectedWard = wards.find(w => w.WardCode === address.ward);
-            
+
             if (selectedWard) {
                 setLoacation(prev => ({
                     ...prev,
@@ -457,7 +459,7 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
                         name: selectedWard.WardName,
                     }
                 }));
-                
+
                 form.setFieldsValue({
                     ward: address.ward
                 });
@@ -553,6 +555,14 @@ const ModalCheckout = ({ open, setOpen, products = [], totalAmount = 0 }) => {
                                         productId: item.productId
                                     })
                                 )
+                            );
+                            socket?.emit(
+                                "createOrder",
+                                JSON.stringify({
+                                    order: res.payload.data,
+                                    model: "User",
+                                    recipient: res.payload.data.user,
+                                })
                             );
                             setLoacation((prev) => ({
                                 ...prev,

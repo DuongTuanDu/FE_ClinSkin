@@ -19,6 +19,7 @@ import { useGetAllCategoryUserQuery } from "@/redux/category/category.query";
 import { useGetAllBrandByUserQuery } from "@/redux/brand/brand.query";
 import Loading from "../Loading/Loading";
 import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
+import NotificationDrop from "./NotificationStoreDrop";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -269,7 +270,7 @@ const HeaderUser = () => {
                             </Button>
                         )}
 
-                        {isAuthenticated && <IoNotificationsOutline className="text-xl lg:text-3xl cursor-pointer" />}
+                        {isAuthenticated && <NotificationDrop />}
 
                         <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 text-gray-700 relative`}>
                             <FaShoppingCart className="text-xl cursor-pointer"/>
