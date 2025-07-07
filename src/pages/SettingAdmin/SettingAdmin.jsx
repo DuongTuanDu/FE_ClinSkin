@@ -1,68 +1,74 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Upload, message } from "antd";
+import { Form, Input, message, Upload } from "antd";
 import CustomButton from "@/components/CustomButton";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    deleteFile,
+    UPLOAD_CLINSKIN_ADMIN_PRESET,
+    uploadFile,
+} from "@/helpers/uploadCloudinary";
+import { updateAccountAdmin } from "@/redux/auth/auth.thunk";
 import { IoCloudUpload } from "react-icons/io5";
-import axios from "@/axios/axios";
-import { getAccountAdmin } from "@/redux/auth/auth.thunk";
-import { color } from "framer-motion";
+import { setAdminInfo } from "@/redux/auth/auth.slice";
 
 const SettingAdmin = () => {
     const dispatch = useDispatch();
     const { adminInfo } = useSelector((state) => state.auth);
+    console.log("adminInfo", adminInfo);
+    
     const [form] = Form.useForm();
     const [avatar, setAvatar] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (adminInfo) {
             form.setFieldsValue({
                 name: adminInfo.name,
+                avatar: {
+                    url: adminInfo.avatar.url,
+                    publicId: adminInfo.avatar.publicId,
+                },
             });
-
-            if (adminInfo.avatar?.url) {
-                setAvatar([
-                    {
-                        uid: "-1",
-                        name: "avatar.png",
-                        status: "done",
-                        url: adminInfo.avatar.url,
-                    },
-                ]);
-            }
+            setAvatar([
+                { url: adminInfo.avatar.url, publicId: adminInfo.avatar.publicId },
+            ]);
         }
     }, [adminInfo, form]);
 
     const handleSubmit = async (values) => {
-        const formData = new FormData();
-        formData.append("name", values.name);
-
-        if (avatar.length > 0 && avatar[0].originFileObj) {
-            formData.append("avatar", avatar[0].originFileObj);
-        }
-
-        if (values.password && values.newPassword) {
-            formData.append("password", values.password);
-            formData.append("newPassword", values.newPassword);
-        }
-
         try {
-            const res = await axios.put(
-                `/admin/auth/update-profile/${adminInfo._id}`,
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                }
-            );
+            setLoading(true);
+            let payload = {};
+            if (avatar[0]?.originFileObj) {
+                const result = await uploadFile({
+                    file: avatar[0].originFileObj,
+                    type: UPLOAD_CLINSKIN_ADMIN_PRESET,
+                });
 
-            if (res.data.success) {
-                message.success("Cập nhật tài khoản thành công");
-                dispatch(getAccountAdmin());
-                form.resetFields(["password", "newPassword"]);
+                if (adminInfo.avatar.publicId) {
+                    await deleteFile(adminInfo.avatar.publicId);
+                }
+                
+                payload = {
+                    ...values,
+                    avatar: { url: result.secure_url, publicId: result.public_id },
+                };
             } else {
-                message.success("Cập nhật tài khoản thành công");
+                payload = { ...values };
+            }
+
+            const res = await dispatch(
+                updateAccountAdmin({ id: adminInfo?._id, data: payload })
+            ).unwrap();
+
+            if (res.success) {
+                message.success(res.message);
+                dispatch(setAdminInfo(res.data));
             }
         } catch (error) {
-            message.error(error?.response?.data?.message || "Đã xảy ra lỗi");
+            console.log(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -76,6 +82,7 @@ const SettingAdmin = () => {
         >
             <Form.Item
                 name="avatar"
+                rules={[{ required: true, message: "Vui lòng chọn ảnh đại diện" }]}
                 className="flex items-center justify-center w-full"
             >
                 <Upload
@@ -94,10 +101,10 @@ const SettingAdmin = () => {
                     )}
                 </Upload>
             </Form.Item>
-
             <Form.Item
                 name="name"
                 label="Họ và tên"
+                className="w-full lg:flex-1"
                 rules={[
                     { required: true, message: "Vui lòng nhập họ và tên" },
                     { min: 3, message: "Họ và tên phải có ít nhất 3 ký tự" },
@@ -109,10 +116,10 @@ const SettingAdmin = () => {
                     className="w-full mt-1"
                 />
             </Form.Item>
-
             <Form.Item
                 name="password"
                 label="Mật khẩu cũ"
+                className="w-full lg:flex-1"
                 dependencies={["newPassword"]}
                 rules={[
                     ({ getFieldValue }) => ({
@@ -138,13 +145,16 @@ const SettingAdmin = () => {
             <Form.Item
                 name="newPassword"
                 label="Mật khẩu mới"
+                className="w-full lg:flex-1"
                 dependencies={["password"]}
                 rules={[
                     ({ getFieldValue }) => ({
                         validator(_, value) {
                             if (!value && getFieldValue("password")) {
                                 return Promise.reject(
-                                    new Error("Vui lòng nhập mật khẩu mới nếu đã nhập mật khẩu cũ")
+                                    new Error(
+                                        "Vui lòng nhập mật khẩu mới nếu đã nhập mật khẩu cũ"
+                                    )
                                 );
                             }
                             if (value && value === getFieldValue("password")) {
@@ -165,7 +175,12 @@ const SettingAdmin = () => {
                 />
             </Form.Item>
 
-            <CustomButton variant="primary" type="submit" className="w-full" >
+            <CustomButton
+                isLoading={loading}
+                variant="primary"
+                type="submit"
+                className="w-full"
+            >
                 Cập nhật tài khoản
             </CustomButton>
         </Form>
