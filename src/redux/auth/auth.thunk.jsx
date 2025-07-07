@@ -98,3 +98,15 @@ export const getAccountAdmin = createAsyncThunk(
     }
   }
 );
+
+export const updateAccountAdmin = createAsyncThunk(
+  "auth/updateAccountAdmin",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await axios.put(`/admin/admin-accounts/${id}`, data);
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);

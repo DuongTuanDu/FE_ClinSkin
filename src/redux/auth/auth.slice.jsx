@@ -9,6 +9,7 @@ import {
     verifyAccount,
 } from "./auth.thunk";
 import { remove } from "@storage/storage";
+import { set } from "lodash";
 
 const initialState = {
     userInfo: {
@@ -72,6 +73,9 @@ export const authSlice = createSlice({
         },
         setUserInfo(state, action) {
             state.userInfo = action.payload;
+        },
+        setAdminInfo(state, action) {
+            state.adminInfo = action.payload;
         },
         logoutAdmin(state, action) {
             remove("ACCESS_TOKEN_ADMIN");
@@ -200,6 +204,7 @@ export const {
     setIsLoading,
     setIsAuthenticated,
     logoutAdmin,
-    setUserInfo
+    setUserInfo,
+    setAdminInfo
 } = authSlice.actions;
 export default authSlice.reducer;
