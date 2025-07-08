@@ -20,6 +20,8 @@ const ManageUser = lazy(() => import("@pages/ManageUser"));
 const ManageOrder = lazy(() => import("@pages/ManageOrder"));
 const ManageInventory = lazy(() => import("@pages/ManageInventory"));
 const ExportOrder = lazy(() => import("@pages/ExportOrder"));
+const CreatePromotion = lazy(() => import("@pages/CreatePromotion"));
+const PromotionDetail = lazy(() => import("@pages/PromotionDetail"));
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading } = useSelector(
@@ -142,7 +144,7 @@ const adminRoutes = [
         layoutTitle: "Danh sách người dùng",
         isProtected: true,
     },
-        {
+    {
         path: "/admin/orders",
         element: ManageOrder,
         title: "Admin - Danh sách đặt hàng",
@@ -162,7 +164,21 @@ const adminRoutes = [
         title: "Admin - Chi tiết đơn xuất kho",
         layoutTitle: "Chi tiết đơn xuất kho",
         isProtected: true,
-    }
+    },
+    {
+        path: "/admin/promotions/create",
+        element: CreatePromotion,
+        title: "Admin - Tạo mới khuyến mãi",
+        layoutTitle: "",
+        isProtected: true,
+    },
+    {
+        path: "/admin/promotions/:id",
+        element: PromotionDetail,
+        title: "Admin - Chi tiết khuyến mãi",
+        layoutTitle: "",
+        isProtected: true,
+    },
 ];
 
 const AdminRoutes = adminRoutes.map(

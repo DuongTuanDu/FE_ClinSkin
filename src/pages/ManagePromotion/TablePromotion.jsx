@@ -1,204 +1,163 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { FaEye, FaTrash } from 'react-icons/fa';
-import PromotionDetailModal from './PromotionDetailModal.jsx';
-import { message } from "antd";
+import React, { useMemo } from "react";
+import { Table, Tooltip, Pagination, Popconfirm, message, Tag } from "antd";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { FaEye } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import {
+  deletePromotion,
+  getListPromotion,
+} from "@redux/promotion/promotion.thunk";
+import { useNavigate } from "react-router-dom";
+import { formatDateReview } from "@helpers/formatDate";
 
-const TablePromotion = ({ refreshTable, onEdit }) => {
-  const [promotions, setPromotions] = useState([]);
-  console.log("promotions", promotions);
-  
-  const [page, setPage] = useState(1);
-  const [limit] = useState(5);
-  const [isActive, setIsActive] = useState('all'); // Default to 'all'
-  const [fromDate, setFromDate] = useState('');
-  const [totalPages, setTotalPages] = useState(1);
-  const [selectedPromotion, setSelectedPromotion] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const TablePromotion = ({
+  promotions = [],
+  isLoading = false,
+  page,
+  pageSize,
+  totalItems,
+  setPaginate,
+}) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const columns = useMemo(
+    () => [
+      {
+        title: "STT",
+        key: "stt",
+        width: 60,
+        render: (_, __, index) => (page - 1) * pageSize + index + 1,
+      },
+      {
+        title: "Tên khuyến mãi",
+        dataIndex: "name",
+        key: "name",
+        render: (text) => (
+          <Tooltip title={text}>
+            <span className="font-extrabold text-sm text-center uppercase">
+              {text}
+            </span>
+          </Tooltip>
+        ),
+      },
+      {
+        title: "Mô tả",
+        dataIndex: "description",
+        key: "description",
+        render: (text) => (
+          <div className="text-sm">{text ? text : "Không có"}</div>
+        ),
+      },
+      {
+        title: "Thời gian",
+        key: "time",
+        render: (_, record) => (
+          <div>
+            <div className="text-sm space-y-1">
+              <span className="font-bold">Bắt đầu</span>:{" "}
+              {formatDateReview(record.startDate)}
+            </div>
+            <div className="text-sm">
+              <span className="font-bold">Kết thúc</span>:{" "}
+              {formatDateReview(record.endDate)}
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: "Trạng thái",
+        dataIndex: "isActive",
+        key: "isActive",
+        render: (isActive) => (
+          <Tag className="text-sm" color={isActive ? "green" : "gold"}>
+            {isActive ? "Hoạt động" : "Đã ngừng"}
+          </Tag>
+        ),
+      },
+      {
+        title: "Thao Tác",
+        key: "action",
+        width: 120,
+        render: (_, record) => (
+          <div className="flex gap-2 items-center text-[#00246a]">
+            <Tooltip title="Chi tiết">
+              <button
+                onClick={() => navigate(`/admin/promotions/${record._id}`)}
+                className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors"
+              >
+                <FaEye />
+              </button>
+            </Tooltip>
+            <Popconfirm
+              className="max-w-40"
+              placement="topLeft"
+              title={"Xác nhận xóa khuyến mãi"}
+              description={record.name}
+              onConfirm={() => removePromotion(record._id)}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{
+                loading: isLoading,
+              }}
+              destroyTooltipOnHide={true}
+            >
+              <Tooltip title="Xóa">
+                <button className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors">
+                  <MdOutlineDeleteOutline />
+                </button>
+              </Tooltip>
+            </Popconfirm>
+          </div>
+        ),
+      },
+    ],
+    [page, pageSize]
+  );
 
-  const fetchPromotions = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      // Chỉ thêm tham số isActive nếu không phải 'all'
-      const isActiveParam = isActive !== 'all' ? `isActive=${isActive}` : '';
-      const response = await axios.get(
-        `http://localhost:9999/api/v1/admin/promotion?${isActiveParam}&page=${page}&limit=${limit}&fromDate=${fromDate}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+  const removePromotion = async (id) => {
+    const res = await dispatch(deletePromotion(id)).unwrap();
+    if (res.success) {
+      dispatch(
+        getListPromotion({
+          page,
+          pageSize,
+        })
       );
-      setPromotions(response.data.data || []);
-      setTotalPages(response.data.pagination.totalPages || 1);
-    } catch (error) {
-      console.error('Error fetching promotions:', error);
-      message.error('Không thể lấy danh sách khuyến mãi.');
+      message.success(res.message);
+      return;
     }
   };
-
-  useEffect(() => {
-    fetchPromotions();
-  }, [page, isActive, fromDate, refreshTable]);
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc muốn xóa khuyến mãi này?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:9999/api/v1/admin/promotion/deletePromotion/${id}`, {
-          headers: { Authorization: `Bearer ${token}` } }
-        );
-        message.success('Xóa khuyến mãi thành công');
-        fetchPromotions();
-      } catch (error) {
-        console.error('Error deleting promotion:', error);
-        message.error('Xóa khuyến mãi thất bại');
-      }
-    }
-  };
-
-  const handleView = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:9999/api/v1/admin/promotion/${id}`, {
-        headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSelectedPromotion(response.data);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('Error fetching promotion details:', error);
-      message.error('Không thể lấy chi tiết khuyến mãi');
-    }
-  };
-
-  const handleToggleActive = async (id, currentStatus) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:9999/api/v1/admin/promotion/updatePromotion/${id}`,
-        { isActive: !currentStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      message.success('Cập nhật trạng thái thành công');
-      fetchPromotions();
-    } catch (error) {
-      console.error('Error updating promotion status:', error);
-      message.error('Cập nhật trạng thái thất bại');
-    }
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedPromotion(null);
-  };
-
-  if (!promotions) {
-    return null;
-  }
 
   return (
-    <div className="bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Danh sách khuyến mãi</h2>
-      <div className="mb-4 flex gap-4">
-        <div>
-          <label className="block text-gray-700">Trạng thái</label>
-          <select
-            value={isActive}
-            onChange={(e) => setIsActive(e.target.value)}
-            className="p-2 border rounded"
-          >
-            <option value="all">Hiển thị tất cả</option>
-            <option value="true">Kích hoạt</option>
-            <option value="false">Không kích hoạt</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-700">Từ ngày</label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="p-2 border rounded"
+    <>
+      <Table
+        columns={columns}
+        dataSource={promotions}
+        rowKey={(record) => record._id}
+        pagination={false}
+        loading={isLoading}
+        scroll={{ x: true }}
+      />
+      {promotions.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={totalItems}
+            onChange={(newPage, newPageSize) =>
+              setPaginate((prev) => ({
+                ...prev,
+                page: newPage,
+                pageSize: newPageSize,
+              }))
+            }
+            showSizeChanger
+            pageSizeOptions={["10", "20", "50", "100"]}
           />
         </div>
-      </div>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border p-2">Tên</th>
-            <th className="border p-2">Mô tả</th>
-            <th className="border p-2">Kích hoạt</th>
-            <th className="border p-2">Ngày bắt đầu</th>
-            <th className="border p-2">Ngày kết thúc</th>
-            <th className="border p-2">Sản phẩm</th>
-            <th className="border p-2">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {promotions.map((promotion) => (
-            <tr key={promotion._id} className="hover:bg-gray-100">
-              <td className="border p-2">{promotion.name}</td>
-              <td className="border p-2">{promotion.description}</td>
-              <td className="border p-2">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={promotion.isActive}
-                    onChange={() => handleToggleActive(promotion._id, promotion.isActive)}
-                    className="sr-only peer"
-                  />
-                  <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </td>
-              <td className="border p-2">{new Date(promotion.startDate).toLocaleDateString()}</td>
-              <td className="border p-2">{new Date(promotion.endDate).toLocaleDateString()}</td>
-              <td className="border p-2">
-                {promotion.products.map((product, index) => (
-                  <div key={index}>
-                    {product.pid.name}: {product.discount}%
-                  </div>
-                ))}
-              </td>
-              <td className="border p-2 flex gap-2">
-                <button
-                  onClick={() => handleView(promotion._id)}
-                  className="text-green-500 hover:text-green-600"
-                  title="Xem chi tiết"
-                >
-                  <FaEye size={20} />
-                </button>
-                <button
-                  onClick={() => handleDelete(promotion._id)}
-                  className="text-red-500 hover:text-red-600"
-                  title="Xóa"
-                >
-                  <FaTrash size={20} />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-4 flex justify-between">
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-        >
-          Trước
-        </button>
-        <span>Trang {page} / {totalPages}</span>
-        <button
-          onClick={() => setPage((prev) => prev + 1)}
-          disabled={page === totalPages}
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-        >
-          Sau
-        </button>
-      </div>
-      <PromotionDetailModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        promotion={selectedPromotion}
-      />
-    </div>
+      )}
+    </>
   );
 };
 
-export default TablePromotion;
+export default React.memo(TablePromotion);
