@@ -20,13 +20,15 @@ import { useGetAllBrandByUserQuery } from "@/redux/brand/brand.query";
 import Loading from "../Loading/Loading";
 import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
 import NotificationDrop from "./NotificationStoreDrop";
+import LanguageSelector from "../language/LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
     const location = useLocation();
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.cart.cart);
-    
+    const { t } = useTranslation("aboutUs");
     const navigate = useNavigate();
     const [current, setCurrent] = useState("");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -240,6 +242,8 @@ const HeaderUser = () => {
                     </div>
 
                     <div className="flex items-center space-x-6">
+                        <LanguageSelector />
+
                         {isAuthenticated ? (
                             <Dropdown
                                 className="hidden md:flex"
@@ -266,7 +270,7 @@ const HeaderUser = () => {
                                 icon={<FaRegUserCircle className="text-3xl" />}
                                 className="hidden md:flex text-base font-medium"
                             >
-                                Đăng nhập
+                                {t("login")}
                             </Button>
                         )}
 
