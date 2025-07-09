@@ -24,9 +24,6 @@ import confetti from "canvas-confetti";
 const ProductDrawer = ({ open, onClose, product = null }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [selectedColor, setSelectedColor] = useState(
-        product.variants?.[0]?.color || {}
-    );
     const [quantity, setQuantity] = useState(1);
 
     const discountPercentage = product.promotion?.discountPercentage || 0;
@@ -115,7 +112,7 @@ const ProductDrawer = ({ open, onClose, product = null }) => {
         const cartItem = {
             productId: product._id,
             name: product.name,
-            image: selectedColor?.image?.url || product.mainImage.url,
+            image: product.mainImage.url,
             price: discountedPrice,
             brand: product.brand.name,
             quantity: quantity,
@@ -173,31 +170,6 @@ const ProductDrawer = ({ open, onClose, product = null }) => {
                             </>
                         )}
                     </div>
-
-                    {product.variants?.length > 0 && (
-                        <div>
-                            <h3 className="font-medium mb-2">
-                                Màu sắc: {selectedColor.name}
-                            </h3>
-                            <div className="flex gap-2">
-                                {product.variants.map((variant, index) => (
-                                    <Tooltip
-                                        key={index}
-                                        title={`${variant.color.name} - Còn ${variant.quantity} sản phẩm`}
-                                    >
-                                        <div
-                                            className={`w-8 h-8 rounded-full cursor-pointer border-2 ${selectedColor.name === variant.color.name
-                                                ? "border-blue-500"
-                                                : "border-gray-300"
-                                                }`}
-                                            style={{ backgroundColor: variant.color.code }}
-                                            onClick={() => setSelectedColor(variant.color)}
-                                        />
-                                    </Tooltip>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     <div>
                         <h3 className="font-medium mb-2">Số lượng</h3>

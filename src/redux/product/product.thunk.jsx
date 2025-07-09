@@ -55,3 +55,14 @@ export const restoreProduct = createAsyncThunk(
         }
     }
 );
+
+export const getProductSearch = createAsyncThunk(
+  "product/getProductSearch",
+  async (search, { rejectWithValue }) => {
+    try {
+      return await axios.get(`/products/search?search=${search}`);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);

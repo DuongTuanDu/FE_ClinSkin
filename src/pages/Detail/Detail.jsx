@@ -72,7 +72,7 @@ const Detail = () => {
                 price: dataProduct.promotion
                     ? dataProduct.finalPrice
                     : dataProduct.price,
-                brand: dataProduct.brandInfo.name,
+                brand: dataProduct.brand.name,
             }));
         }
     }, [dataProduct]);
