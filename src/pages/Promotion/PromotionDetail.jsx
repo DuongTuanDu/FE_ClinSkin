@@ -1,6 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Input, Slider, Breadcrumb, Empty, Pagination,Skeleton } from "antd";
+import {
+  Input,
+  Slider,
+  Breadcrumb,
+  Empty,
+  Pagination,
+  Skeleton,
+} from "antd";
 import { useGetPromotionProductBySlugQuery } from "@/redux/promotion/promotion.query";
 import PromotionCard from "./PromotionCard";
 import ProductDrawer from "@components/Product/ProductDrawer";
@@ -16,7 +23,7 @@ const PromotionDetail = () => {
 
   const [search, setSearch] = useState("");
   const [discountRange, setDiscountRange] = useState([0, 100]);
-  const [priceRange, setPriceRange] = useState([0, 10000000]); // Giá trị mặc định
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
 
   const { data, isLoading } = useGetPromotionProductBySlugQuery({
     slug,
@@ -32,12 +39,18 @@ const PromotionDetail = () => {
     return data.data;
   }, [data, slug]);
 
+  const paginatedProducts = useMemo(() => {
+    if (!promotion) return [];
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return promotion.products.slice(start, end);
+  }, [promotion, page]);
+
   const handleQuickView = (product) => {
     setSelectedProduct(product);
     setDrawerVisible(true);
   };
 
-  // Hàm format giá tiền
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -69,7 +82,6 @@ const PromotionDetail = () => {
       />
       <Banner />
       <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-
         <div className="flex items-center gap-2">
           <span>Giảm giá từ</span>
           <Slider
@@ -80,7 +92,9 @@ const PromotionDetail = () => {
             onChange={(val) => setDiscountRange(val)}
             style={{ width: 200 }}
           />
-          <span>{discountRange[0]}% - {discountRange[1]}%</span>
+          <span>
+            {discountRange[0]}% - {discountRange[1]}%
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -88,11 +102,11 @@ const PromotionDetail = () => {
           <Slider
             range
             min={0}
-            max={10000000} // Có thể điều chỉnh max dựa trên sản phẩm
+            max={10000000}
+            step={100000}
             value={priceRange}
             onChange={(val) => setPriceRange(val)}
             style={{ width: 200 }}
-            step={100000} // Bước nhảy 100,000 VNĐ
           />
           <span>
             {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
@@ -100,7 +114,9 @@ const PromotionDetail = () => {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-blue-700 text-center">{promotion.name}</h2>
+      <h2 className="text-2xl font-bold text-blue-700 text-center">
+        {promotion.name}
+      </h2>
       <p className="text-center text-gray-600 max-w-2xl mx-auto">
         {promotion.description}
       </p>
@@ -110,11 +126,11 @@ const PromotionDetail = () => {
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {promotion.products.map(({ pid: product, discount }) => (
+            {paginatedProducts.map(({ product, discountPercentage }) => (
               <PromotionCard
                 key={product._id}
                 product={product}
-                discount={discount}
+                discount={discountPercentage}
                 onQuickView={handleQuickView}
               />
             ))}
