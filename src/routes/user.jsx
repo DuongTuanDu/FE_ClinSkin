@@ -15,6 +15,7 @@ const Cart = lazy(() => import("@pages/Cart/Cart"));
 const AboutUs = lazy(() => import("@pages/About-us/index"));
 const OrderReturn = lazy(() => import("@pages/OrderReturn/OrderReturn"));
 const Brand = lazy(() => import("@pages/Brand/index"));
+const PromotionDetail = lazy(() => import("@pages/Promotion/index"));
 
 const WrapRoute = ({ element: Element }) => (
   <Suspense fallback={<Loading />}>
@@ -92,6 +93,12 @@ const routes = [
     title: "Thương hiệu",
     wrapper: WrapRoute
   },
+  {
+    path:"/promotionProduct/:slug",
+    element: PromotionDetail ,
+    title: "Khuyến mãi hot",
+    wrapper: WrapRoute
+  }
 ];
 
 const UserRoutes = routes.map(

@@ -19,6 +19,8 @@ import { useGetAllCategoryUserQuery } from "@/redux/category/category.query";
 import { useGetAllBrandByUserQuery } from "@/redux/brand/brand.query";
 import Loading from "../Loading/Loading";
 import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
+import Promotion from "@/pages/Promotion";
+import { useGetAllActivePromotionsQuery } from "@/redux/promotion/promotion.query";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -41,6 +43,11 @@ const HeaderUser = () => {
         isLoading: isLoadingBrands,
         isFetching: isFetchingBrands,
     } = useGetAllBrandByUserQuery();
+
+    const {
+        data: promotions = [],
+        isLoading: isLoadingPromotions,
+    } = useGetAllActivePromotionsQuery();
 
     const createMenuCategoryItems = (items) => {
         const menu = items.map((item) => {
@@ -113,10 +120,22 @@ const HeaderUser = () => {
                     : [],
         },
         ...createMenuCategoryItems(categories),
-        {
+      {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotions",
+            path: "/promotionProduct", // fallback
+            children:
+                Array.isArray(promotions) && promotions.length > 0
+                    ? promotions.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="text-pink-600 font-bold text-sm">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/promotionProduct/${item.slug}`, // <-- route này bạn phải tạo riêng!
+                    }))
+                    : [],
         },
         {
             key: "about-us",
