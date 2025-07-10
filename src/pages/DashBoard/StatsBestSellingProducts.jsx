@@ -14,21 +14,13 @@ import { MdTrendingUp, MdShoppingCart, MdStarRate, MdTrendingDown } from "react-
 import { FiShoppingBag } from "react-icons/fi";
 import { IoTrendingUpOutline, IoTrendingDownOutline } from "react-icons/io5";
 import dayjs from "@utils/dayjsTz";
+import axiosInstance from "@axios/axios";
 
 const { Option } = Select;
 const { Text, Title } = Typography;
 
-// Mock data for testing - Expanded with more products and growth rates
-const mockBestSellingProducts = [
-    {
-        id: 1,
-        name: "Serum Vitamin C Advanced",
-        image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
-        totalSold: 1250,
-        revenue: 12500000,
-        rating: 4.8,
-        category: "Serum",
-        growthRate: 15.5, // Tỉ lệ tăng so với tháng trước (%)
+    // Mock data for chart display - keeping as requested
+    const mockChartData = {
         monthlySales: [
             { month: "Tháng 1", sales: 95, revenue: 950000 },
             { month: "Tháng 2", sales: 108, revenue: 1080000 },
@@ -50,225 +42,7 @@ const mockBestSellingProducts = [
             { year: "2024", sales: 1250, revenue: 12500000 },
             { year: "2025", sales: 650, revenue: 6500000 }
         ]
-    },
-    {
-        id: 2,
-        name: "Kem Dưỡng Ẩm Hyaluronic Acid",
-        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100",
-        totalSold: 980,
-        revenue: 9800000,
-        rating: 4.6,
-        category: "Kem dưỡng",
-        growthRate: -5.2,
-        monthlySales: [
-            { month: "Tháng 1", sales: 75, revenue: 750000 },
-            { month: "Tháng 2", sales: 82, revenue: 820000 },
-            { month: "Tháng 3", sales: 90, revenue: 900000 },
-            { month: "Tháng 4", sales: 68, revenue: 680000 },
-            { month: "Tháng 5", sales: 95, revenue: 950000 },
-            { month: "Tháng 6", sales: 110, revenue: 1100000 },
-            { month: "Tháng 7", sales: 78, revenue: 780000 },
-            { month: "Tháng 8", sales: 85, revenue: 850000 },
-            { month: "Tháng 9", sales: 98, revenue: 980000 },
-            { month: "Tháng 10", sales: 72, revenue: 720000 },
-            { month: "Tháng 11", sales: 88, revenue: 880000 },
-            { month: "Tháng 12", sales: 139, revenue: 1390000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 780, revenue: 7800000 },
-            { year: "2022", sales: 850, revenue: 8500000 },
-            { year: "2023", sales: 920, revenue: 9200000 },
-            { year: "2024", sales: 980, revenue: 9800000 },
-            { year: "2025", sales: 520, revenue: 5200000 }
-        ]
-    },
-    {
-        id: 3,
-        name: "Sữa Rửa Mặt Gentle Cleanser",
-        image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=100",
-        totalSold: 850,
-        revenue: 6800000,
-        rating: 4.4,
-        category: "Sữa rửa mặt",
-        growthRate: 8.3,
-        monthlySales: [
-            { month: "Tháng 1", sales: 65, revenue: 520000 },
-            { month: "Tháng 2", sales: 70, revenue: 560000 },
-            { month: "Tháng 3", sales: 78, revenue: 624000 },
-            { month: "Tháng 4", sales: 58, revenue: 464000 },
-            { month: "Tháng 5", sales: 82, revenue: 656000 },
-            { month: "Tháng 6", sales: 88, revenue: 704000 },
-            { month: "Tháng 7", sales: 62, revenue: 496000 },
-            { month: "Tháng 8", sales: 75, revenue: 600000 },
-            { month: "Tháng 9", sales: 80, revenue: 640000 },
-            { month: "Tháng 10", sales: 68, revenue: 544000 },
-            { month: "Tháng 11", sales: 72, revenue: 576000 },
-            { month: "Tháng 12", sales: 102, revenue: 816000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 650, revenue: 5200000 },
-            { year: "2022", sales: 720, revenue: 5760000 },
-            { year: "2023", sales: 800, revenue: 6400000 },
-            { year: "2024", sales: 850, revenue: 6800000 },
-            { year: "2025", sales: 450, revenue: 3600000 }
-        ]
-    },
-    {
-        id: 4,
-        name: "Toner Niacinamide 10%",
-        image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100",
-        totalSold: 720,
-        revenue: 5760000,
-        rating: 4.7,
-        category: "Toner",
-        growthRate: 12.1,
-        monthlySales: [
-            { month: "Tháng 1", sales: 55, revenue: 440000 },
-            { month: "Tháng 2", sales: 62, revenue: 496000 },
-            { month: "Tháng 3", sales: 68, revenue: 544000 },
-            { month: "Tháng 4", sales: 48, revenue: 384000 },
-            { month: "Tháng 5", sales: 72, revenue: 576000 },
-            { month: "Tháng 6", sales: 78, revenue: 624000 },
-            { month: "Tháng 7", sales: 52, revenue: 416000 },
-            { month: "Tháng 8", sales: 65, revenue: 520000 },
-            { month: "Tháng 9", sales: 70, revenue: 560000 },
-            { month: "Tháng 10", sales: 58, revenue: 464000 },
-            { month: "Tháng 11", sales: 62, revenue: 496000 },
-            { month: "Tháng 12", sales: 90, revenue: 720000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 580, revenue: 4640000 },
-            { year: "2022", sales: 620, revenue: 4960000 },
-            { year: "2023", sales: 680, revenue: 5440000 },
-            { year: "2024", sales: 720, revenue: 5760000 },
-            { year: "2025", sales: 380, revenue: 3040000 }
-        ]
-    },
-    {
-        id: 5,
-        name: "Kem Chống Nắng SPF 50+",
-        image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=100",
-        totalSold: 650,
-        revenue: 9750000,
-        rating: 4.5,
-        category: "Kem chống nắng",
-        growthRate: -3.7,
-        monthlySales: [
-            { month: "Tháng 1", sales: 35, revenue: 525000 },
-            { month: "Tháng 2", sales: 40, revenue: 600000 },
-            { month: "Tháng 3", sales: 48, revenue: 720000 },
-            { month: "Tháng 4", sales: 65, revenue: 975000 },
-            { month: "Tháng 5", sales: 88, revenue: 1320000 },
-            { month: "Tháng 6", sales: 95, revenue: 1425000 },
-            { month: "Tháng 7", sales: 102, revenue: 1530000 },
-            { month: "Tháng 8", sales: 85, revenue: 1275000 },
-            { month: "Tháng 9", sales: 62, revenue: 930000 },
-            { month: "Tháng 10", sales: 45, revenue: 675000 },
-            { month: "Tháng 11", sales: 38, revenue: 570000 },
-            { month: "Tháng 12", sales: 47, revenue: 705000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 550, revenue: 8250000 },
-            { year: "2022", sales: 600, revenue: 9000000 },
-            { year: "2023", sales: 620, revenue: 9300000 },
-            { year: "2024", sales: 650, revenue: 9750000 },
-            { year: "2025", sales: 340, revenue: 5100000 }
-        ]
-    },
-    {
-        id: 6,
-        name: "Essence Retinol Night Care",
-        image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
-        totalSold: 590,
-        revenue: 8850000,
-        rating: 4.3,
-        category: "Essence",
-        growthRate: 6.8,
-        monthlySales: [
-            { month: "Tháng 1", sales: 45, revenue: 675000 },
-            { month: "Tháng 2", sales: 52, revenue: 780000 },
-            { month: "Tháng 3", sales: 58, revenue: 870000 },
-            { month: "Tháng 4", sales: 42, revenue: 630000 },
-            { month: "Tháng 5", sales: 68, revenue: 1020000 },
-            { month: "Tháng 6", sales: 75, revenue: 1125000 },
-            { month: "Tháng 7", sales: 48, revenue: 720000 },
-            { month: "Tháng 8", sales: 62, revenue: 930000 },
-            { month: "Tháng 9", sales: 55, revenue: 825000 },
-            { month: "Tháng 10", sales: 38, revenue: 570000 },
-            { month: "Tháng 11", sales: 52, revenue: 780000 },
-            { month: "Tháng 12", sales: 65, revenue: 975000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 480, revenue: 7200000 },
-            { year: "2022", sales: 520, revenue: 7800000 },
-            { year: "2023", sales: 560, revenue: 8400000 },
-            { year: "2024", sales: 590, revenue: 8850000 },
-            { year: "2025", sales: 310, revenue: 4650000 }
-        ]
-    },
-    {
-        id: 7,
-        name: "Mặt Nạ Collagen Intensive",
-        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100",
-        totalSold: 480,
-        revenue: 7200000,
-        rating: 4.1,
-        category: "Mặt nạ",
-        growthRate: -8.4,
-        monthlySales: [
-            { month: "Tháng 1", sales: 35, revenue: 525000 },
-            { month: "Tháng 2", sales: 42, revenue: 630000 },
-            { month: "Tháng 3", sales: 48, revenue: 720000 },
-            { month: "Tháng 4", sales: 32, revenue: 480000 },
-            { month: "Tháng 5", sales: 55, revenue: 825000 },
-            { month: "Tháng 6", sales: 62, revenue: 930000 },
-            { month: "Tháng 7", sales: 38, revenue: 570000 },
-            { month: "Tháng 8", sales: 45, revenue: 675000 },
-            { month: "Tháng 9", sales: 42, revenue: 630000 },
-            { month: "Tháng 10", sales: 28, revenue: 420000 },
-            { month: "Tháng 11", sales: 35, revenue: 525000 },
-            { month: "Tháng 12", sales: 52, revenue: 780000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 380, revenue: 5700000 },
-            { year: "2022", sales: 420, revenue: 6300000 },
-            { year: "2023", sales: 450, revenue: 6750000 },
-            { year: "2024", sales: 480, revenue: 7200000 },
-            { year: "2025", sales: 250, revenue: 3750000 }
-        ]
-    },
-    {
-        id: 8,
-        name: "Oil Cleanser Deep Clean",
-        image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=100",
-        totalSold: 420,
-        revenue: 5040000,
-        rating: 4.2,
-        category: "Oil cleanser",
-        growthRate: 4.2,
-        monthlySales: [
-            { month: "Tháng 1", sales: 28, revenue: 336000 },
-            { month: "Tháng 2", sales: 35, revenue: 420000 },
-            { month: "Tháng 3", sales: 42, revenue: 504000 },
-            { month: "Tháng 4", sales: 25, revenue: 300000 },
-            { month: "Tháng 5", sales: 48, revenue: 576000 },
-            { month: "Tháng 6", sales: 55, revenue: 660000 },
-            { month: "Tháng 7", sales: 32, revenue: 384000 },
-            { month: "Tháng 8", sales: 38, revenue: 456000 },
-            { month: "Tháng 9", sales: 35, revenue: 420000 },
-            { month: "Tháng 10", sales: 22, revenue: 264000 },
-            { month: "Tháng 11", sales: 28, revenue: 336000 },
-            { month: "Tháng 12", sales: 42, revenue: 504000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 320, revenue: 3840000 },
-            { year: "2022", sales: 360, revenue: 4320000 },
-            { year: "2023", sales: 390, revenue: 4680000 },
-            { year: "2024", sales: 420, revenue: 5040000 },
-            { year: "2025", sales: 220, revenue: 2640000 }
-        ]
-    }
-];
+    };
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -309,56 +83,93 @@ const StatsBestSellingProducts = () => {
     });
 
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [products, setProducts] = useState([]);
     const [displayedProducts, setDisplayedProducts] = useState([]);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const pageSize = 3;
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNextPage: false,
+        hasPrevPage: false
+    });
+    const [summary, setSummary] = useState(null);
 
-    // Simulate API call
-    useEffect(() => {
-        setIsLoading(true);
-        // Reset pagination when query changes
-        setPage(1);
-        setDisplayedProducts([]);
-        
-        // Simulate API delay
-        setTimeout(() => {
-            // Filter products based on query (simulation)
-            let filteredProducts = [...mockBestSellingProducts];
-            
-            // Sort by totalSold descending
-            filteredProducts.sort((a, b) => b.totalSold - a.totalSold);
-            
-            setProducts(filteredProducts);
-            
-            // Load first page
-            const firstPageProducts = filteredProducts.slice(0, pageSize);
-            setDisplayedProducts(firstPageProducts);
-            setHasMore(filteredProducts.length > pageSize);
-            
-            // Select first product by default
-            if (firstPageProducts.length > 0) {
-                setSelectedProduct(firstPageProducts[0]);
+    // API call function
+    const fetchBestSellingProducts = async (year, month, page = 1, isLoadMore = false) => {
+        try {
+            if (isLoadMore) {
+                setLoadingMore(true);
+            } else {
+                setIsLoading(true);
+                setDisplayedProducts([]); // Reset khi thay đổi query
             }
             
-            setIsLoading(false);
-        }, 500);
-    }, [query]);
+            const response = await axiosInstance.get(`/admin/dashboard/best-selling-products/${year}/${month}?page=${page}&limit=10`);
+            
+            if (response.success) {
+                // Transform API data to component format
+                const transformedProducts = response.data.map((item, index) => ({
+                    id: item.productId,
+                    name: item.productInfo.name,
+                    image: item.productInfo.mainImage?.url || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
+                    totalSold: item.currentMonth.totalQuantity,
+                    revenue: item.currentMonth.totalRevenue,
+                    rating: item.productInfo.ratingCount > 0 
+                        ? (item.productInfo.totalRating / item.productInfo.ratingCount).toFixed(1)
+                        : 0,
+                    ratingCount: item.productInfo.ratingCount || 0,
+                    category: item.productInfo.brand || "Chưa phân loại",
+                    growthRate: item.comparison.quantityChangePercent || 0,
+                    brand: item.productInfo.brand,
+                    slug: item.productInfo.slug,
+                    price: item.productInfo.price,
+                    grossProfit: item.currentMonth.grossProfit,
+                    totalOrders: item.currentMonth.totalOrders,
+                    // Add mock chart data for now
+                    monthlySales: mockChartData.monthlySales,
+                    yearlySales: mockChartData.yearlySales
+                }));
 
-    // Load more products for infinite scroll
+                if (isLoadMore) {
+                    // Thêm vào danh sách hiện có
+                    setDisplayedProducts(prev => [...prev, ...transformedProducts]);
+                } else {
+                    // Thay thế danh sách mới
+                    setDisplayedProducts(transformedProducts);
+                    // Select first product by default khi load trang đầu
+                    if (transformedProducts.length > 0) {
+                        setSelectedProduct(transformedProducts[0]);
+                    }
+                }
+                
+                setProducts(prev => isLoadMore ? [...prev, ...transformedProducts] : transformedProducts);
+                setPagination(response.pagination);
+                setSummary(response.summary);
+            }
+        } catch (error) {
+            console.error("Error fetching best selling products:", error);
+            if (!isLoadMore) {
+                // Fallback to empty state chỉ khi không phải load more
+                setProducts([]);
+                setDisplayedProducts([]);
+                setSelectedProduct(null);
+            }
+        } finally {
+            setIsLoading(false);
+            setLoadingMore(false);
+        }
+    };
+
+    // Load more function cho infinite scroll
     const loadMore = useCallback(() => {
-        if (isLoading || !hasMore) return;
+        if (loadingMore || !pagination.hasNextPage) return;
         
-        const startIndex = page * pageSize;
-        const endIndex = startIndex + pageSize;
-        const newProducts = products.slice(startIndex, endIndex);
-        
-        setDisplayedProducts(prev => [...prev, ...newProducts]);
-        setPage(prev => prev + 1);
-        setHasMore(endIndex < products.length);
-    }, [page, products, isLoading, hasMore]);
+        const nextPage = pagination.currentPage + 1;
+        fetchBestSellingProducts(query.year, query.month, nextPage, true);
+    }, [query.year, query.month, pagination.currentPage, pagination.hasNextPage, loadingMore]);
 
     // Handle infinite scroll
     const handleScroll = useCallback((e) => {
@@ -367,6 +178,12 @@ const StatsBestSellingProducts = () => {
             loadMore();
         }
     }, [loadMore]);
+
+    // Reset pagination và load trang đầu khi query thay đổi
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
+        fetchBestSellingProducts(query.year, query.month, 1, false);
+    }, [query.year, query.month]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -501,6 +318,11 @@ const StatsBestSellingProducts = () => {
                                 <div className="flex items-center gap-2">
                                     <MdShoppingCart className="text-green-600" />
                                     <span>Top sản phẩm bán chạy</span>
+                                    {summary && (
+                                        <span className="text-sm text-gray-500">
+                                            ({summary.totalProducts} sản phẩm)
+                                        </span>
+                                    )}
                                 </div>
                             }
                             className="h-full"
@@ -563,10 +385,33 @@ const StatsBestSellingProducts = () => {
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
+                                                            <span className="text-gray-600">Lợi nhuận:</span>
+                                                            <span className="font-medium text-purple-600">
+                                                                {formatPrice(product.grossProfit)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-gray-600">Đơn hàng:</span>
+                                                            <span className="font-medium text-orange-600">
+                                                                {product.totalOrders} đơn
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
                                                             <span className="text-gray-600">Đánh giá:</span>
                                                             <div className="flex items-center gap-1">
-                                                                <MdStarRate className="text-yellow-500" />
-                                                                <span className="font-medium">{product.rating}</span>
+                                                                {product.rating > 0 ? (
+                                                                    <>
+                                                                        <MdStarRate className="text-yellow-500" />
+                                                                        <span className="font-medium">{product.rating}</span>
+                                                                        <span className="text-xs text-gray-500">
+                                                                            ({product.ratingCount})
+                                                                        </span>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-gray-400 text-sm">
+                                                                        Chưa có đánh giá
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -575,7 +420,7 @@ const StatsBestSellingProducts = () => {
                                         </List.Item>
                                     )}
                                 />
-                                {hasMore && (
+                                {loadingMore && (
                                     <div className="text-center py-4">
                                         <Spin size="small" />
                                         <div className="text-gray-500 text-sm mt-2">Đang tải thêm...</div>
@@ -592,7 +437,7 @@ const StatsBestSellingProducts = () => {
                                 selectedProduct ? (
                                     <div>
                                         <Text type="secondary" className="text-sm">
-                                            {selectedProduct.name} - {query.type === "month" ? `Năm ${query.year}` : "5 năm gần nhất"}
+                                            {selectedProduct.name} - {query.type === "month" ? `Tháng ${query.month}/${query.year}` : "5 năm gần nhất"}
                                         </Text>
                                     </div>
                                 ) : "Chọn sản phẩm để xem biểu đồ"
