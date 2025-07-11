@@ -123,7 +123,7 @@ const HeaderUser = () => {
                     : [],
         },
         ...createMenuCategoryItems(categories),
-      {
+        {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
             path: "/promotionProduct", // fallback
@@ -137,6 +137,23 @@ const HeaderUser = () => {
                             </div>
                         ),
                         path: `/promotionProduct/${item.slug}`, // <-- route này bạn phải tạo riêng!
+                    }))
+                    : [],
+        },
+        {
+            key: "categories",
+            label: "Danh mục",
+            path: "/category",
+            children:
+                Array.isArray(categories) && categories.length > 0
+                    ? categories.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="mt-2.5 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500 font-extrabold text-sm text-center uppercase">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/categories/${item.slug}`,
                     }))
                     : [],
         },
@@ -296,7 +313,7 @@ const HeaderUser = () => {
                         {isAuthenticated && <NotificationDrop />}
 
                         <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 text-gray-700 relative`}>
-                            <FaShoppingCart className="text-xl cursor-pointer"/>
+                            <FaShoppingCart className="text-xl cursor-pointer" />
                             <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                                 {products.length}
                             </span>
