@@ -29,6 +29,7 @@ export const store = configureStore({
     [shipApi.reducerPath]: shipApi.reducer,
     [promotionApi.reducerPath]: promotionApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
+    [categoryApi.reducerPath]: categoryApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

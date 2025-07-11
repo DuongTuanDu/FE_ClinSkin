@@ -19,6 +19,7 @@ const AboutUs = lazy(() => import("@pages/About-us/index"));
 const OrderReturn = lazy(() => import("@pages/OrderReturn/OrderReturn"));
 const Brand = lazy(() => import("@pages/Brand/index"));
 const PromotionDetail = lazy(() => import("@pages/Promotion/index"));
+const Category = lazy(() => import("@pages/Category/index"));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
@@ -128,7 +129,13 @@ const routes = [
     element: PromotionDetail ,
     title: "Khuyến mãi hot",
     wrapper: WrapRoute
-  }
+  },
+    {
+    path: "/categories/:slug",
+    element: Category,
+    title: "Loại sản phẩm",
+    wrapper: WrapRoute
+  },
 ];
 
 const UserRoutes = routes.map(
