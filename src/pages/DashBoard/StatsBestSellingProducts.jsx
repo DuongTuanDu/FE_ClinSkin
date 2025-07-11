@@ -107,31 +107,41 @@ const StatsBestSellingProducts = () => {
                 setDisplayedProducts([]); // Reset khi thay đổi query
             }
             
-            const response = await axiosInstance.get(`/admin/dashboard/best-selling-products/${year}/${month}?page=${page}&limit=10`);
+            // Build API URL based on query type
+            const apiUrl = query.type === "month" 
+                ? `/admin/dashboard/best-selling-products/${year}/${month}?page=${page}&limit=10`
+                : `/admin/dashboard/best-selling-products/${year}?page=${page}&limit=10`;
+            
+            const response = await axiosInstance.get(apiUrl);
             
             if (response.success) {
                 // Transform API data to component format
-                const transformedProducts = response.data.map((item, index) => ({
-                    id: item.productId,
-                    name: item.productInfo.name,
-                    image: item.productInfo.mainImage?.url || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
-                    totalSold: item.currentMonth.totalQuantity,
-                    revenue: item.currentMonth.totalRevenue,
-                    rating: item.productInfo.ratingCount > 0 
-                        ? (item.productInfo.totalRating / item.productInfo.ratingCount).toFixed(1)
-                        : 0,
-                    ratingCount: item.productInfo.ratingCount || 0,
-                    category: item.productInfo.brand || "Chưa phân loại",
-                    growthRate: item.comparison.quantityChangePercent || 0,
-                    brand: item.productInfo.brand,
-                    slug: item.productInfo.slug,
-                    price: item.productInfo.price,
-                    grossProfit: item.currentMonth.grossProfit,
-                    totalOrders: item.currentMonth.totalOrders,
-                    // Add mock chart data for now
-                    monthlySales: mockChartData.monthlySales,
-                    yearlySales: mockChartData.yearlySales
-                }));
+                const transformedProducts = response.data.map((item, index) => {
+                    // Get data based on query type (month or year)
+                    const currentData = query.type === "month" ? item.currentMonth : item.currentYear;
+                    
+                    return {
+                        id: item.productId,
+                        name: item.productInfo.name,
+                        image: item.productInfo.mainImage?.url || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
+                        totalSold: currentData.totalQuantity,
+                        revenue: currentData.totalRevenue,
+                        rating: item.productInfo.ratingCount > 0 
+                            ? (item.productInfo.totalRating / item.productInfo.ratingCount).toFixed(1)
+                            : 0,
+                        ratingCount: item.productInfo.ratingCount || 0,
+                        category: item.productInfo.brand || "Chưa phân loại",
+                        growthRate: item.comparison.quantityChangePercent || 0,
+                        brand: item.productInfo.brand,
+                        slug: item.productInfo.slug,
+                        price: item.productInfo.price,
+                        grossProfit: currentData.grossProfit,
+                        totalOrders: currentData.totalOrders,
+                        // Add mock chart data for now
+                        monthlySales: mockChartData.monthlySales,
+                        yearlySales: mockChartData.yearlySales
+                    };
+                });
 
                 if (isLoadMore) {
                     // Thêm vào danh sách hiện có
@@ -169,7 +179,7 @@ const StatsBestSellingProducts = () => {
         
         const nextPage = pagination.currentPage + 1;
         fetchBestSellingProducts(query.year, query.month, nextPage, true);
-    }, [query.year, query.month, pagination.currentPage, pagination.hasNextPage, loadingMore]);
+    }, [query.year, query.month, query.type, pagination.currentPage, pagination.hasNextPage, loadingMore]);
 
     // Handle infinite scroll
     const handleScroll = useCallback((e) => {
@@ -183,7 +193,7 @@ const StatsBestSellingProducts = () => {
     useEffect(() => {
         setPagination(prev => ({ ...prev, currentPage: 1 }));
         fetchBestSellingProducts(query.year, query.month, 1, false);
-    }, [query.year, query.month]);
+    }, [query.year, query.month, query.type]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -300,6 +310,23 @@ const StatsBestSellingProducts = () => {
                                     ))}
                                 </Select>
                             </>
+                        )}
+
+                        {query.type === "year" && (
+                            <Select
+                                value={query.year}
+                                onChange={(value) =>
+                                    setQuery((prev) => ({ ...prev, year: value }))
+                                }
+                                className="w-32"
+                                suffixIcon={<MdTrendingUp />}
+                            >
+                                {[...Array(5)].map((_, i) => (
+                                    <Option key={i} value={dayjs().year() - i}>
+                                        Năm {dayjs().year() - i}
+                                    </Option>
+                                ))}
+                            </Select>
                         )}
                     </div>
                 </div>
