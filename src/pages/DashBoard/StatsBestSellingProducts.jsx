@@ -77,26 +77,49 @@ const StatsBestSellingProducts = () => {
     const [summary, setSummary] = useState(null);
 
     // API call function for chart data
-    const fetchProductChartData = async (productId, year) => {
+    const fetchProductChartData = async (productId, year, type = "month") => {
         try {
             setLoadingChart(true);
-            const response = await axiosInstance.get(`/admin/dashboard/product-chart/${productId}/${year}`);
+            
+            const apiUrl = type === "year" 
+                ? `/admin/dashboard/product-chart/${productId}/five-years`
+                : `/admin/dashboard/product-chart/${productId}/${year}`;
+            
+            const response = await axiosInstance.get(apiUrl);
             
             if (response.success) {
-                // Transform monthly data to chart format
-                const monthlyChartData = response.data.monthlyData.map(item => ({
-                    month: `Tháng ${item.month}`,
-                    sales: item.totalQuantity,
-                    revenue: item.totalRevenue,
-                    grossProfit: item.grossProfit,
-                    totalOrders: item.totalOrders
-                }));
-                
-                setChartData({
-                    monthly: monthlyChartData,
-                    productInfo: response.data.productInfo,
-                    yearSummary: response.data.yearSummary
-                });
+                if (type === "year") {
+                    // Transform yearly data to chart format
+                    const yearlyChartData = response.data.yearlyData.map(item => ({
+                        month: `Năm ${item.year}`,
+                        sales: item.totalQuantity,
+                        revenue: item.totalRevenue,
+                        grossProfit: item.grossProfit,
+                        totalOrders: item.totalOrders
+                    }));
+                    
+                    setChartData({
+                        monthly: yearlyChartData,
+                        productInfo: response.data.productInfo,
+                        yearSummary: response.data.fiveYearSummary,
+                        yearRange: response.data.yearRange
+                    });
+                } else {
+                    // Transform monthly data to chart format
+                    const monthlyChartData = response.data.monthlyData.map(item => ({
+                        month: `Tháng ${item.month}`,
+                        sales: item.totalQuantity,
+                        revenue: item.totalRevenue,
+                        grossProfit: item.grossProfit,
+                        totalOrders: item.totalOrders
+                    }));
+                    
+                    setChartData({
+                        monthly: monthlyChartData,
+                        productInfo: response.data.productInfo,
+                        yearSummary: response.data.yearSummary
+                    });
+                }
             }
         } catch (error) {
             console.error("Error fetching product chart data:", error);
@@ -204,9 +227,9 @@ const StatsBestSellingProducts = () => {
     // Fetch chart data when selected product and year changes
     useEffect(() => {
         if (selectedProduct) {
-            fetchProductChartData(selectedProduct.id, query.year);
+            fetchProductChartData(selectedProduct.id, query.year, query.type);
         }
-    }, [selectedProduct?.id, query.year]);
+    }, [selectedProduct?.id, query.year, query.type]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -218,7 +241,7 @@ const StatsBestSellingProducts = () => {
     const handleProductSelect = (product) => {
         setSelectedProduct(product);
         // Fetch chart data for selected product
-        fetchProductChartData(product.id, query.year);
+        fetchProductChartData(product.id, query.year, query.type);
     };
 
     const getCategoryColor = (category) => {
@@ -479,7 +502,7 @@ const StatsBestSellingProducts = () => {
                                 selectedProduct ? (
                                     <div>
                                         <Text type="secondary" className="text-sm">
-                                            {selectedProduct.name} - {query.type === "month" ? `Năm ${query.year}` : "5 năm gần nhất"}
+                                            {selectedProduct.name} - {query.type === "month" ? `Năm ${query.year}` : (chartData?.yearRange || "5 năm gần nhất")}
                                         </Text>
                                     </div>
                                 ) : "Chọn sản phẩm để xem biểu đồ"
@@ -497,7 +520,10 @@ const StatsBestSellingProducts = () => {
                                             <div className="flex items-center gap-2">
                                                 <MdTrendingUp className="text-blue-600 text-xl" />
                                                 <span className="font-medium">
-                                                    Biểu đồ bán hàng theo tháng năm {query.year}
+                                                    {query.type === "month" 
+                                                        ? `Biểu đồ bán hàng theo tháng năm ${query.year}`
+                                                        : `Biểu đồ bán hàng theo năm (${chartData.yearRange || "5 năm gần nhất"})`
+                                                    }
                                                 </span>
                                             </div>
                                             <div className="mt-2 text-sm text-gray-600">
@@ -518,7 +544,11 @@ const StatsBestSellingProducts = () => {
                                                     />
                                                     <YAxis 
                                                         yAxisId="left" 
-                                                        label={{ value: 'Số lượng bán', angle: -90, position: 'insideLeft' }}
+                                                        label={{ 
+                                                            value: query.type === "month" ? 'Số lượng bán' : 'Số lượng bán', 
+                                                            angle: -90, 
+                                                            position: 'insideLeft' 
+                                                        }}
                                                     />
                                                     <YAxis 
                                                         yAxisId="right" 
