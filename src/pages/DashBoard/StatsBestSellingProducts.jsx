@@ -19,31 +19,6 @@ import axiosInstance from "@axios/axios";
 const { Option } = Select;
 const { Text, Title } = Typography;
 
-    // Mock data for chart display - keeping as requested
-    const mockChartData = {
-        monthlySales: [
-            { month: "Tháng 1", sales: 95, revenue: 950000 },
-            { month: "Tháng 2", sales: 108, revenue: 1080000 },
-            { month: "Tháng 3", sales: 120, revenue: 1200000 },
-            { month: "Tháng 4", sales: 85, revenue: 850000 },
-            { month: "Tháng 5", sales: 140, revenue: 1400000 },
-            { month: "Tháng 6", sales: 155, revenue: 1550000 },
-            { month: "Tháng 7", sales: 98, revenue: 980000 },
-            { month: "Tháng 8", sales: 132, revenue: 1320000 },
-            { month: "Tháng 9", sales: 145, revenue: 1450000 },
-            { month: "Tháng 10", sales: 88, revenue: 880000 },
-            { month: "Tháng 11", sales: 102, revenue: 1020000 },
-            { month: "Tháng 12", sales: 182, revenue: 1820000 }
-        ],
-        yearlySales: [
-            { year: "2021", sales: 890, revenue: 8900000 },
-            { year: "2022", sales: 1050, revenue: 10500000 },
-            { year: "2023", sales: 1180, revenue: 11800000 },
-            { year: "2024", sales: 1250, revenue: 12500000 },
-            { year: "2025", sales: 650, revenue: 6500000 }
-        ]
-    };
-
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
@@ -59,12 +34,14 @@ const CustomTooltip = ({ active, payload, label }) => {
                     >
                         <span className="text-gray-600">{entry.name}:</span>
                         <span className="font-medium">
-                            {entry.dataKey === "revenue" 
+                            {entry.dataKey === "revenue" || entry.dataKey === "grossProfit"
                                 ? new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
                                 }).format(entry.value)
-                                : `${entry.value} sản phẩm`
+                                : entry.dataKey === "sales"
+                                ? `${entry.value} sản phẩm`
+                                : `${entry.value} đơn`
                             }
                         </span>
                     </div>
@@ -87,6 +64,8 @@ const StatsBestSellingProducts = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [products, setProducts] = useState([]);
     const [displayedProducts, setDisplayedProducts] = useState([]);
+    const [chartData, setChartData] = useState(null);
+    const [loadingChart, setLoadingChart] = useState(false);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -96,6 +75,36 @@ const StatsBestSellingProducts = () => {
         hasPrevPage: false
     });
     const [summary, setSummary] = useState(null);
+
+    // API call function for chart data
+    const fetchProductChartData = async (productId, year) => {
+        try {
+            setLoadingChart(true);
+            const response = await axiosInstance.get(`/admin/dashboard/product-chart/${productId}/${year}`);
+            
+            if (response.success) {
+                // Transform monthly data to chart format
+                const monthlyChartData = response.data.monthlyData.map(item => ({
+                    month: `Tháng ${item.month}`,
+                    sales: item.totalQuantity,
+                    revenue: item.totalRevenue,
+                    grossProfit: item.grossProfit,
+                    totalOrders: item.totalOrders
+                }));
+                
+                setChartData({
+                    monthly: monthlyChartData,
+                    productInfo: response.data.productInfo,
+                    yearSummary: response.data.yearSummary
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching product chart data:", error);
+            setChartData(null);
+        } finally {
+            setLoadingChart(false);
+        }
+    };
 
     // API call function
     const fetchBestSellingProducts = async (year, month, page = 1, isLoadMore = false) => {
@@ -136,10 +145,7 @@ const StatsBestSellingProducts = () => {
                         slug: item.productInfo.slug,
                         price: item.productInfo.price,
                         grossProfit: currentData.grossProfit,
-                        totalOrders: currentData.totalOrders,
-                        // Add mock chart data for now
-                        monthlySales: mockChartData.monthlySales,
-                        yearlySales: mockChartData.yearlySales
+                        totalOrders: currentData.totalOrders
                     };
                 });
 
@@ -195,6 +201,13 @@ const StatsBestSellingProducts = () => {
         fetchBestSellingProducts(query.year, query.month, 1, false);
     }, [query.year, query.month, query.type]);
 
+    // Fetch chart data when selected product and year changes
+    useEffect(() => {
+        if (selectedProduct) {
+            fetchProductChartData(selectedProduct.id, query.year);
+        }
+    }, [selectedProduct?.id, query.year]);
+
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -204,6 +217,8 @@ const StatsBestSellingProducts = () => {
 
     const handleProductSelect = (product) => {
         setSelectedProduct(product);
+        // Fetch chart data for selected product
+        fetchProductChartData(product.id, query.year);
     };
 
     const getCategoryColor = (category) => {
@@ -464,7 +479,7 @@ const StatsBestSellingProducts = () => {
                                 selectedProduct ? (
                                     <div>
                                         <Text type="secondary" className="text-sm">
-                                            {selectedProduct.name} - {query.type === "month" ? `Tháng ${query.month}/${query.year}` : "5 năm gần nhất"}
+                                            {selectedProduct.name} - {query.type === "month" ? `Năm ${query.year}` : "5 năm gần nhất"}
                                         </Text>
                                     </div>
                                 ) : "Chọn sản phẩm để xem biểu đồ"
@@ -472,74 +487,88 @@ const StatsBestSellingProducts = () => {
                             className="h-full"
                         >
                             {selectedProduct ? (
-                                <>
-                                    <div className="mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <MdTrendingUp className="text-blue-600 text-xl" />
-                                            <span className="font-medium">
-                                                Biểu đồ bán hàng {query.type === "month" ? "theo tháng" : "theo năm"}
-                                            </span>
+                                loadingChart ? (
+                                    <div className="flex justify-center items-center h-96">
+                                        <Spin size="large" />
+                                    </div>
+                                ) : chartData ? (
+                                    <>
+                                        <div className="mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <MdTrendingUp className="text-blue-600 text-xl" />
+                                                <span className="font-medium">
+                                                    Biểu đồ bán hàng theo tháng năm {query.year}
+                                                </span>
+                                            </div>
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                Tổng bán: {chartData.yearSummary.totalQuantity.toLocaleString()} sản phẩm | 
+                                                Doanh thu: {formatPrice(chartData.yearSummary.totalRevenue)} | 
+                                                Lợi nhuận: {formatPrice(chartData.yearSummary.grossProfit)} | 
+                                                Đơn hàng: {chartData.yearSummary.totalOrders} đơn
+                                            </div>
                                         </div>
-                                        <div className="mt-2 text-sm text-gray-600">
-                                            {query.type === "month" ? (
-                                                <>
-                                                    Tổng bán: {selectedProduct.monthlySales.reduce((sum, item) => sum + item.sales, 0).toLocaleString()} sản phẩm | 
-                                                    Doanh thu: {formatPrice(selectedProduct.monthlySales.reduce((sum, item) => sum + item.revenue, 0))}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Tổng bán: {selectedProduct.yearlySales.reduce((sum, item) => sum + item.sales, 0).toLocaleString()} sản phẩm | 
-                                                    Doanh thu: {formatPrice(selectedProduct.yearlySales.reduce((sum, item) => sum + item.revenue, 0))}
-                                                </>
-                                            )}
+                                        <div className="h-96">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={chartData.monthly}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis
+                                                        dataKey="month"
+                                                        height={60}
+                                                        tick={<CustomizedAxisTick />}
+                                                    />
+                                                    <YAxis 
+                                                        yAxisId="left" 
+                                                        label={{ value: 'Số lượng bán', angle: -90, position: 'insideLeft' }}
+                                                    />
+                                                    <YAxis 
+                                                        yAxisId="right" 
+                                                        orientation="right"
+                                                        label={{ 
+                                                            value: 'Doanh thu (VND)', 
+                                                            angle: 90, 
+                                                            position: 'insideRight',
+                                                            offset: 10,
+                                                            textAnchor: 'middle'
+                                                        }}
+                                                    />
+                                                    <Tooltip content={<CustomTooltip />} />
+                                                    <Legend />
+                                                    <Line
+                                                        yAxisId="left"
+                                                        type="linear"
+                                                        dataKey="sales"
+                                                        name="Số lượng bán"
+                                                        stroke="#1677ff"
+                                                        strokeWidth={2}
+                                                    />
+                                                    <Line
+                                                        yAxisId="right"
+                                                        type="linear"
+                                                        dataKey="revenue"
+                                                        name="Doanh thu"
+                                                        stroke="#52c41a"
+                                                        strokeWidth={2}
+                                                    />
+                                                    <Line
+                                                        yAxisId="right"
+                                                        type="linear"
+                                                        dataKey="grossProfit"
+                                                        name="Lợi nhuận"
+                                                        stroke="#722ed1"
+                                                        strokeWidth={2}
+                                                    />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex items-center justify-center h-96 text-gray-500">
+                                        <div className="text-center">
+                                            <MdTrendingDown className="text-6xl mb-4 mx-auto opacity-50" />
+                                            <p>Không có dữ liệu biểu đồ cho sản phẩm này</p>
                                         </div>
                                     </div>
-                                    <div className="h-96">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={query.type === "month" ? selectedProduct.monthlySales : selectedProduct.yearlySales}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis
-                                                    dataKey={query.type === "month" ? "month" : "year"}
-                                                    height={60}
-                                                    tick={<CustomizedAxisTick />}
-                                                />
-                                                <YAxis 
-                                                    yAxisId="left" 
-                                                    label={{ value: 'Số lượng bán', angle: -90, position: 'insideLeft' }}
-                                                />
-                                                <YAxis 
-                                                    yAxisId="right" 
-                                                    orientation="right"
-                                                    label={{ 
-                                                        value: 'Doanh thu (VND)', 
-                                                        angle: 90, 
-                                                        position: 'insideRight',
-                                                        offset: 10,
-                                                        textAnchor: 'middle'
-                                                    }}
-                                                />
-                                                <Tooltip content={<CustomTooltip />} />
-                                                <Legend />
-                                                <Line
-                                                    yAxisId="left"
-                                                    type="linear"
-                                                    dataKey="sales"
-                                                    name="Số lượng bán"
-                                                    stroke="#1677ff"
-                                                    strokeWidth={2}
-                                                />
-                                                <Line
-                                                    yAxisId="right"
-                                                    type="linear"
-                                                    dataKey="revenue"
-                                                    name="Doanh thu"
-                                                    stroke="#52c41a"
-                                                    strokeWidth={2}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </>
+                                )
                             ) : (
                                 <div className="flex items-center justify-center h-96 text-gray-500">
                                     <div className="text-center">
