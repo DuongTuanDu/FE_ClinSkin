@@ -10,6 +10,7 @@ import { inventoryBatchApi } from "./inventory/inventoryBatch.query";
 import { productSearchApi } from "./product/productSearch.query";
 import { userApi } from "./user/user.query";
 import { shipApi } from "./ship/ship.query";
+import { promotionApi } from "./promotion/promotion.query";
 import { notificationApi } from "./notification/notification.query";
 import { addressApi } from "./address/address.query"
 
@@ -27,8 +28,10 @@ export const store = configureStore({
     [productSearchApi.reducerPath]: productSearchApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [shipApi.reducerPath]: shipApi.reducer,
+    [promotionApi.reducerPath]: promotionApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
-    [addressApi.reducerPath]: addressApi.reducer
+    [addressApi.reducerPath]: addressApi.reducer,
+    [categoryApi.reducerPath]: categoryApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -44,7 +47,8 @@ export const store = configureStore({
       userApi.middleware,
       shipApi.middleware,
       notificationApi.middleware,
-      addressApi.middleware
+      addressApi.middleware,
+      promotionApi.middleware
     )
 
 });

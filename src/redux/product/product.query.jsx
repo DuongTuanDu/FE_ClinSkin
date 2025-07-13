@@ -151,6 +151,33 @@ export const productApi = createApi({
                 method: "GET",
             }),
         }),
+
+        getProductFromCategory: builder.query({
+            query: ({
+                page = 1,
+                pageSize = 12,
+                priceRange = "",
+                categories = [],
+                tags = [],
+                sortOrder = "",
+                slug,
+            }) => {
+                const queryString = new URLSearchParams({
+                    priceRange,
+                    categories: categories.join(","), 
+                    tags: tags.join(","),             
+                    sortOrder,
+                    page,
+                    pageSize,
+                }).toString();
+
+                return {
+                    url: `/products/categories/${slug}?${queryString}`,
+                    method: "GET",
+                };
+            },
+            transformResponse: (response) => response.data,
+        }),
     }),
 });
 
@@ -168,4 +195,5 @@ export const {
     useGetFilterOptionsQuery,
     useGetProductFromBrandQuery,
     useGetProductAddPromotionQuery,
+    useGetProductFromCategoryQuery
 } = productApi;

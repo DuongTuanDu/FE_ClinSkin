@@ -22,6 +22,8 @@ import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
 import NotificationDrop from "./NotificationStoreDrop";
 import LanguageSelector from "../language/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import Promotion from "@/pages/Promotion";
+import { useGetAllActivePromotionsQuery } from "@/redux/promotion/promotion.query";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -44,6 +46,11 @@ const HeaderUser = () => {
         isLoading: isLoadingBrands,
         isFetching: isFetchingBrands,
     } = useGetAllBrandByUserQuery();
+
+    const {
+        data: promotions = [],
+        isLoading: isLoadingPromotions,
+    } = useGetAllActivePromotionsQuery();
 
     const createMenuCategoryItems = (items) => {
         const menu = items.map((item) => {
@@ -119,7 +126,36 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotions",
+            path: "/promotionProduct", // fallback
+            children:
+                Array.isArray(promotions) && promotions.length > 0
+                    ? promotions.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="text-pink-600 font-bold text-sm">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/promotionProduct/${item.slug}`, // <-- route này bạn phải tạo riêng!
+                    }))
+                    : [],
+        },
+        {
+            key: "categories",
+            label: "Danh mục",
+            path: "/category",
+            children:
+                Array.isArray(categories) && categories.length > 0
+                    ? categories.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="mt-2.5 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500 font-extrabold text-sm text-center uppercase">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/categories/${item.slug}`,
+                    }))
+                    : [],
         },
         {
             key: "about-us",
@@ -277,7 +313,7 @@ const HeaderUser = () => {
                         {isAuthenticated && <NotificationDrop />}
 
                         <Link to="/cart" className={`p-2 rounded-full hover:bg-opacity-10 hover:bg-gray-200 text-gray-700 relative`}>
-                            <FaShoppingCart className="text-xl cursor-pointer"/>
+                            <FaShoppingCart className="text-xl cursor-pointer" />
                             <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                                 {products.length}
                             </span>
