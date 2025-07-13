@@ -7,11 +7,13 @@ import { clearCart } from "@redux/cart/cart.slice";
 import AccountForm from "./AccountForm";
 import UserInfo from "./UserInfo";
 import AccountMenu from "./AccountMenu";
+import AddressManagement from "./AddressManagement";
 
 const CONTENT_TYPES = {
   PROFILE: "profile",
-  ORDERS: "orders",
+  ORDERS: "orders", 
   CARTS: "carts",
+  ADDRESSES: "addresses", // Thêm tab địa chỉ
 };
 
 const Account = () => {
@@ -35,7 +37,7 @@ const Account = () => {
     if (!queryParams.get("tab")) {
       navigate("/account?tab=profile");
     }
-  }, [navigate]);
+  }, [navigate, tab]);
 
   const logout = () => {
     dispatch(clearCart());
@@ -47,15 +49,51 @@ const Account = () => {
     switch (contentType) {
       case CONTENT_TYPES.PROFILE:
         return <AccountForm userInfo={userInfo} isAuthenticated={isAuthenticated} />;
+      case CONTENT_TYPES.ADDRESSES:
+        return <AddressManagement userInfo={userInfo} isAuthenticated={isAuthenticated} />;
+      case CONTENT_TYPES.ORDERS:
+        return (
+          <Card>
+            <div className="text-center py-8">
+              <h3>Đơn hàng của tôi</h3>
+              <p className="text-gray-500">Chức năng đang phát triển...</p>
+            </div>
+          </Card>
+        );
+      case CONTENT_TYPES.CARTS:
+        return (
+          <Card>
+            <div className="text-center py-8">
+              <h3>Giỏ hàng yêu thích</h3>
+              <p className="text-gray-500">Chức năng đang phát triển...</p>
+            </div>
+          </Card>
+        );
       default:
         return <></>;
+    }
+  };
+
+  // Cập nhật breadcrumb dựa trên tab hiện tại
+  const getBreadcrumbItems = () => {
+    const baseItems = [{ title: "Trang chủ" }, { title: "Tài khoản" }];
+    
+    switch (contentType) {
+      case CONTENT_TYPES.ADDRESSES:
+        return [...baseItems, { title: "Quản lý địa chỉ" }];
+      case CONTENT_TYPES.ORDERS:
+        return [...baseItems, { title: "Đơn hàng" }];
+      case CONTENT_TYPES.CARTS:
+        return [...baseItems, { title: "Giỏ hàng yêu thích" }];
+      default:
+        return [...baseItems, { title: "Thông tin cá nhân" }];
     }
   };
 
   return (
     <div className="container mx-auto mt-6 px-4 max-w-7xl">
       <Breadcrumb
-        items={[{ title: "Trang chủ" }, { title: "Tài khoản" }]}
+        items={getBreadcrumbItems()}
         className="text-sm mb-6"
       />
 
@@ -68,6 +106,7 @@ const Account = () => {
             cartItemCount={products.length}
             navigate={navigate}
             logout={logout}
+            currentTab={contentType} // Truyền tab hiện tại để highlight menu
           />
         </div>
 
