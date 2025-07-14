@@ -125,7 +125,7 @@ const routes = [
     wrapper: WrapRoute
   },
   {
-    path:"/promotionProduct/:slug",
+    path:"/promotions",
     element: PromotionDetail ,
     title: "Khuyến mãi hot",
     wrapper: WrapRoute
