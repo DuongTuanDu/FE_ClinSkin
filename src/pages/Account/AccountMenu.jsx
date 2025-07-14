@@ -4,6 +4,7 @@ import {
   ShoppingCartOutlined,
   FileTextOutlined,
   LogoutOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 
@@ -23,6 +24,9 @@ const AccountMenu = ({ handleSelectedMenu, cartItemCount, logout }) => {
       >
         <Menu.Item key="profile" icon={<UserOutlined />}>
           Thông tin cá nhân
+        </Menu.Item>
+        <Menu.Item key="addresses" icon={<EnvironmentOutlined />}>
+          Quản lý địa chỉ
         </Menu.Item>
         <Menu.Item key="orders" icon={<FileTextOutlined />}>
           Đơn hàng của tôi
