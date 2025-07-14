@@ -126,19 +126,7 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotionProduct", // fallback
-            children:
-                Array.isArray(promotions) && promotions.length > 0
-                    ? promotions.map((item) => ({
-                        key: item._id,
-                        label: (
-                            <div className="text-pink-600 font-bold text-sm">
-                                {item.name}
-                            </div>
-                        ),
-                        path: `/promotionProduct/${item.slug}`, // <-- route này bạn phải tạo riêng!
-                    }))
-                    : [],
+            path: "/promotions",
         },
         {
             key: "categories",

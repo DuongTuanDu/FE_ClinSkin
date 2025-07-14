@@ -22,6 +22,7 @@ const ManageInventory = lazy(() => import("@pages/ManageInventory"));
 const ExportOrder = lazy(() => import("@pages/ExportOrder"));
 const CreatePromotion = lazy(() => import("@pages/CreatePromotion"));
 const PromotionDetail = lazy(() => import("@pages/PromotionDetail"));
+const ManageAccount = lazy(() => import("@pages/ManageAccount"));
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading } = useSelector(
@@ -179,6 +180,13 @@ const adminRoutes = [
         layoutTitle: "",
         isProtected: true,
     },
+    {
+    path: "/admin/accounts",
+    element: ManageAccount,
+    title: "Admin - Quản lý tài khoản",
+    layoutTitle: "Danh sách tài khoản quản trị",
+    isProtected: true,
+  },
 ];
 
 const AdminRoutes = adminRoutes.map(
