@@ -21,6 +21,7 @@ import CustomButton from "@/components/CustomButton";
 import ProductList from "@/components/Product/ProductList";
 import { useGetProductOtherQuery } from "@/redux/product/product.query";
 import ModalCheckout from "./ModalCheckout";
+import { useGetAllAddressQuery } from "@/redux/address/address.query";
 
 const { Text } = Typography;
 
@@ -42,6 +43,10 @@ const Cart = ({ isHiden = false }) => {
     });
 
     const { data: productList = [], pagination = {} } = data || {};
+
+    const { data: addresses = [], isLoading: isLoadingAddress, refetch } = useGetAllAddressQuery();
+    console.log("addresses", addresses);
+    
 
     const selectedProducts = useMemo(() => {
         return products.filter((product) =>
@@ -142,6 +147,8 @@ const Cart = ({ isHiden = false }) => {
                 <>
                     <ModalCheckout
                         {...{
+                            addresses: addresses,
+                            isLoadingAddress: isLoadingAddress,
                             open,
                             setOpen,
                             products: selectedProducts,
