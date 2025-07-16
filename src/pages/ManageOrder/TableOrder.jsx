@@ -10,7 +10,7 @@ const TableOrder = ({
   totalItems,
   setPaginate,
   refetch,
-  onViewDetail, // ✅ thêm props để xem chi tiết
+  onViewDetail, 
 }) => {
   const columns = useMemo(
     () => [
