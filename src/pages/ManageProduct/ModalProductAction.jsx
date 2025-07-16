@@ -37,7 +37,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const brands = brandsData || [];
 
   useEffect(() => {
-    // Reset form when modal opens/closes
+
     if (open) {
       if (!isEmpty(product)) {
         form.setFieldsValue({

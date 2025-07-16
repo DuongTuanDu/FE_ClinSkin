@@ -1,5 +1,3 @@
-// 📁 src/pages/ManageOrder/ModalOrderDetail.jsx
-
 import React from "react";
 import { Modal, Descriptions, Tag, Divider, Image, Button } from "antd";
 import { format } from "date-fns";
