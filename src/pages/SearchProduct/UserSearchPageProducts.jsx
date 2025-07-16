@@ -24,7 +24,7 @@ const UserProductSearchPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  // Gọi API từ RTK Query
+
   const { data: categories = [], isLoading: loadingCategories } = useGetAllCategoryUserQuery();
   const { data: brands = [], isLoading: loadingBrands } = useGetAllBrandByUserQuery();
   const {
@@ -39,7 +39,7 @@ const UserProductSearchPage = () => {
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
   });
-
+//   console.log(productData);
   const products = productData?.data || [];
   const totalPages = productData?.pagination?.totalPage || 0;
 
