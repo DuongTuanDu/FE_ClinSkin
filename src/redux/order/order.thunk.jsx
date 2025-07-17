@@ -15,3 +15,31 @@ export const orderCod = createAsyncThunk(
     }
   }
 );
+
+export const updateStatusOrderByAdmin = createAsyncThunk(
+  "order/updateStatusOrderByAdmin",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await axios.put(
+        `/admin/orders/status/${id}`, data
+      );
+    } catch (error) {
+      message.warning(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const deleteOrder = createAsyncThunk(
+  "order/deleteOrder",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await axios.delete(
+        `/admin/orders/${id}`
+      );
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
