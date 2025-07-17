@@ -27,6 +27,7 @@ const TableAccount = ({
     const [open, setOpen] = useState(false);
     const [account, setAccount] = useState({});
 
+    // remove
     const removeAccount = async (id) => {
         const res = await dispatch(removeAccountAdmin(id)).unwrap();
         if (res.success) {
@@ -34,7 +35,7 @@ const TableAccount = ({
             message.success(res.message);
         }
     };
-
+    // toggle
     const handleToggle = async ({ id, isActive }) => {
         const res = await dispatch(
             updateAccountAdmin({ id, data: { isActive } })
