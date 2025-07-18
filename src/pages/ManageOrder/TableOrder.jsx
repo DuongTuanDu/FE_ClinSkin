@@ -92,25 +92,63 @@ const TableOrder = ({
         title: "Trạng thái",
         dataIndex: "status",
         key: "status",
-        width: 150,
-        render: (status, record) => (
-          <Select
-            className="w-full"
-            disabled={
-              status === "cancelled" || status === "delivered" ? true : false
+        width: 200,
+        render: (status, record) => {
+          // Xác định các option có thể chọn dựa trên trạng thái hiện tại
+          const getAvailableOptions = (currentStatus) => {
+            switch (currentStatus) {
+              case "pending":
+                return orderStatus.filter(item => 
+                  ["pending", "processing", "cancelled"].includes(item.value)
+                );
+              case "processing":
+                return orderStatus.filter(item => 
+                  ["processing", "cancelled"].includes(item.value)
+                );
+              case "shipping":
+                return orderStatus.filter(item => 
+                  ["shipping", "delivered", "cancelled"].includes(item.value)
+                );
+              case "delivered":
+              case "cancelled":
+                return orderStatus.filter(item => item.value === currentStatus);
+              default:
+                return orderStatus;
             }
-            value={status}
-            onChange={(value) =>
-              handleUpdateStatus({ order: record, status: value })
-            }
-          >
-            {orderStatus.map((item, index) => (
-              <Select.Option key={index} value={item.value}>
-                {item.name}
-              </Select.Option>
-            ))}
-          </Select>
-        ),
+          };
+
+          const availableOptions = getAvailableOptions(status);
+          const isDisabled = status === "cancelled" || status === "delivered";
+
+          return (
+            <div className="flex items-center gap-2">
+              <Select
+                className="flex-1"
+                disabled={isDisabled}
+                value={status}
+                onChange={(value) =>
+                  handleUpdateStatus({ order: record, status: value })
+                }
+              >
+                {availableOptions.map((item, index) => (
+                  <Select.Option key={index} value={item.value}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              {status === "processing" && (
+                <Tooltip title="Lấy hàng">
+                  <button
+                    onClick={() => handlePickupOrder(record)}
+                    className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
+                  >
+                    Lấy hàng
+                  </button>
+                </Tooltip>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: "Tổng tiền",
@@ -187,6 +225,10 @@ const TableOrder = ({
       message.success(res.message);
       refetch();
     }
+  };
+
+  const handlePickupOrder = (order) => {
+    navigate(`/admin/export-order/${order._id}`);
   };
 
   const removeOrder = async (id) => {
