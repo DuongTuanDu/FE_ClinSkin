@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGetBatchesByOrderIdQuery } from "@/redux/inventory/inventoryBatch.query";
-import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col, message, Descriptions } from "antd";
-import { FaBoxOpen } from "react-icons/fa";
+import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col, message, Descriptions, Alert } from "antd";
+import { FaBoxOpen, FaExclamationTriangle } from "react-icons/fa";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
@@ -27,7 +27,7 @@ const OrderSummary = ({ orderData }) => {
         
         <Descriptions.Item label="Khách hàng" span={2}>{user?.name}</Descriptions.Item>
         <Descriptions.Item label="Email" span={2}>{user?.email}</Descriptions.Item>
-        <Descriptions.Item label="Số điện thoại" span={2}>{user?.phone}</Descriptions.Item>
+        
         <Descriptions.Item label="Phương thức thanh toán" span={2}>{paymentMethod}</Descriptions.Item>
         
         <Descriptions.Item label="Tổng tiền" span={4}>
@@ -35,7 +35,7 @@ const OrderSummary = ({ orderData }) => {
         </Descriptions.Item>
         
         <Descriptions.Item label="Địa chỉ" span={4}>
-          {address?.detail}, {address?.ward}, {address?.district}, {address?.province}
+          {address?.province?.name}, {address?.district?.name}, {address?.ward?.name}
         </Descriptions.Item>
         
         {note && (
@@ -51,8 +51,11 @@ const OrderSummary = ({ orderData }) => {
 const ExportOrder = () => {
   const { orderId } = useParams();
   const { data, isLoading, error } = useGetBatchesByOrderIdQuery(orderId);
-  const batchData = data?.data || [];
+  
   const orderData = data?.order || {};
+  const availableItems = data?.data?.availableItems || [];
+  const insufficientStockItems = data?.data?.insufficientStockItems || [];
+  const hasInsufficientStock = data?.hasInsufficientStock || false;
 
   if (isLoading) {
     return (
@@ -73,24 +76,62 @@ const ExportOrder = () => {
   return (
     <div className="p-4">
       <OrderSummary orderData={orderData} />
-      <Text className="text-lg font-semibold mb-4">Danh sách sản phẩm trong đơn hàng</Text>
-      {batchData.length === 0 ? (
-        <Empty description="Không có dữ liệu lô hàng cho đơn hàng này" />
-      ) : (
-        <div className="space-y-6">
-          {batchData.map((item) => (
-            <ProductWithBatches key={item.product._id} productData={item} />
-          ))}
+      
+      {/* Alert for insufficient stock */}
+      {hasInsufficientStock && (
+        <Alert
+          message="Cảnh báo thiếu hàng"
+          description="Một số sản phẩm trong đơn hàng không đủ số lượng tồn kho"
+          type="warning"
+          icon={<FaExclamationTriangle />}
+          className="mb-6"
+          showIcon
+        />
+      )}
+      
+      {/* Available items section */}
+      {availableItems.length > 0 && (
+        <div className="mb-6">
+          <Title level={4} className="text-green-600">
+            Sản phẩm có đủ hàng ({availableItems.length})
+          </Title>
+          <div className="space-y-6">
+            {availableItems.map((item) => (
+              <ProductWithBatches key={item.product._id} productData={item} />
+            ))}
+          </div>
         </div>
+      )}
+      
+      {/* Insufficient stock items section */}
+      {insufficientStockItems.length > 0 && (
+        <div className="mb-6">
+          <Title level={4} className="text-red-600">
+            Sản phẩm thiếu hàng ({insufficientStockItems.length})
+          </Title>
+          <div className="space-y-6">
+            {insufficientStockItems.map((item) => (
+              <InsufficientStockProduct key={item.product._id} productData={item} />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {availableItems.length === 0 && insufficientStockItems.length === 0 && (
+        <Empty description="Không có dữ liệu sản phẩm cho đơn hàng này" />
       )}
       
       <div className="flex justify-end mt-4">
         <button
             type="button"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={hasInsufficientStock}
             onClick={() => {
+                if (hasInsufficientStock) {
+                    message.error("Không thể giao hàng do có sản phẩm thiếu hàng");
+                    return;
+                }
                 // TODO: Implement delivery logic here
-                // You can open a modal, call an API, or show a notification
                 message.warning("doing")
             }}
         >
@@ -98,6 +139,90 @@ const ExportOrder = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+const InsufficientStockProduct = ({ productData }) => {
+  const { product, requiredQuantity, availableQuantity, shortageQuantity, price, message: errorMessage } = productData;
+
+  return (
+    <Card className="shadow-md border-red-200 bg-red-50">
+      <Row gutter={[24, 16]}>
+        <Col xs={24} md={8}>
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              {product?.mainImage?.url ? (
+                <Image
+                  src={product.mainImage.url}
+                  alt={product.name}
+                  width={80}
+                  height={80}
+                  className="object-cover rounded-md"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md">
+                  <FaBoxOpen className="text-2xl text-gray-400" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <Title level={4} className="m-0">
+                {product?.name || "Sản phẩm không có tên"}
+              </Title>
+
+              <div className="mb-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 text-xs">Thương hiệu:</span>
+                  {product?.brandId && (
+                    <Tag color="blue" className="!px-2 !py-0.5 !text-xs">{product.brandId.name}</Tag>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-500 text-xs">Danh mục:</span>
+                  {product?.categories?.map((cat) => (
+                    <Tag key={cat._id} color="green" className="!px-1 !py-0.5 !text-xs">
+                      {cat.name}
+                    </Tag>
+                  ))}
+                </div>
+              </div>
+
+              <div className="gap-y-1 mt-3">
+                <div className="text-sm">
+                  <Text type="secondary">Số lượng yêu cầu: </Text>
+                  <Text strong>{requiredQuantity}</Text>
+                </div>
+                <div className="text-sm">
+                  <Text type="secondary">Số lượng có sẵn: </Text>
+                  <Text strong type="warning">{availableQuantity}</Text>
+                </div>
+                <div className="text-sm">
+                  <Text type="secondary">Số lượng thiếu: </Text>
+                  <Text strong type="danger">{shortageQuantity}</Text>
+                </div>
+                <div className="text-sm">
+                  <Text type="secondary">Giá bán: </Text>
+                  <Text type="danger" strong>
+                    {price?.toLocaleString('vi-VN')} ₫
+                  </Text>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Col>
+
+        <Col xs={24} md={16}>
+          <Alert
+            message="Không đủ hàng"
+            description={errorMessage}
+            type="error"
+            showIcon
+            icon={<FaExclamationTriangle />}
+          />
+        </Col>
+      </Row>
+    </Card>
   );
 };
 
@@ -216,7 +341,7 @@ const ProductWithBatches = ({ productData }) => {
   ];
 
   return (
-    <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+    <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-green-200 bg-green-50">
       <Row gutter={[24, 16]}>
         {/* Product Information (Left Side) */}
         <Col xs={24} md={8}>
@@ -241,10 +366,6 @@ const ProductWithBatches = ({ productData }) => {
               <Title level={4} className="m-0">
                 {product?.name || "Sản phẩm không có tên"}
               </Title>
-              
-              {/* <div className="text-sm text-gray-500 mb-1">
-                ID: {product?._id}
-              </div> */}
 
               <div className="mb-3 space-y-1">
                 <div className="flex items-center gap-2">
@@ -268,12 +389,6 @@ const ProductWithBatches = ({ productData }) => {
                     <Text type="secondary">Tổng số lượng cần: </Text>
                     <Text strong>{totalQuantity}</Text>
                 </div>
-                {/* <div className="text-sm">
-                  <Text type="secondary">Tổng số lượng lấy: </Text>
-                  <Text strong type={totalToTake < totalQuantity ? "danger" : "success"}>
-                    {totalToTake}
-                  </Text>
-                </div> */}
                 <div className="text-sm">
                   <Text type="secondary">Tồn kho hiện tại: </Text>
                   <Text>{product?.currentStock || 0}</Text> 
