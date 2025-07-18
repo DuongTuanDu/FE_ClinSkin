@@ -27,7 +27,7 @@ export const reviewApi = createApi({
 
       providesTags: ["Review"],
     }),
-
+    // delete
     deleteReview: builder.mutation({
       query: (id) => ({
         url: `/admin/reviews/${id}`,
@@ -35,7 +35,7 @@ export const reviewApi = createApi({
       }),
       invalidatesTags: ["Review"],
     }),
-
+    // toggle
     toggleDisplay: builder.mutation({
       query: (id) => ({
         url: `/admin/reviews/${id}/toggle-display`,
