@@ -24,6 +24,7 @@ import LanguageSelector from "../language/LanguageSelector";
 import { useTranslation } from "react-i18next";
 import Promotion from "@/pages/Promotion";
 import { useGetAllActivePromotionsQuery } from "@/redux/promotion/promotion.query";
+import { message } from "antd";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -99,9 +100,17 @@ const HeaderUser = () => {
         };
         const flattenedMenu = flattenMenu(menuItems);
         const selectedItem = flattenedMenu.find((item) => item.key === e.key);
-        if (selectedItem && selectedItem.path) {
-            navigate(selectedItem.path);
-        }
+        // if (selectedItem && selectedItem.path) {
+        //     navigate(selectedItem.path);
+        // }
+
+       if (selectedItem && selectedItem.path) {
+    if (selectedItem.path === "/promotionProduct" && promotions.length === 0) {
+        message.info("Hiện tại không có khuyến mãi nào");
+        return;
+    }
+    navigate(selectedItem.path);
+}
     };
 
     const menuItems = [
@@ -126,7 +135,19 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotions",
+            path: "/promotionProduct",
+            children:
+                Array.isArray(promotions) && promotions.length > 0
+                    ? promotions.map((item) => ({
+                        key: item._id,
+                        label: (
+                            <div className="text-pink-600 font-bold text-sm">
+                                {item.name}
+                            </div>
+                        ),
+                        path: `/promotionProduct/${item.slug}`, 
+                    }))
+                    : [],
         },
         {
             key: "categories",
