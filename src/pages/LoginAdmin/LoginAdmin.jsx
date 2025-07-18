@@ -13,6 +13,7 @@ const LoginAdmin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Handle form submission
   const handleSubmit = async (values) => {
     dispatch(loginAdmin(values)).then((res) => {
       if (res.payload.success) {

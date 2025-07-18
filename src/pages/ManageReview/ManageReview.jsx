@@ -17,24 +17,19 @@ const ManageReview = () => {
     setSearchText(value);
     setPaginate((prev) => ({ ...prev, page: 1 }));
   }, 500), []);
-// handle search
   const handleSearchChange = (e) => {
     debouncedFilter(e.target.value);
   };
-// handle pagination
   const handlePageChange = (page, pageSize) => {
     setPaginate({ page, pageSize });
   };
-// get data
  const { data, isLoading, refetch } = useGetReviewListQuery({
   ...paginate,
   content: searchText,
 });
-// get data
   const reviews = data?.reviews || [];
 const pagination = data?.pagination || {};
 
-// render
   return (
     <div className="mt-4">
       <div className="mb-4 bg-white p-4 rounded-md shadow-md flex gap-4 items-center">

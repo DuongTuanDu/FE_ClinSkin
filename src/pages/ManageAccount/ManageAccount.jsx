@@ -63,6 +63,7 @@ const ManageAccount = () => {
         debouncedFilter(key, value);
     };
 
+    // handle action
     const setStateByAction = ({ id, data, action = "update" }) => {
         const actions = {
             update: () => {
