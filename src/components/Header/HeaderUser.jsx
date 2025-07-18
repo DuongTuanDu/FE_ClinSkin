@@ -100,17 +100,9 @@ const HeaderUser = () => {
         };
         const flattenedMenu = flattenMenu(menuItems);
         const selectedItem = flattenedMenu.find((item) => item.key === e.key);
-        // if (selectedItem && selectedItem.path) {
-        //     navigate(selectedItem.path);
-        // }
-
-       if (selectedItem && selectedItem.path) {
-    if (selectedItem.path === "/promotionProduct" && promotions.length === 0) {
-        message.info("Hiện tại không có khuyến mãi nào");
-        return;
-    }
-    navigate(selectedItem.path);
-}
+        if (selectedItem && selectedItem.path) {
+            navigate(selectedItem.path);
+        }
     };
 
     const menuItems = [
@@ -147,7 +139,13 @@ const HeaderUser = () => {
                         ),
                         path: `/promotionProduct/${item.slug}`, 
                     }))
-                    : [],
+                    : [{key: 0,
+                        label: (
+                            <div className="text-pink-600 font-bold text-sm">
+                                Hiện tại không có khuyến mãi !!!
+                            </div>
+                        ),
+                        path: `#`, }],
         },
         {
             key: "categories",
