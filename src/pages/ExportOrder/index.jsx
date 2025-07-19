@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGetBatchesByOrderIdQuery } from "@/redux/inventory/inventoryBatch.query";
+import { useCreateSalesHistoryMutation } from "@/redux/salesHistory/salesHistory.query";
 import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col, message, Descriptions, Alert } from "antd";
 import { FaBoxOpen, FaExclamationTriangle } from "react-icons/fa";
 import dayjs from "dayjs";
@@ -51,11 +52,101 @@ const OrderSummary = ({ orderData }) => {
 const ExportOrder = () => {
   const { orderId } = useParams();
   const { data, isLoading, error } = useGetBatchesByOrderIdQuery(orderId);
+  const [createSalesHistory, { isLoading: isCreating }] = useCreateSalesHistoryMutation();
   
   const orderData = data?.order || {};
   const availableItems = data?.data?.availableItems || [];
   const insufficientStockItems = data?.data?.insufficientStockItems || [];
   const hasInsufficientStock = data?.hasInsufficientStock || false;
+
+  // Function to prepare form data for API submission
+  const prepareFormData = () => {
+    return {
+      orderId: orderData.id,
+      orderData: {
+        id: orderData.id,
+        user: {
+          name: orderData.user?.name,
+          email: orderData.user?.email,
+          phone: orderData.user?.phone
+        },
+        totalAmount: orderData.totalAmount,
+        status: orderData.status,
+        note: orderData.note,
+        paymentMethod: orderData.paymentMethod,
+        address: {
+          province: {
+            id: orderData.address?.province?.id,
+            name: orderData.address?.province?.name
+          },
+          district: {
+            id: orderData.address?.district?.id,
+            name: orderData.address?.district?.name
+          },
+          ward: {
+            id: orderData.address?.ward?.id,
+            name: orderData.address?.ward?.name
+          }
+        }
+      },
+      availableItems: availableItems.map(item => ({
+        product: {
+          _id: item.product._id,
+          name: item.product.name,
+          mainImage: item.product.mainImage?.url,
+          currentStock: item.product.currentStock,
+          brandId: {
+            _id: item.product.brandId?._id,
+            name: item.product.brandId?.name
+          },
+          categories: item.product.categories?.map(cat => ({
+            _id: cat._id,
+            name: cat.name
+          }))
+        },
+        totalQuantity: item.totalQuantity,
+        price: item.price,
+        batchItems: {
+          success: item.batchItems?.success,
+          items: item.batchItems?.items?.map(batch => ({
+            _id: batch._id,
+            batchNumber: batch.batchNumber,
+            productId: batch.productId,
+            quantity: batch.quantity,
+            costPrice: batch.costPrice,
+            remainingQuantity: batch.remainingQuantity,
+            expiryDate: batch.expiryDate,
+            receivedDate: batch.receivedDate
+          })),
+          total: item.batchItems?.total
+        }
+      }))
+    };
+  };
+
+  // Handle form submission
+  const handleDelivery = async () => {
+    if (hasInsufficientStock) {
+      message.error("Không thể giao hàng do có sản phẩm thiếu hàng");
+      return;
+    }
+
+    try {
+      const formData = prepareFormData();
+      const result = await createSalesHistory(formData).unwrap();
+      
+      if (result.success) {
+        message.success("Giao hàng thành công!");
+        console.log("Sales history created:", result);
+        // You can add navigation or other success actions here
+      } else {
+        message.error("Có lỗi xảy ra khi giao hàng");
+      }
+    } catch (error) {
+      console.error("Error creating sales history:", error);
+      message.error("Có lỗi xảy ra khi giao hàng");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -125,17 +216,10 @@ const ExportOrder = () => {
         <button
             type="button"
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-            disabled={hasInsufficientStock}
-            onClick={() => {
-                if (hasInsufficientStock) {
-                    message.error("Không thể giao hàng do có sản phẩm thiếu hàng");
-                    return;
-                }
-                // TODO: Implement delivery logic here
-                message.warning("doing")
-            }}
+            disabled={hasInsufficientStock || isCreating}
+            onClick={handleDelivery}
         >
-            Giao hàng
+            {isCreating ? "Đang xử lý..." : "Giao hàng"}
         </button>
       </div>
     </div>
