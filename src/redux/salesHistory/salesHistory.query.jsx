@@ -7,7 +7,7 @@ export const salesHistoryApi = createApi({
         const { url, method, data, params } = args;
         return baseQuery({ url, method, data, params });
     },
-    tagTypes: ["SalesHistory"],
+    tagTypes: ["SalesHistory", "Order", "InventoryBatch"],
     endpoints: (builder) => ({
         createSalesHistory: builder.mutation({
             query: (salesData) => ({
@@ -15,7 +15,7 @@ export const salesHistoryApi = createApi({
                 method: "POST",
                 data: salesData,
             }),
-            invalidatesTags: ["SalesHistory"],
+            invalidatesTags: ["SalesHistory", "Order", "InventoryBatch"],
         }),
     }),
 });

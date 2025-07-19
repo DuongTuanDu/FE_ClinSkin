@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useGetBatchesByOrderIdQuery } from "@/redux/inventory/inventoryBatch.query";
 import { useCreateSalesHistoryMutation } from "@/redux/salesHistory/salesHistory.query";
 import { Card, Spin, Empty, Typography, Image, Tag, Table, InputNumber, Divider, Row, Col, message, Descriptions, Alert } from "antd";
@@ -51,6 +51,7 @@ const OrderSummary = ({ orderData }) => {
 
 const ExportOrder = () => {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const { data, isLoading, error } = useGetBatchesByOrderIdQuery(orderId);
   const [createSalesHistory, { isLoading: isCreating }] = useCreateSalesHistoryMutation();
   
@@ -138,7 +139,13 @@ const ExportOrder = () => {
       if (result.success) {
         message.success("Giao hàng thành công!");
         console.log("Sales history created:", result);
-        // You can add navigation or other success actions here
+        // Navigate to order management page with state to indicate refresh needed
+        setTimeout(() => {
+          navigate("/admin/orders", { 
+            replace: true,
+            state: { refreshData: true, timestamp: Date.now() }
+          });
+        }, 1500); 
       } else {
         message.error("Có lỗi xảy ra khi giao hàng");
       }

@@ -7,6 +7,7 @@ export const orderApi = createApi({
     const { url, method, data, params } = args;
     return baseQuery({ url, method, data, params });
   },
+  tagTypes: ["Order"],
   endpoints: (builder) => ({
     getAllOrderAdmin: builder.query({
       query: ({
@@ -32,6 +33,7 @@ export const orderApi = createApi({
           method: "GET",
         };
       },
+      providesTags: ["Order"],
     })
   }),
 });
