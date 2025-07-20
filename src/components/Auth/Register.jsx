@@ -10,7 +10,7 @@ const Register = ({ setStep }) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
+    // Handle form submission
     const handleSubmit = async (values) => {
         const { name, email, password, rePassword } = values;
 
