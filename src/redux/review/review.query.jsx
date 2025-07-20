@@ -44,6 +44,7 @@ export const reviewApi = createApi({
       invalidatesTags: ["Review"],
     }),
 
+    // reply
     replyReview: builder.mutation({
       query: ({ id, reply }) => ({
         url: `/admin/reviews/${id}/reply`,
