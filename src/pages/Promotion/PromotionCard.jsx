@@ -17,7 +17,13 @@ const PromotionCard = ({ product, discount, onQuickView }) => {
         {/* Nút Quick View xuất hiện khi hover */}
         <QuickViewOverlay onClick={(e) => {
           e.stopPropagation();
-          onQuickView(product);
+          onQuickView({
+            ...product,
+            finalPrice: priceAfterDiscount,
+            promotion: {
+              discountPercentage: discount,
+            }
+          });
         }} />
       </div>
 

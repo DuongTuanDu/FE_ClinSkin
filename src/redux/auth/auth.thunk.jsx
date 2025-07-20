@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "@axios/axios";
 import { message } from "antd";
 
+// login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data, { rejectWithValue }) => {
@@ -14,6 +15,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// register
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (data, { rejectWithValue }) => {
@@ -111,6 +113,7 @@ export const updateAccountAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const getAllAccountAdmin = createAsyncThunk(
   "auth/getAllAccountAdmin",
   async (
@@ -127,6 +130,7 @@ export const getAllAccountAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const createAccountAdmin = createAsyncThunk(
   "auth/createAccountAdmin",
   async (payload, { rejectWithValue }) => {
@@ -139,6 +143,7 @@ export const createAccountAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const removeAccountAdmin = createAsyncThunk(
   "auth/removeAccountAdmin",
   async (payload, { rejectWithValue }) => {

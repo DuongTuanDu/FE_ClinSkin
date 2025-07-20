@@ -8,6 +8,7 @@ import ImageCarousel from "@components/ImageCarousel";
 import QuickViewOverlay from "./QuickViewOverlay";
 import ProductDrawer from "./ProductDrawer";
 
+// ProductListViewMore
 const ProductListViewMore = ({
     isLoading,
     products = [],
@@ -39,6 +40,7 @@ const ProductListViewMore = ({
         },
     };
 
+    // Function to handle product click
     const renderItem = (item) => {
         const discountPercentage = item.promotion?.discountPercentage || 0;
         const discountedPrice = item.promotion ? item.finalPrice : item.price;

@@ -84,7 +84,6 @@ export const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            //Login Customer
             .addCase(loginUser.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -101,7 +100,6 @@ export const authSlice = createSlice({
                 state.isLoading = false;
             })
 
-            //Register Customer
             .addCase(registerUser.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -116,7 +114,6 @@ export const authSlice = createSlice({
                 state.isLoading = false;
             })
 
-            //Send Otp
             .addCase(sendOtp.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -131,7 +128,6 @@ export const authSlice = createSlice({
                 state.isLoading = false;
             })
 
-            //Verify Otp
             .addCase(verifyAccount.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -145,7 +141,6 @@ export const authSlice = createSlice({
                 state.error = action.payload;
                 state.isLoading = false;
             })
-            //Reset Password
             .addCase(resetPassword.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -160,7 +155,6 @@ export const authSlice = createSlice({
                 state.isLoading = false;
             })
 
-            //Login Admin
             .addCase(loginAdmin.pending, (state, action) => {
                 state.isLoading = true;
             })
@@ -177,7 +171,6 @@ export const authSlice = createSlice({
                 state.isLoading = false;
             })
 
-            // Get Account Admin
             .addCase(getAccountAdmin.pending, (state, action) => {
                 state.isLoading = true;
             })
