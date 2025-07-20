@@ -36,7 +36,6 @@ const SettingAdmin = () => {
         }
     }, [adminInfo, form]);
 
-/// Update profile
     const handleSubmit = async (values) => {
         try {
             setLoading(true);
