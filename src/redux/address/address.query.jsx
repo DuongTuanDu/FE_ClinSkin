@@ -16,6 +16,7 @@ export const addressApi = createApi({
             transformResponse: (response) => response.data,
             providesTags: ["Address"],
         }),
+        // create
         createAddress: builder.mutation({
             query: (data) => ({
                 url: "/address",
@@ -24,6 +25,7 @@ export const addressApi = createApi({
             }),
             invalidatesTags: ["Address"],
         }),
+        // update
         updateAddress: builder.mutation({
             query: ({ id, ...data }) => ({
                 url: `/address/${id}`,
@@ -32,6 +34,7 @@ export const addressApi = createApi({
             }),
             invalidatesTags: ["Address"],
         }),
+        // delete
         deleteAddress: builder.mutation({
             query: (id) => ({
                 url: `/address/${id}`,
@@ -39,6 +42,7 @@ export const addressApi = createApi({
             }),
             invalidatesTags: ["Address"],
         }),
+        // set default
         setDefaultAddress: builder.mutation({
             query: (id) => ({
                 url: `/address/${id}/set-default`,

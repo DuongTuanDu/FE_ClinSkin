@@ -17,11 +17,12 @@ import {
 import { GrUserAdmin } from "react-icons/gr";
 import { useSelector } from "react-redux";
 
+// eslint-disable-next-line no-unused-vars
 const LOGO_ANIMATION = {
   initial: { y: -20, opacity: 0 },
   animate: { y: 0, opacity: 1 },
 };
-
+// eslint-disable-next-line no-unused-vars
 const LOGO_TRANSITION = {
   duration: 0.5,
 };
