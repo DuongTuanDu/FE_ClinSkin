@@ -33,7 +33,6 @@ const TableReview = ({
 
   const [editingId, setEditingId] = useState(null);
   const [replyValue, setReplyValue] = useState("");
-// delete
   const handleDelete = async (id) => {
     try {
       const res = await deleteReview(id).unwrap();
@@ -43,7 +42,6 @@ const TableReview = ({
       message.error("Xoá review thất bại");
     }
   };
-// toggle
   const handleToggleDisplay = async (id) => {
     try {
       await toggleDisplay(id).unwrap();
@@ -52,7 +50,6 @@ const TableReview = ({
       message.error("Cập nhật trạng thái thất bại");
     }
   };
-// reply
   const handleReply = async (id) => {
     if (!replyValue.trim()) return message.warning("Phản hồi không được để trống");
 
@@ -66,7 +63,6 @@ const TableReview = ({
       message.error("Gửi phản hồi thất bại");
     }
   };
-// table
   const columns = useMemo(
     () => [
       {
