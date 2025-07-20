@@ -21,6 +21,7 @@ const LayoutUser = ({ children }) => {
   }, [location.pathname]);
 
   return (
+    // eslint-disable-next-line
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <ModalAuth
         {...{
