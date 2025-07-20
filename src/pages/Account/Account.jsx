@@ -8,10 +8,11 @@ import AccountForm from "./AccountForm";
 import UserInfo from "./UserInfo";
 import AccountMenu from "./AccountMenu";
 import AddressManagement from "./AddressManagement";
+import Cart from "../Cart";
 
 const CONTENT_TYPES = {
   PROFILE: "profile",
-  ORDERS: "orders", 
+  ORDERS: "orders",
   CARTS: "carts",
   ADDRESSES: "addresses", // Thêm tab địa chỉ
 };
@@ -22,7 +23,7 @@ const Account = () => {
   const location = useLocation();
   const [contentType, setContentType] = useState(CONTENT_TYPES.PROFILE);
   const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
-  const products = useSelector((state) => state.cart.cart.products); 
+  const products = useSelector((state) => state.cart.cart.products);
 
   const queryParams = new URLSearchParams(location.search);
   const tab = queryParams.get("tab") || CONTENT_TYPES.PROFILE;
@@ -61,14 +62,7 @@ const Account = () => {
           </Card>
         );
       case CONTENT_TYPES.CARTS:
-        return (
-          <Card>
-            <div className="text-center py-8">
-              <h3>Giỏ hàng yêu thích</h3>
-              <p className="text-gray-500">Chức năng đang phát triển...</p>
-            </div>
-          </Card>
-        );
+        return <Cart {...{ isHiden: true }} />;
       default:
         return <></>;
     }
@@ -77,7 +71,7 @@ const Account = () => {
   // Cập nhật breadcrumb dựa trên tab hiện tại
   const getBreadcrumbItems = () => {
     const baseItems = [{ title: "Trang chủ" }, { title: "Tài khoản" }];
-    
+
     switch (contentType) {
       case CONTENT_TYPES.ADDRESSES:
         return [...baseItems, { title: "Quản lý địa chỉ" }];

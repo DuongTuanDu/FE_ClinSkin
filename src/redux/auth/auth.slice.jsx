@@ -9,7 +9,6 @@ import {
     verifyAccount,
 } from "./auth.thunk";
 import { remove } from "@storage/storage";
-import { set } from "lodash";
 
 const initialState = {
     userInfo: {

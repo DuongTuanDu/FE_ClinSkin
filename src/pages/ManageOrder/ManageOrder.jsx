@@ -28,8 +28,6 @@ const ManageOrder = () => {
     ...filter,
   });
   const { data: orders = [], pagination = {} } = data || {};
-  console.log("orders", orders);
-  
 
   const debouncedSearch = useCallback(
     debounce((key, value) => {

@@ -43,3 +43,16 @@ export const deleteOrder = createAsyncThunk(
     }
   }
 );
+
+export const getOrderDetail = createAsyncThunk(
+  "order/getOrderDetail",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await axios.get(
+        `/admin/orders/${id}`
+      );
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
