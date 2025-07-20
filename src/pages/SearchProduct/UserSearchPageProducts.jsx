@@ -64,6 +64,7 @@ const UserProductSearchPage = () => {
     },
   };
 
+  // Function to handle item click
   const renderItem = (item) => {
     const discountPercentage = item.promotion?.discountPercentage || 0;
     const discountedPrice = item.promotion ? item.finalPrice : item.price;

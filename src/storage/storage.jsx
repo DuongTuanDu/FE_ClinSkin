@@ -7,6 +7,7 @@ export const get = (key) => {
     }
 };
 
+// set
 export const set = (key, value) => {
     localStorage.setItem(
         key,
@@ -14,6 +15,7 @@ export const set = (key, value) => {
     );
 };
 
+// remove
 export const remove = (key) => {
     localStorage.removeItem(key);
 };
