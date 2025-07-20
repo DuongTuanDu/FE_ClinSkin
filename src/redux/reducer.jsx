@@ -4,6 +4,7 @@ import cartReducer from "./cart/cart.slice";
 import socketReducer from "./socket/socket.slice";
 import promotionReducer from "./promotion/promotion.slice";
 import orderReducer from "./order/order.slice";
+import shipReducer from "./ship/ship.slice";
 
 const reducer = {
   auth: authReducer,
@@ -11,7 +12,8 @@ const reducer = {
   cart: cartReducer,
   socket: socketReducer,
   promotion: promotionReducer,
-  order: orderReducer
+  order: orderReducer,
+  ship: shipReducer
 };
 
 export default reducer;

@@ -56,3 +56,44 @@ export const getOrderDetail = createAsyncThunk(
     }
   }
 );
+
+export const getOrderHistory = createAsyncThunk(
+  "order/getOrderHistory",
+  async (payload, { rejectWithValue }) => {
+    try {
+      return await axios.get(
+        `/orders?status=${payload.status}&page=${payload.page}&pageSize=${payload.pageSize}`
+      );
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const updateOrderByUser = createAsyncThunk(
+  "order/updateOrderByUser",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await axios.put(
+        `/orders/${id}`, data
+      );
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const updateStatusOrderByUser = createAsyncThunk(
+  "order/updateStatusOrderByUser",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await axios.put(
+        `/orders/status/${id}`, data
+      );
+    } catch (error) {
+      message.warning(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);

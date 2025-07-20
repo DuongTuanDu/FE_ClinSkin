@@ -9,6 +9,7 @@ import UserInfo from "./UserInfo";
 import AccountMenu from "./AccountMenu";
 import AddressManagement from "./AddressManagement";
 import Cart from "../Cart";
+import OrderTabs from "./OrderTabs";
 
 const CONTENT_TYPES = {
   PROFILE: "profile",
@@ -53,14 +54,7 @@ const Account = () => {
       case CONTENT_TYPES.ADDRESSES:
         return <AddressManagement userInfo={userInfo} isAuthenticated={isAuthenticated} />;
       case CONTENT_TYPES.ORDERS:
-        return (
-          <Card>
-            <div className="text-center py-8">
-              <h3>Đơn hàng của tôi</h3>
-              <p className="text-gray-500">Chức năng đang phát triển...</p>
-            </div>
-          </Card>
-        );
+        return <OrderTabs />;
       case CONTENT_TYPES.CARTS:
         return <Cart {...{ isHiden: true }} />;
       default:
