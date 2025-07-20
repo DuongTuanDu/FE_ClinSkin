@@ -20,7 +20,7 @@ const ModelAccountAction = ({
             form.setFieldValue("username", account.username);
         }
     }, [account]);
-
+//   console.log("account", account);
     const handleSubmit = async (values) => {
         delete values.resPassword;
         const action = isEmpty(account) ? createAccountAdmin : updateAccountAdmin;
@@ -48,6 +48,7 @@ const ModelAccountAction = ({
     };
 
     return (
+        // eslint-disable-next-line
         <Modal
             title={isEmpty(account) ? "Tạo tài khoản quản trị" : "Cập nhật tài khoản"}
             open={open}
