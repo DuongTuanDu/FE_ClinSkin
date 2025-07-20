@@ -36,6 +36,7 @@ const SettingAdmin = () => {
         }
     }, [adminInfo, form]);
 
+    // Handle form
     const handleSubmit = async (values) => {
         try {
             setLoading(true);
@@ -175,7 +176,7 @@ const SettingAdmin = () => {
                     className="w-full mt-1"
                 />
             </Form.Item>
-
+            
             <CustomButton
                 isLoading={loading}
                 variant="primary"

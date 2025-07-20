@@ -36,7 +36,6 @@ const SearchHeader = () => {
     [dispatch]
   );
 
-  // handle search
   const handleSearch = useCallback(
     (value) => {
       setSearch(value);
@@ -46,7 +45,6 @@ const SearchHeader = () => {
     [debouncedSearch]
   );
 
-  // handle click
   const handleProductClick = useCallback(
     (slug) => {
       setSearch("");
