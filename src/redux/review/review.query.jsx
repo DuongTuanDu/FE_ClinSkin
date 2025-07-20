@@ -7,58 +7,33 @@ export const reviewApi = createApi({
     const { url, method, data, params } = args;
     return baseQuery({ url, method, data, params });
   },
-  tagTypes: ["Review"],
-
   endpoints: (builder) => ({
-    getReviewList: builder.query({
-
-      query: ({ page = 1, pageSize = 10, content = "" }) => {
-  const queryStrings = new URLSearchParams({
-    page,
-    pageSize,
-    content, 
-  }).toString();
+    getReviewListAdmin: builder.query({
+      query: ({
+        page = 1,
+        pageSize = 10,
+        customerName = "",
+        rate = 0,
+        productName = "",
+        fromDate = "",
+        toDate = "",
+      }) => {
+        const queryString = new URLSearchParams({
+          page,
+          pageSize,
+          customerName,
+          rate,
+          productName,
+          fromDate,
+          toDate,
+        }).toString();
         return {
-          url: `/admin/reviews/getReview?${queryStrings}`,
+          url: `/admin/reviews?${queryString}`,
           method: "GET",
         };
       },
-      transformResponse: (response) => response.data,
-
-      providesTags: ["Review"],
-    }),
-    // delete
-    deleteReview: builder.mutation({
-      query: (id) => ({
-        url: `/admin/reviews/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Review"],
-    }),
-    // toggle
-    toggleDisplay: builder.mutation({
-      query: (id) => ({
-        url: `/admin/reviews/${id}/toggle-display`,
-        method: "PATCH",
-      }),
-      invalidatesTags: ["Review"],
-    }),
-
-    // reply
-    replyReview: builder.mutation({
-      query: ({ id, reply }) => ({
-        url: `/admin/reviews/${id}/reply`,
-        method: "PUT",
-        data: { reply },
-      }),
-      invalidatesTags: ["Review"],
-    }),
+    })
   }),
 });
 
-export const {
-  useGetReviewListQuery,
-  useDeleteReviewMutation,
-  useToggleDisplayMutation,
-  useReplyReviewMutation,
-} = reviewApi;
+export const { useGetReviewListAdminQuery } = reviewApi;
