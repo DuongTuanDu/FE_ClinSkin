@@ -27,7 +27,7 @@ export const registerUser = createAsyncThunk(
     }
   }
 );
-
+// send otp
 export const sendOtp = createAsyncThunk(
   "auth/sendOtp",
   async (payload, { rejectWithValue }) => {
@@ -39,7 +39,7 @@ export const sendOtp = createAsyncThunk(
     }
   }
 );
-
+// verify otp
 export const verifyAccount = createAsyncThunk(
   "auth/verifyAccount",
   async (payload, { rejectWithValue }) => {
@@ -51,7 +51,7 @@ export const verifyAccount = createAsyncThunk(
     }
   }
 );
-
+// reset password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (payload, { rejectWithValue }) => {
@@ -63,7 +63,7 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
-
+// get account
 export const getAccountUser = createAsyncThunk(
   "auth/getAccountUser",
   async (_, { rejectWithValue }) => {
@@ -76,7 +76,8 @@ export const getAccountUser = createAsyncThunk(
     }
   }
 );
-
+ 
+// Admin
 export const loginAdmin = createAsyncThunk(
   "auth/loginAdmin",
   async (data, { rejectWithValue }) => {
@@ -89,6 +90,7 @@ export const loginAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const getAccountAdmin = createAsyncThunk(
   "auth/getAccountAdmin",
   async (_, { rejectWithValue }) => {
@@ -101,6 +103,7 @@ export const getAccountAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const updateAccountAdmin = createAsyncThunk(
   "auth/updateAccountAdmin",
   async ({ id, data }, { rejectWithValue }) => {
