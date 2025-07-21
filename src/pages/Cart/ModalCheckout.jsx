@@ -3,7 +3,7 @@ import { Collapse, Drawer, Form, Input, Radio, Card, Typography } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { orderCod } from "@redux/order/order.thunk";
 import { useNavigate } from "react-router-dom";
-import { setOrderReturn } from "@redux/order/order.slide";
+import { setOrderReturn } from "@redux/order/order.slice";
 import { MdVerifiedUser, MdLocationOn, MdCheckCircle } from "react-icons/md";
 import CartOrder from "./CartOrder";
 import { formatPrice } from "@helpers/formatPrice";
@@ -17,7 +17,6 @@ const ModalCheckout = ({ addresses = [], isLoadingAddress, open, setOpen, produc
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
-    console.log("userInfo", userInfo);
     
     const { socketCustomer: socket } = useSelector((state) => state.socket);
 

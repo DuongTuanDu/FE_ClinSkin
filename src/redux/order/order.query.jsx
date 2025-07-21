@@ -34,10 +34,31 @@ export const orderApi = createApi({
         };
       },
       providesTags: ["Order"],
-    })
+    }),
+    getOrderHistory: builder.query({
+      query: ({ page = 1, pageSize = 10, status = "all" }) => {
+        const queryString = new URLSearchParams({
+          page,
+          pageSize,
+          status,
+        }).toString();
+        return {
+          url: `/orders?${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
+    getOrderDetailByUser: builder.query({
+      query: ({ id }) => ({
+        url: `/orders/detail/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
-  useGetAllOrderAdminQuery
+  useGetAllOrderAdminQuery,
+  useGetOrderHistoryQuery,
+  useGetOrderDetailByUserQuery,
 } = orderApi;
