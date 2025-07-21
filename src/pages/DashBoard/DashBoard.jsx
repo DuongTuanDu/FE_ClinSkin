@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import StatsOverview from "./StatsOverview";
 import StatsRevenueOrder from "./StatsRevenueOrder";
 import StatsReview from "./StatsReview";
+import StatsBestSellingProducts from "./StatsBestSellingProducts";
 
 
 const DashBoard = () => {
@@ -65,6 +66,7 @@ const DashBoard = () => {
             <StatsOverview />
             <StatsRevenueOrder />
             <StatsReview />
+            <StatsBestSellingProducts />
             <Card className="shadow-lg" bordered={false}>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div className="flex items-center gap-4 flex-wrap">

@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Input, Select, Row, Col, Card, DatePicker } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { debounce } from "lodash";
+import { useLocation } from "react-router-dom";
 import TableOrder from "@/pages/ManageOrder/TableOrder";
 import { orderStatus } from "@const/status";
 import locale from "antd/es/date-picker/locale/vi_VN";
@@ -10,6 +11,7 @@ import { useGetAllOrderAdminQuery } from "@/redux/order/order.query";
 const { RangePicker } = DatePicker;
 
 const ManageOrder = () => {
+  const location = useLocation();
   const [paginate, setPaginate] = useState({
     page: 1,
     pageSize: 10,
@@ -28,6 +30,17 @@ const ManageOrder = () => {
     ...filter,
   });
   const { data: orders = [], pagination = {} } = data || {};
+  console.log("orders", orders);
+
+  // Listen for navigation state to trigger refetch
+  useEffect(() => {
+    if (location.state?.refreshData) {
+      refetch();
+      // Clear the state to prevent repeated refetches
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, refetch]);
+  
 
   const debouncedSearch = useCallback(
     debounce((key, value) => {
