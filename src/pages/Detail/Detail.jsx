@@ -9,18 +9,9 @@ import {
     Card,
     Empty,
     Tag,
-    Progress,
-    Button,
     notification,
 } from "antd";
-import {
-    HeartOutlined,
-    ShareAltOutlined,
-    FireOutlined,
-    StarFilled,
-    PictureOutlined,
-    MessageOutlined,
-} from "@ant-design/icons";
+import { HeartOutlined, ShareAltOutlined, FireOutlined } from "@ant-design/icons";
 import { LiaShoppingBasketSolid } from "react-icons/lia";
 import { createAverageRate } from "@utils/createIcon";
 import { FaCheckCircle, FaShippingFast } from "react-icons/fa";
@@ -39,6 +30,7 @@ import CustomButton from "@/components/CustomButton";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/redux/cart/cart.slice";
 import confetti from "canvas-confetti";
+import RateList from "@/components/RateList";
 
 const Detail = () => {
     const dispatch = useDispatch();
@@ -112,9 +104,6 @@ const Detail = () => {
 
     const renderQuantityStatus = () => {
         const availableQty = getAvailableQuantity();
-
-        console.log("availableQty", availableQty);
-
 
         if (isOutOfStock) {
             return (
@@ -215,91 +204,6 @@ const Detail = () => {
         openNotification();
     };
 
-    const RatingSection = () => {
-        return (
-            <div className="bg-white rounded-lg p-6">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Left side - Rating Summary */}
-                    <div className="flex-1">
-                        <div className="text-center mb-6">
-                            <div className="text-6xl font-bold text-gray-800 mb-2">0.0</div>
-                            <div className="flex justify-center mb-2">
-                                <Rate disabled value={0} className="text-2xl" />
-                            </div>
-                            <div className="text-gray-500">0 đánh giá</div>
-                        </div>
-
-                        {/* Rating breakdown */}
-                        <div className="space-y-2">
-                            {[5, 4, 3, 2, 1].map((star) => (
-                                <div key={star} className="flex items-center gap-3">
-                                    <span className="w-2 text-sm">{star}</span>
-                                    <StarFilled className="text-gray-300" />
-                                    <Progress
-                                        percent={0}
-                                        showInfo={false}
-                                        strokeColor="#fadb14"
-                                        trailColor="#f0f0f0"
-                                        className="flex-1"
-                                    />
-                                    <span className="w-8 text-sm text-gray-500">(0)</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-6">
-                            <div className="text-orange-500 font-medium mb-4 flex items-center gap-2">
-                                ✍️ Viết đánh giá
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right side - Filter and Reviews */}
-                    <div className="flex-1">
-                        <div className="flex gap-2 mb-6 flex-wrap">
-                            <Button type="primary" size="small">
-                                Tất cả
-                            </Button>
-                            <Button size="small" className="flex items-center gap-1">
-                                Lọc theo đánh giá
-                            </Button>
-                            <Button size="small" className="flex items-center gap-1">
-                                <PictureOutlined />
-                                Có hình
-                            </Button>
-                            <Button size="small" className="flex items-center gap-1">
-                                <MessageOutlined />
-                                Có bình luận
-                            </Button>
-                        </div>
-
-                        {/* Empty state */}
-                        <div className="text-center py-12">
-                            <div className="mb-4">
-                                <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                                    <div className="text-gray-300">
-                                        <div className="flex justify-center mb-2">
-                                            <StarFilled className="text-2xl mx-1" />
-                                            <StarFilled className="text-2xl mx-1" />
-                                            <StarFilled className="text-2xl mx-1" />
-                                        </div>
-                                        <div className="bg-gray-200 rounded p-2 text-center">
-                                            <div className="w-6 h-2 bg-gray-300 rounded mx-auto mb-1"></div>
-                                            <div className="w-8 h-2 bg-gray-300 rounded mx-auto"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-gray-500 italic">
-                                Sản phẩm chưa có đánh giá !
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div className="max-w-7xl mx-auto">
             <Breadcrumb
@@ -350,14 +254,14 @@ const Detail = () => {
                                     character={({ index }) =>
                                         createAverageRate({
                                             index: index + 1,
-                                            rate: 4.5,
+                                            rate: parseFloat(dataProduct.averageRating),
                                             width: "24px",
                                             height: "24px",
                                         })
                                     }
                                 />
                                 <span className="ml-2 text-gray-500">
-                                    (9 đánh giá)
+                                    ({dataProduct.totalReviews} đánh giá)
                                 </span>
                             </div>
                             {renderQuantityStatus()}
@@ -475,7 +379,7 @@ const Detail = () => {
 
             <div className="mt-12">
                 <h2 className="text-2xl font-bold mb-4">Đánh giá sản phẩm</h2>
-                <RatingSection />
+                <RateList {...{ product: dataProduct }} />
             </div>
         </div>
     );

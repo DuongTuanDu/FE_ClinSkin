@@ -77,12 +77,13 @@ const TableOrder = ({
         render: (paymentMethod) => (
           <Tag
             color={
-              paymentMethod === "COD"
+              paymentMethod === "cod"
                 ? "#f50"
-                : paymentMethod === "STRIPE"
+                : paymentMethod === "stripe"
                   ? "#ad53ef"
                   : "#87d068"
             }
+            className="uppercase"
           >
             {paymentMethod}
           </Tag>

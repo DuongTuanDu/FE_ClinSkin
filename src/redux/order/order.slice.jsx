@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   orderCod,
+  getOrderDetail
 } from "./order.thunk";
 
 const initialState = {
@@ -43,6 +44,20 @@ export const orderSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(orderCod.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLoading = false;
+      })
+      //Get order detail admin
+      .addCase(getOrderDetail.pending, (state, action) => {
+        state.isLoading = true;
+      })
+      .addCase(getOrderDetail.fulfilled, (state, action) => {
+        if (action.payload.success) {
+          state.isLoading = false;
+          state.order = action.payload.data;
+        }
+      })
+      .addCase(getOrderDetail.rejected, (state, action) => {
         state.error = action.payload;
         state.isLoading = false;
       })
