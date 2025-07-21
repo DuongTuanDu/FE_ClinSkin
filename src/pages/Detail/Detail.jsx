@@ -9,18 +9,9 @@ import {
     Card,
     Empty,
     Tag,
-    Progress,
-    Button,
     notification,
 } from "antd";
-import {
-    HeartOutlined,
-    ShareAltOutlined,
-    FireOutlined,
-    StarFilled,
-    PictureOutlined,
-    MessageOutlined,
-} from "@ant-design/icons";
+import { HeartOutlined, ShareAltOutlined, FireOutlined } from "@ant-design/icons";
 import { LiaShoppingBasketSolid } from "react-icons/lia";
 import { createAverageRate } from "@utils/createIcon";
 import { FaCheckCircle, FaShippingFast } from "react-icons/fa";
@@ -113,9 +104,6 @@ const Detail = () => {
 
     const renderQuantityStatus = () => {
         const availableQty = getAvailableQuantity();
-
-        console.log("availableQty", availableQty);
-
 
         if (isOutOfStock) {
             return (
@@ -391,7 +379,7 @@ const Detail = () => {
 
             <div className="mt-12">
                 <h2 className="text-2xl font-bold mb-4">Đánh giá sản phẩm</h2>
-                <RateList {...{ product: dataProduct, refetchProduct: refetch }} />
+                <RateList {...{ product: dataProduct }} />
             </div>
         </div>
     );
