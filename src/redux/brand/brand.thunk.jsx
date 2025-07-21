@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "@axios/axios";
 import { message } from "antd";
-
+// get
 export const getBrandByCreatePro = createAsyncThunk(
   "brand/getBrandByCreatePro",
   async (_, { rejectWithValue }) => {
@@ -12,7 +12,7 @@ export const getBrandByCreatePro = createAsyncThunk(
     }
   }
 );
-
+// get
 export const getBrandList = createAsyncThunk(
   "brand/getBrandList",
   async (payload, { rejectWithValue }) => {
@@ -25,7 +25,7 @@ export const getBrandList = createAsyncThunk(
     }
   }
 );
-
+// get
 export const getAllBrand = createAsyncThunk(
   "brand/getAllBrand",
   async (_, { rejectWithValue }) => {

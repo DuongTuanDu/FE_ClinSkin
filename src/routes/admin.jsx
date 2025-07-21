@@ -18,6 +18,7 @@ const ManageBrand = lazy(() => import("@pages/ManageBrand"));
 const ManageReview = lazy(() => import("@pages/ManageReview"));
 const ManageUser = lazy(() => import("@pages/ManageUser"));
 const ManageOrder = lazy(() => import("@pages/ManageOrder"));
+const OrderDetail = lazy(() => import("@pages/OrderDetail"));
 const ManageInventory = lazy(() => import("@pages/ManageInventory"));
 const ExportOrder = lazy(() => import("@pages/ExportOrder"));
 const CreatePromotion = lazy(() => import("@pages/CreatePromotion"));
@@ -181,12 +182,19 @@ const adminRoutes = [
         isProtected: true,
     },
     {
-    path: "/admin/accounts",
-    element: ManageAccount,
-    title: "Admin - Quản lý tài khoản",
-    layoutTitle: "Danh sách tài khoản quản trị",
-    isProtected: true,
-  },
+        path: "/admin/accounts",
+        element: ManageAccount,
+        title: "Admin - Quản lý tài khoản",
+        layoutTitle: "Danh sách tài khoản quản trị",
+        isProtected: true,
+    },
+    {
+        path: "/admin/orders/:id",
+        element: OrderDetail,
+        title: "Admin - Chi tiết đơn hàng",
+        layoutTitle: "Chi tiết đơn hàng",
+        isProtected: true,
+    },
 ];
 
 const AdminRoutes = adminRoutes.map(

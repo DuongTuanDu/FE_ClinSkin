@@ -7,6 +7,7 @@ export const brandApi = createApi({
     const { url, method, data, params } = args;
     return baseQuery({ url, method, data, params });
   },
+  // tagTypes: ["Brand"],
   endpoints: (builder) => ({
     getAllBrands: builder.query({
       query: () => ({
@@ -15,6 +16,7 @@ export const brandApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
+    // get
     getBrandList: builder.query({
       query: ({ page = 1, pageSize = 10, name = "" }) => {
         const queryStrings = new URLSearchParams({

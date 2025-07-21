@@ -12,7 +12,8 @@ import { userApi } from "./user/user.query";
 import { shipApi } from "./ship/ship.query";
 import { promotionApi } from "./promotion/promotion.query";
 import { notificationApi } from "./notification/notification.query";
-import { addressApi } from "./address/address.query"
+import { addressApi } from "./address/address.query";
+import { salesHistoryApi } from "./salesHistory/salesHistory.query";
 
 
 export const store = configureStore({
@@ -31,6 +32,7 @@ export const store = configureStore({
     [promotionApi.reducerPath]: promotionApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
     [addressApi.reducerPath]: addressApi.reducer,
+    [salesHistoryApi.reducerPath]: salesHistoryApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
@@ -48,6 +50,7 @@ export const store = configureStore({
       shipApi.middleware,
       notificationApi.middleware,
       addressApi.middleware,
+      salesHistoryApi.middleware,
       promotionApi.middleware
     )
 

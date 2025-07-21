@@ -7,6 +7,7 @@ export const orderApi = createApi({
     const { url, method, data, params } = args;
     return baseQuery({ url, method, data, params });
   },
+  tagTypes: ["Order"],
   endpoints: (builder) => ({
     // get
     getAllOrderAdmin: builder.query({
@@ -33,10 +34,32 @@ export const orderApi = createApi({
           method: "GET",
         };
       },
-    })
+      providesTags: ["Order"],
+    }),
+    getOrderHistory: builder.query({
+      query: ({ page = 1, pageSize = 10, status = "all" }) => {
+        const queryString = new URLSearchParams({
+          page,
+          pageSize,
+          status,
+        }).toString();
+        return {
+          url: `/orders?${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
+    getOrderDetailByUser: builder.query({
+      query: ({ id }) => ({
+        url: `/orders/detail/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
-  useGetAllOrderAdminQuery
+  useGetAllOrderAdminQuery,
+  useGetOrderHistoryQuery,
+  useGetOrderDetailByUserQuery,
 } = orderApi;
