@@ -32,8 +32,30 @@ export const reviewApi = createApi({
           method: "GET",
         };
       },
-    })
+    }),
+    getReviewByUser: builder.query({
+      query: ({
+        productId,
+        page = 1,
+        pageSize = 10,
+        rate = "",
+        hasComment = "",
+        hasImage = "",
+      }) => {
+        const queryString = new URLSearchParams({
+          page,
+          pageSize,
+          rate,
+          hasComment,
+          hasImage,
+        }).toString();
+        return {
+          url: `/reviews/${productId}?${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
-export const { useGetReviewListAdminQuery } = reviewApi;
+export const { useGetReviewListAdminQuery, useGetReviewByUserQuery } = reviewApi;
