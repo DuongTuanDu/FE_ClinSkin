@@ -8,6 +8,7 @@ export const orderApi = createApi({
     return baseQuery({ url, method, data, params });
   },
   endpoints: (builder) => ({
+    // get
     getAllOrderAdmin: builder.query({
       query: ({
         page = 1,

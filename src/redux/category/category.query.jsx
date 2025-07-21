@@ -16,7 +16,7 @@ export const categoryApi = createApi({
             transformResponse: (response) => response.data,
             providesTags: ["Category"],
         }),
-
+// update
         getCategoryList: builder.query({
             query: ({ page = 1, pageSize = 10, name = "" }) => {
                 const queryStrings = new URLSearchParams({
@@ -31,7 +31,7 @@ export const categoryApi = createApi({
             },
             providesTags: ["Category"],
         }),
-
+// delete
         deleteCategory: builder.mutation({
             query: (id) => ({
                 url: `/admin/categories/${id}`,
@@ -39,7 +39,7 @@ export const categoryApi = createApi({
             }),
             invalidatesTags: ["Category"],
         }),
-
+       // create
         getAllCategoryUser: builder.query({
             query: () => ({
                 url: `/categories`,

@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { message } from "antd";
 import axios from "@axios/axios";
 
-
+// create
 export const orderCod = createAsyncThunk(
   "order/orderCod",
   async (payload, { rejectWithValue }) => {
@@ -15,7 +15,7 @@ export const orderCod = createAsyncThunk(
     }
   }
 );
-
+// update
 export const updateStatusOrderByAdmin = createAsyncThunk(
   "order/updateStatusOrderByAdmin",
   async ({ id, data }, { rejectWithValue }) => {
@@ -29,7 +29,7 @@ export const updateStatusOrderByAdmin = createAsyncThunk(
     }
   }
 );
-
+// delete
 export const deleteOrder = createAsyncThunk(
   "order/deleteOrder",
   async (id, { rejectWithValue }) => {
