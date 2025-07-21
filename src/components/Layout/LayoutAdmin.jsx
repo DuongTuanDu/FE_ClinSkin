@@ -20,6 +20,7 @@ const LayoutAdmin = ({ children, title, className = "bg-white" }) => {
     }, [isMobile]);
 
     return (
+        // eslint-disable-next-line react/jsx-no-constructed-context-values
         <Layout className="min-h-screen">
             <SiderAdmin {...{ collapsed, setCollapsed }} />
             <Layout className="site-layout">

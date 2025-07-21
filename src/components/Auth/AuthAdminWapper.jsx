@@ -13,6 +13,7 @@ const AuthAdminWrapper = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const { pathname } = useLocation();
 
+  // eslint-disable-next-line
   const initAuth = () => {
     const accessToken = get("ACCESS_TOKEN_ADMIN");
     if (accessToken && !isAuthenticatedAdmin) {

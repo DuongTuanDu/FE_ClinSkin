@@ -1,4 +1,3 @@
-// promotion.query.js
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@axios/axios";
 
@@ -44,7 +43,7 @@ export const promotionApi = createApi({
       }),
     })
 
-    // Có thể thêm các endpoint khác ở đây sau này
+
   }),
 });
 

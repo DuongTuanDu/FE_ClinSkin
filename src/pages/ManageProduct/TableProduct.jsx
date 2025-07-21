@@ -21,7 +21,7 @@ const TableProduct = ({
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState({});
   
-  // Handle the add product modal from parent component
+
   useEffect(() => {
     if (showAddModal) {
       setProduct({});

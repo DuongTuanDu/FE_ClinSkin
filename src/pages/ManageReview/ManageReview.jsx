@@ -17,23 +17,18 @@ const ManageReview = () => {
     setSearchText(value);
     setPaginate((prev) => ({ ...prev, page: 1 }));
   }, 500), []);
-
   const handleSearchChange = (e) => {
     debouncedFilter(e.target.value);
   };
-
   const handlePageChange = (page, pageSize) => {
     setPaginate({ page, pageSize });
   };
-
  const { data, isLoading, refetch } = useGetReviewListQuery({
   ...paginate,
   content: searchText,
 });
-
   const reviews = data?.reviews || [];
 const pagination = data?.pagination || {};
-
 
   return (
     <div className="mt-4">
@@ -46,7 +41,6 @@ const pagination = data?.pagination || {};
           allowClear
         />
       </div>
-
       <TableReview
         reviews={reviews}
         isLoading={isLoading}

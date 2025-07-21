@@ -7,46 +7,35 @@ export const orderApi = createApi({
     const { url, method, data, params } = args;
     return baseQuery({ url, method, data, params });
   },
-  tagTypes: ["Order"],
   endpoints: (builder) => ({
-    // 🔍 Get danh sách order (phân trang, filter, search)
-    getOrderList: builder.query({
+    getAllOrderAdmin: builder.query({
       query: ({
         page = 1,
-        limit = 10,
+        pageSize = 10,
+        search = "",
         status = "",
-        keyword = "",
-        sort = "-createdAt",
-        startDate = ''
-      } = {}) => {
-        const queryStrings = new URLSearchParams({
+        paymentMethod = "",
+        fromDate = "",
+        toDate = "",
+      }) => {
+        const queryString = new URLSearchParams({
           page,
-          limit,
+          pageSize,
+          search,
           status,
-          keyword,
-          sort,
-          startDate
+          paymentMethod,
+          fromDate,
+          toDate,
         }).toString();
         return {
-          url: `/admin/orders?${queryStrings}`,
-          method: "GET"
+          url: `/admin/orders?${queryString}`,
+          method: "GET",
         };
       },
-      providesTags: ["Order"]
-    }),
-
-    // 📄 Get chi tiết đơn hàng
-    getOrderDetail: builder.query({
-      query: (id) => ({
-        url: `/admin/orders/${id}`,
-        method: "GET"
-      }),
-      providesTags: ["Order"]
-    }),
-  })
+    })
+  }),
 });
 
 export const {
-  useGetOrderListQuery,
-  useGetOrderDetailQuery,
+  useGetAllOrderAdminQuery
 } = orderApi;

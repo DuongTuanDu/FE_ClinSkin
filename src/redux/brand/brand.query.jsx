@@ -28,6 +28,7 @@ export const brandApi = createApi({
         };
       },
     }),
+    // create
     getAllBrandByUser: builder.query({
       query: () => ({
         url: `/brands`,

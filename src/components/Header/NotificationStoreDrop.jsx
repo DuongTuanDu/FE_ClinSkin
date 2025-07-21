@@ -24,6 +24,7 @@ const NotificationDrop = () => {
   const [notifications, setNotifications] = useState(data?.notifications || []);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Handle new notification
   const handleNewNotification = (notification) => {
     setNotifications((prev) => [notification, ...prev]);
     setUnreadCount((prev) => prev + 1);
@@ -56,6 +57,8 @@ const NotificationDrop = () => {
     }
   }, [data?.notifications, paginate.page]);
 
+
+  // Handle see more
   const handleSeeMore = useCallback(() => {
     if (data?.hasMore) {
       setPaginate((prev) => ({
@@ -67,6 +70,7 @@ const NotificationDrop = () => {
 
   const { hasMore = false } = data || {};
 
+  // Handle click
   const handleClickNofi = async (notification) => {
     console.log("kkkkkkkk");
     

@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "@axios/axios";
 import { message } from "antd";
 
+// login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data, { rejectWithValue }) => {
@@ -14,6 +15,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// register
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (data, { rejectWithValue }) => {
@@ -25,7 +27,7 @@ export const registerUser = createAsyncThunk(
     }
   }
 );
-
+// send otp
 export const sendOtp = createAsyncThunk(
   "auth/sendOtp",
   async (payload, { rejectWithValue }) => {
@@ -37,7 +39,7 @@ export const sendOtp = createAsyncThunk(
     }
   }
 );
-
+// verify otp
 export const verifyAccount = createAsyncThunk(
   "auth/verifyAccount",
   async (payload, { rejectWithValue }) => {
@@ -49,7 +51,7 @@ export const verifyAccount = createAsyncThunk(
     }
   }
 );
-
+// reset password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (payload, { rejectWithValue }) => {
@@ -61,7 +63,7 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
-
+// get account
 export const getAccountUser = createAsyncThunk(
   "auth/getAccountUser",
   async (_, { rejectWithValue }) => {
@@ -74,7 +76,8 @@ export const getAccountUser = createAsyncThunk(
     }
   }
 );
-
+ 
+// Admin
 export const loginAdmin = createAsyncThunk(
   "auth/loginAdmin",
   async (data, { rejectWithValue }) => {
@@ -87,6 +90,7 @@ export const loginAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const getAccountAdmin = createAsyncThunk(
   "auth/getAccountAdmin",
   async (_, { rejectWithValue }) => {
@@ -99,11 +103,55 @@ export const getAccountAdmin = createAsyncThunk(
   }
 );
 
+// Admin
 export const updateAccountAdmin = createAsyncThunk(
   "auth/updateAccountAdmin",
   async ({ id, data }, { rejectWithValue }) => {
     try {
       return await axios.put(`/admin/admin-accounts/${id}`, data);
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Admin
+export const getAllAccountAdmin = createAsyncThunk(
+  "auth/getAllAccountAdmin",
+  async (
+    { page = 1, pageSize = 10, search = "", role = "" },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await axios.get(
+        `/admin/admin-accounts?page=${page}&pageSize=${pageSize}&search=${search}&role=${role}`
+      );
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Admin
+export const createAccountAdmin = createAsyncThunk(
+  "auth/createAccountAdmin",
+  async (payload, { rejectWithValue }) => {
+    try {
+      return await axios.post("/admin/admin-accounts", payload);
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Admin
+export const removeAccountAdmin = createAsyncThunk(
+  "auth/removeAccountAdmin",
+  async (payload, { rejectWithValue }) => {
+    try {
+      return await axios.delete(`/admin/admin-accounts/${payload}`);
     } catch (error) {
       message.error(error.response.data.message);
       return rejectWithValue(error.response.data);

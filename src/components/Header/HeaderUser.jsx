@@ -24,6 +24,7 @@ import LanguageSelector from "../language/LanguageSelector";
 import { useTranslation } from "react-i18next";
 import Promotion from "@/pages/Promotion";
 import { useGetAllActivePromotionsQuery } from "@/redux/promotion/promotion.query";
+import { message } from "antd";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -126,7 +127,7 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotionProduct", // fallback
+            path: "/promotionProduct",
             children:
                 Array.isArray(promotions) && promotions.length > 0
                     ? promotions.map((item) => ({
@@ -136,9 +137,15 @@ const HeaderUser = () => {
                                 {item.name}
                             </div>
                         ),
-                        path: `/promotionProduct/${item.slug}`, // <-- route này bạn phải tạo riêng!
+                        path: `/promotionProduct/${item.slug}`, 
                     }))
-                    : [],
+                    : [{key: 0,
+                        label: (
+                            <div className="text-pink-600 font-bold text-sm">
+                                Hiện tại không có khuyến mãi !!!
+                            </div>
+                        ),
+                        path: `#`, }],
         },
         {
             key: "categories",
