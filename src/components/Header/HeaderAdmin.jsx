@@ -14,6 +14,7 @@ import { BsFillMenuButtonFill, BsFillMenuButtonWideFill } from "react-icons/bs";
 
 const { Header } = Layout;
 
+// eslint-disable-next-line react/prop-types
 const HeaderAdmin = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ const HeaderAdmin = ({ collapsed, setCollapsed }) => {
   ];
 
   return (
+    // eslint-disable-next-line react/jsx-no-comment-textnodes
     <Header className="bg-white flex justify-between items-center shadow-md px-8">
       <div className="flex items-center">
         <Button

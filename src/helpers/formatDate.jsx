@@ -5,7 +5,7 @@ export const formatDateReview = (dateString) => {
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
 };
-
+// format date
 export const formatDateOrder = (dateString) => {
   const date = new Date(dateString);
 

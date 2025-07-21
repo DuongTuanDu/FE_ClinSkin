@@ -35,8 +35,7 @@ const SearchHeader = () => {
       }, 500),
     [dispatch]
   );
-
-  // handle search
+// console.log(searchResults);
   const handleSearch = useCallback(
     (value) => {
       setSearch(value);
@@ -45,7 +44,6 @@ const SearchHeader = () => {
     },
     [debouncedSearch]
   );
-
   // handle click
   const handleProductClick = useCallback(
     (slug) => {
@@ -56,6 +54,7 @@ const SearchHeader = () => {
     [navigate]
   );
 
+  // render
   const searchContent = useMemo(
     () => (
       <div className="w-full max-h-[70vh] overflow-y-auto overflow-x-hidden">
@@ -106,6 +105,7 @@ const SearchHeader = () => {
   );
 
   return (
+    // search
     <Popover
       content={searchContent}
       title="Kết quả tìm kiếm"

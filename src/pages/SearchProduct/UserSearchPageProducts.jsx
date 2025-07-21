@@ -39,7 +39,6 @@ const UserProductSearchPage = () => {
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
   });
-//   console.log(productData);
   const products = productData?.data || [];
   const totalPages = productData?.pagination?.totalPage || 0;
 
@@ -65,6 +64,7 @@ const UserProductSearchPage = () => {
     },
   };
 
+  // Function to handle item click
   const renderItem = (item) => {
     const discountPercentage = item.promotion?.discountPercentage || 0;
     const discountedPrice = item.promotion ? item.finalPrice : item.price;

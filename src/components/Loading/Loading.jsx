@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const Loading = () => {
+    // loading
     return (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-pink-50" >
             <motion.div

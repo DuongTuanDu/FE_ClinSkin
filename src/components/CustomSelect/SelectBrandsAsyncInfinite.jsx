@@ -15,7 +15,7 @@ const SelectBrandsAsyncInfinite = ({ defaultBrand, onSelectChange }) => {
       });
     }
   }, [defaultBrand]);
-
+  // console.log("selected", selected);
   const loadOptions = useCallback(
     async (search, loadedOptions, { page }) => {
       try {
@@ -49,6 +49,7 @@ const SelectBrandsAsyncInfinite = ({ defaultBrand, onSelectChange }) => {
     [dispatch]
   );
 
+// handleChange
   const handleChange = (selectedOption) => {
     setSelected(selectedOption);
     if (onSelectChange && selectedOption) {
