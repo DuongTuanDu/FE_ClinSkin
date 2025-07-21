@@ -8,6 +8,7 @@ export const notificationApi = createApi({
     return baseQuery({ url, method, data, params });
   },
   endpoints: (builder) => ({
+    // get
     getAllNotiStoreByUser: builder.query({
       query: ({ page = 1, limit = 10, type = "STORE" }) => {
         const queryString = new URLSearchParams({
