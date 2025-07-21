@@ -48,8 +48,19 @@ const OrderProductItem = ({
             />
             <div className="flex flex-col items-center justify-end gap-1 flex-wrap">
                 {order.status === "delivered" && (
-                    <Button>
-                        Đánh giá
+                    <Button
+                        onClick={() => {
+                            setOrderId(order._id);
+                            setProductDetail({
+                                _id: product.pid,
+                                name: product.name,
+                                image: product.image,
+                            });
+                            setOpenRate(true);
+                        }}
+                        disabled={product.isReviewed}
+                    >
+                        {product.isReviewed ? "Đã đánh giá" : "Đánh giá"}
                     </Button>
                 )}
             </div>

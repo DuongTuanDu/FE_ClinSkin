@@ -18,6 +18,7 @@ import { useDispatch } from "react-redux";
 import OrderInfor from "./OrderInfor";
 import OrderProductItem from "./OrderProductItem";
 import { groupProductsByProductId } from "@/helpers/order";
+import ModalRate from "@/components/Modal/ModalRate";
 
 const { Title, Text } = Typography;
 
@@ -98,6 +99,15 @@ const OrderAll = ({
           setOpen: setOpenCancel,
           orderId,
           setOrderId,
+          refetch,
+        }}
+      />
+      <ModalRate
+        {...{
+          product: productDetail,
+          open: openRate,
+          setOpen: setOpenRate,
+          order: orderId,
           refetch,
         }}
       />

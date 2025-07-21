@@ -3,6 +3,7 @@ import { List, Card, Spin, Pagination, Typography, Space } from "antd";
 import { groupProductsByProductId } from "@/helpers/order";
 import OrderProductItem from "./OrderProductItem";
 import OrderInfor from "./OrderInfor";
+import ModalRate from "@/components/Modal/ModalRate";
 
 const { Title } = Typography;
 
@@ -21,6 +22,15 @@ const OrderComplete = ({
 
   return (
     <Spin spinning={isLoading}>
+      <ModalRate
+        {...{
+          product: productDetail,
+          open,
+          setOpen,
+          order: orderId,
+          refetch,
+        }}
+      />
       <List
         grid={{ gutter: 16, column: 1 }}
         dataSource={orders}
