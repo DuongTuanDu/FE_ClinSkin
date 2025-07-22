@@ -5,6 +5,7 @@ import { HiOutlineBadgeCheck } from "react-icons/hi";
 import { BiLeaf } from "react-icons/bi";
 import CountUp from "./CountUp";
 
+// Banner component
 const Banner = () => {
   return (
     <div className="relative bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 rounded-xl overflow-hidden">
