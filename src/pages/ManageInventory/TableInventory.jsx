@@ -65,6 +65,18 @@ const TableInventory = ({
         key: "batchNumber",
         sorter: true,
         sortOrder: sortBy === 'batchNumber' ? sortOrder : null,
+        render: (text, record) => {
+          const isExpired = dayjs(record.expiryDate).isBefore(dayjs());
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span className={isExpired ? "text-red-600 font-semibold" : ""}>{text}</span>
+              {isExpired && (
+                <span className="text-xs text-red-500">⚠️</span>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: "Sản phẩm",
@@ -122,13 +134,29 @@ const TableInventory = ({
         sorter: true,
         sortOrder: sortBy === 'expiryDate' ? sortOrder : null,
         render: (date) => {
-          const isNearExpiry = dayjs(date).diff(dayjs(), 'month') <= 3;
-          const isExpired = dayjs(date).isBefore(dayjs());
+          const daysRemaining = dayjs(date).diff(dayjs(), 'days');
+          const isNearExpiry = daysRemaining <= 90 && daysRemaining > 0;
+          const isExpired = daysRemaining < 0;
           
           return (
-            <Tag color={isExpired ? "red" : isNearExpiry ? "orange" : "green"}>
-              {dayjs(date).format("DD/MM/YYYY")}
-            </Tag>
+            <div className="flex items-center gap-2">
+              <Tag color={isExpired ? "red" : isNearExpiry ? "orange" : "green"}>
+                {dayjs(date).format("DD/MM/YYYY")}
+              </Tag>
+              {isExpired ? (
+                <span className="text-red-600 font-semibold text-xs bg-red-100 px-2 py-1 rounded-full border border-red-300">
+                  HẾT HẠN
+                </span>
+              ) : (
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  isNearExpiry 
+                    ? "text-orange-600 bg-orange-100 border border-orange-300" 
+                    : "text-green-600 bg-green-100 border border-green-300"
+                }`}>
+                  Còn {daysRemaining} ngày
+                </span>
+              )}
+            </div>
           );
         },
       },
@@ -172,7 +200,7 @@ const TableInventory = ({
         ),
       },
     ],
-    [page, pageSize, sortBy, sortOrder]
+    [page, pageSize, sortBy, sortOrder, isLoadingDelete]
   );
 
   return (

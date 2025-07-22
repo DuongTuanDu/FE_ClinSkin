@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Input, Button } from "antd";
+import { Input, Button, Select } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import TableInventory from "@/pages/ManageInventory/TableInventory";
 import debounce from "lodash/debounce";
@@ -16,6 +16,7 @@ const ManageInventory = () => {
     batchNumber: "",
     productId: "",
     importer: "",
+    expiryStatus: "all", // all, expired, notExpired
     sortBy: "createdAt",
     sortOrder: "descend",
   });
@@ -54,6 +55,11 @@ const ManageInventory = () => {
     setPaginate((prev) => ({ ...prev, page: 1 }));
   };
 
+  const handleExpiryStatusFilter = (value) => {
+    setFilter((prev) => ({ ...prev, expiryStatus: value }));
+    setPaginate((prev) => ({ ...prev, page: 1 }));
+  };
+
   return (
     <div className="mt-4">
       <ModalInventoryAction
@@ -75,6 +81,20 @@ const ManageInventory = () => {
         </div>
         <div className="w-full md:w-64">
           <SelectProductsAsyncInfinite onSelectChange={handleProductFilter} />
+        </div>
+        <div className="w-full md:w-48">
+          <Select
+            size="middle"
+            placeholder="Trạng thái hết hạn"
+            value={filter.expiryStatus}
+            onChange={handleExpiryStatusFilter}
+            className="w-full"
+            options={[
+              { value: "all", label: "Tất cả" },
+              { value: "notExpired", label: "Chưa hết hạn" },
+              { value: "expired", label: "Đã hết hạn" },
+            ]}
+          />
         </div>
         <Button
           size="middle"
