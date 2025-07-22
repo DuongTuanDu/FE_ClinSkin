@@ -17,6 +17,7 @@ const ProductList = React.lazy(() =>
   import("@/components/Product/ProductList")
 );
 
+// eslint-disable-next-line react/prop-types
 const ListSkeleton = () => (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {[...Array(8)].map((_, idx) => (
