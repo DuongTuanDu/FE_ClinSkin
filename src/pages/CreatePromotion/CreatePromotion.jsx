@@ -35,6 +35,7 @@ const SORT_OPTIONS = [
   { label: "Giảm dần", value: "desc" },
 ];
 
+// eslint-disable-next-line react/prop-types
 const CreatePromotion = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -122,6 +123,7 @@ const CreatePromotion = () => {
     []
   );
 
+  // eslint-disable-next-line react/prop-types
   const rowSelection = useMemo(
     () => ({
       selectedRowKeys: selectedProducts.map((p) => p.product),

@@ -9,6 +9,7 @@ export const orderApi = createApi({
   },
   tagTypes: ["Order"],
   endpoints: (builder) => ({
+    // get
     getAllOrderAdmin: builder.query({
       query: ({
         page = 1,

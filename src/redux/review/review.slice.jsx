@@ -14,7 +14,7 @@ const initialState = {
         pageSize: 10,
     },
 };
-
+// Create review
 export const reviewSlice = createSlice({
     name: "review",
     initialState,

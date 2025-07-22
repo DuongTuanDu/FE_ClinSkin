@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "@axios/axios";
 import { message } from "antd";
-
+// create
 export const createCategory = createAsyncThunk(
     "category/createCategory",
     async (payload, { rejectWithValue }) => {
@@ -13,7 +13,7 @@ export const createCategory = createAsyncThunk(
         }
     }
 );
-
+// update
 export const updateCategory = createAsyncThunk(
     "category/updateCategory",
     async (payload, { rejectWithValue }) => {
