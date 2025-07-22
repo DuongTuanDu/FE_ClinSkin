@@ -82,11 +82,11 @@ const OrderReturn = () => {
                     <List.Item.Meta
                         avatar={<Avatar src={item.image} shape="square" size={64} />}
                         title={<span>{item.name}</span>}
-                        description={`${item.quantity} x ${formatPrice(item.price)} đ`}
+                        // description={`${item.quantity} x ${formatPrice(item.price)} đ`}
                     />
-                    <div className="font-semibold">
+                    {/* <div className="font-semibold">
                         {formatPrice(item.price * item.quantity)} đ
-                    </div>
+                    </div> */}
                 </List.Item>
             )}
         />
