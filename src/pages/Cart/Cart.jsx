@@ -45,8 +45,6 @@ const Cart = ({ isHiden = false }) => {
     const { data: productList = [], pagination = {} } = data || {};
 
     const { data: addresses = [], isLoading: isLoadingAddress, refetch } = useGetAllAddressQuery();
-    console.log("addresses", addresses);
-    
 
     const selectedProducts = useMemo(() => {
         return products.filter((product) =>

@@ -93,7 +93,7 @@ const ModalCheckout = ({ addresses = [], isLoadingAddress, open, setOpen, produc
                                 JSON.stringify({
                                     order: res.payload.data,
                                     model: "User",
-                                    recipient: res.payload.data.user,
+                                    recipient: res.payload.data.userId,
                                 })
                             );
 

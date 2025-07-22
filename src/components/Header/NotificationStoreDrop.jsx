@@ -2,10 +2,14 @@ import { useGetAllNotiStoreByUserQuery } from "@/redux/notification/notification
 import { Badge, Button, Dropdown, Empty, Skeleton, Tooltip } from "antd";
 import React, { useCallback, useEffect, useState } from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import dayjs from "@utils/dayjsTz";
+import { useNavigate } from "react-router-dom";
+import { markAllNotificationsAsRead, markNotificationAsRead } from "@/redux/notification/notification.thunk";
 
 const NotificationDrop = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { socketCustomer: socket } = useSelector((state) => state.socket);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -21,7 +25,9 @@ const NotificationDrop = () => {
       },
       { skip: !isAuthenticated }
     );
+
   const [notifications, setNotifications] = useState(data?.notifications || []);
+
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Handle new notification
@@ -71,13 +77,38 @@ const NotificationDrop = () => {
   const { hasMore = false } = data || {};
 
   // Handle click
-  const handleClickNofi = async (notification) => {
-    console.log("kkkkkkkk");
-    
+  const handleClickNofi = async (notification, isNavigate = false) => {
+    if (notification.isRead && !isNavigate) return;
+
+    if (notification.metadata?.link) {
+      navigate(notification.metadata.link);
+    }
+
+    const res = await dispatch(
+      markNotificationAsRead({
+        id: notification._id,
+        recipient: notification.recipient,
+      })
+    ).unwrap();
+
+    if (res.success) {
+      refetch();
+      if (isNavigate && notification.metadata?.link) {
+        navigate(notification.metadata.link);
+      }
+    }
   };
 
   const handleMarkAllNoti = async () => {
-    console.log("jjjjjjjjjj");
+    const res = await dispatch(
+      markAllNotificationsAsRead({
+        type: "STORE",
+      })
+    ).unwrap();
+
+    if (res.success) {
+      refetch();
+    }
   };
 
   const notificationList = (

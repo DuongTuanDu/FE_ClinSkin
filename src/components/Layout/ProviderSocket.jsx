@@ -9,7 +9,9 @@ const ProviderSocket = ({ children }) => {
     const dispatch = useDispatch();
     const {
         isAuthenticated,
+        isAuthenticatedAdmin,
         userInfo,
+        adminInfo
     } = useSelector((state) => state.auth);
 
     // Socket connection for authenticated customer
@@ -30,6 +32,25 @@ const ProviderSocket = ({ children }) => {
             };
         }
     }, [isAuthenticated]);
+
+    // Socket connection for authenticated admin
+    useEffect(() => {
+        if (isAuthenticatedAdmin) {
+            const socketConnect = io(SOCKET_SERVER_URL, {
+                query: {
+                    userId: adminInfo?._id,
+                    userType: "admin",
+                },
+            });
+
+            dispatch(SocketActions.setSocketAdmin(socketConnect));
+
+            return () => {
+                socketConnect.disconnect();
+                dispatch(SocketActions.setSocketAdmin(null));
+            };
+        }
+    }, [isAuthenticatedAdmin]);
 
     return <>{children}</>;
 };
