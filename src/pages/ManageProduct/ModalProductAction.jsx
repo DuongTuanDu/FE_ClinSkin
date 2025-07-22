@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import ErrorMessage from "@components/Error/ErrorMessage";
 import { useGetAllCategoryQuery } from "@redux/category/category.query";
 import { useGetAllBrandsQuery } from "@redux/brand/brand.query";
@@ -11,7 +13,6 @@ import { validateForm, validateProductActionSchema } from "@validate/validate";
 import SelectBrandsAsyncInfinite from "@/components/CustomSelect/SelectBrandsAsyncInfinite";
 import { tags } from "@/const/tags";
 
-const { TextArea } = Input;
 const { Option } = Select;
 
 const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
@@ -21,6 +22,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const [fileList, setFileList] = useState([]);
   const [mainImage, setMainImage] = useState(null);
   const [errors, setErrors] = useState({});
+  const [description, setDescription] = useState("");
 
   // Use actual API queries
   const {
@@ -46,9 +48,11 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
           currentStock: product.currentStock,
           categories: product.categories?.map(cat => cat._id || cat),
           brandId: product.brandId?._id || product.brandId,
-          description: product.description,
           tags: product.tags?.join(", ")
         });
+
+        // Set description for ReactQuill
+        setDescription(product.description || "");
 
         // Set main image
         if (product.mainImage?.url) {
@@ -80,6 +84,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       } else {
         // Clear form for new product creation
         form.resetFields();
+        setDescription("");
         setMainImage(null);
         setFileList([]);
       }
@@ -128,6 +133,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       const productData = {
         ...values,
         tags,
+        description, // Use description from ReactQuill state
       };
 
       // Handle main image
@@ -184,6 +190,24 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       reader.onerror = (error) => reject(error);
     });
   };
+
+  // Quill modules và formats
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['link', 'video'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'color', 'background', 'list', 'bullet', 'align', 'link', 'video'
+  ];
 
   const handleCancel = () => {
     setOpen(false);
@@ -350,14 +374,21 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
           </Select>
         </Form.Item>
 
-        <Form.Item
-          name="description"
-          label="Mô tả sản phẩm"
-          validateStatus={errors.description ? "error" : ""}
-          help={errors.description ? <ErrorMessage message={errors.description} /> : ""}
-        >
-          <TextArea rows={4} />
-        </Form.Item>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Mô tả sản phẩm
+          </label>
+          <ReactQuill
+            theme="snow"
+            value={description}
+            onChange={setDescription}
+            modules={quillModules}
+            formats={quillFormats}
+            placeholder="Nhập mô tả sản phẩm..."
+            style={{ height: '200px', marginBottom: '50px' }}
+          />
+          {errors.description && <ErrorMessage message={errors.description} />}
+        </div>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
