@@ -15,7 +15,7 @@ import dayjs from "@utils/dayjsTz";
 import axiosInstance from "@axios/axios";
 
 const { Option } = Select;
-
+// Custom tooltip   
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
@@ -54,6 +54,7 @@ const fetchReviewsDaily = async (year, month) => {
     }
 };
 
+// API service functions
 const fetchReviewsMonthly = async (year) => {
     try {
         const response = await axiosInstance.get(`/admin/dashboard/reviews/monthly/${year}`);
@@ -63,7 +64,7 @@ const fetchReviewsMonthly = async (year) => {
         throw error;
     }
 };
-
+// API service functions
 const fetchReviewsYearly = async () => {
     try {
         const response = await axiosInstance.get("/admin/dashboard/reviews/yearly");
@@ -74,6 +75,7 @@ const fetchReviewsYearly = async () => {
     }
 };
 
+// Main component
 const StatsReview = () => {
     const [query, setQuery] = useState({
         year: dayjs().year(),

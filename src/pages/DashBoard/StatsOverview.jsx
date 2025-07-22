@@ -155,6 +155,7 @@ const StatCard = ({
     );
 };
 
+// Main component
 const StatsOverview = () => {
     const [query, setQuery] = useState({
         year: dayjs().year(),
