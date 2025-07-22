@@ -1,2 +1,2 @@
-import PromotionDetail from "./PromotionDetail";
-export default PromotionDetail;
+import Promotion from "./Promotion";
+export default Promotion;

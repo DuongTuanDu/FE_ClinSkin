@@ -127,25 +127,7 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotionProduct",
-            children:
-                Array.isArray(promotions) && promotions.length > 0
-                    ? promotions.map((item) => ({
-                        key: item._id,
-                        label: (
-                            <div className="text-pink-600 font-bold text-sm">
-                                {item.name}
-                            </div>
-                        ),
-                        path: `/promotionProduct/${item.slug}`, 
-                    }))
-                    : [{key: 0,
-                        label: (
-                            <div className="text-pink-600 font-bold text-sm">
-                                Hiện tại không có khuyến mãi !!!
-                            </div>
-                        ),
-                        path: `#`, }],
+            path: "/promotions",
         },
         {
             key: "categories",
