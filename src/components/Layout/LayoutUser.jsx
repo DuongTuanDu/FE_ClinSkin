@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ModalAuth from "../Modal/ModalAuth";
 import { setOpenModelAuth } from "@/redux/auth/auth.slice";
 import ClickSpark from "../ClickSpark";
+import ConversationSupport from "../Chat/ConversationSupport";
 
 const LayoutUser = ({ children }) => {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ const LayoutUser = ({ children }) => {
       >
         <HeaderUser />
         <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
+        <ConversationSupport />
         <FooterUser />
       </ClickSpark>
     </div>

@@ -164,8 +164,8 @@ export const productApi = createApi({
             }) => {
                 const queryString = new URLSearchParams({
                     priceRange,
-                    categories: categories.join(","), 
-                    tags: tags.join(","),             
+                    categories: categories.join(","),
+                    tags: tags.join(","),
                     sortOrder,
                     page,
                     pageSize,
@@ -173,6 +173,35 @@ export const productApi = createApi({
 
                 return {
                     url: `/products/categories/${slug}?${queryString}`,
+                    method: "GET",
+                };
+            },
+            transformResponse: (response) => response.data,
+        }),
+
+        getProductPromtion: builder.query({
+            query: ({
+                page = 1,
+                pageSize = 12,
+                priceRange = "",
+                brands = [],
+                rating = "",
+                categories = [],
+                tags = [],
+                sortOrder = "",
+            }) => {
+                const queryString = new URLSearchParams({
+                    priceRange,
+                    rating,
+                    categories,
+                    tags,
+                    sortOrder,
+                    page,
+                    brands,
+                    pageSize,
+                }).toString();
+                return {
+                    url: `/products/promotions?${queryString}`,
                     method: "GET",
                 };
             },
@@ -195,5 +224,6 @@ export const {
     useGetFilterOptionsQuery,
     useGetProductFromBrandQuery,
     useGetProductAddPromotionQuery,
-    useGetProductFromCategoryQuery
+    useGetProductFromCategoryQuery,
+    useGetProductPromtionQuery,
 } = productApi;

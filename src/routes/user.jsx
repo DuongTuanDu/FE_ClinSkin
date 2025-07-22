@@ -18,7 +18,7 @@ const Cart = lazy(() => import("@pages/Cart/Cart"));
 const AboutUs = lazy(() => import("@pages/About-us/index"));
 const OrderReturn = lazy(() => import("@pages/OrderReturn/OrderReturn"));
 const Brand = lazy(() => import("@pages/Brand/index"));
-const PromotionDetail = lazy(() => import("@pages/Promotion/index"));
+const Promotion = lazy(() => import("@pages/Promotion/index"));
 const Category = lazy(() => import("@pages/Category/index"));
 const OrderDetailUser = lazy(() =>
   import("@pages/OrderDetailUser/OrderDetailUser")
@@ -128,8 +128,8 @@ const routes = [
     wrapper: WrapRoute
   },
   {
-    path: "/promotionProduct/:slug",
-    element: PromotionDetail,
+    path: "/promotions",
+    element: Promotion,
     title: "Khuyến mãi hot",
     wrapper: WrapRoute
   },
