@@ -11,6 +11,7 @@ import {
 } from "@/redux/auth/auth.slice";
 import ModalAuth from "../Modal/ModalAuth";
 
+
 const AuthUserWrapper = ({
   children,
   isModalAuth = false,
@@ -23,7 +24,7 @@ const AuthUserWrapper = ({
   const urlParams = new URLSearchParams(window.location.search);
   const { pathname } = useLocation();
   const token = urlParams.get("token");
-
+//   console.log(token);
   const initAuth = async () => {
     try {
       dispatch(setIsLoading(true));
