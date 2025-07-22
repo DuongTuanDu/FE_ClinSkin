@@ -25,6 +25,7 @@ const ListSkeleton = () => (
   </div>
 );
 
+// eslint-disable-next-line react/prop-types
 const Category = () => {
   const { slug } = useParams();
   const [paginate, setPaginate] = useState({
@@ -50,6 +51,7 @@ const Category = () => {
     []
   );
 
+  // eslint-disable-next-line react/prop-types
   const { data: productData, isLoading: isLoadingProducts } =
     useGetProductFromBrandQuery(
       { ...paginate, ...filters, slug },
@@ -80,6 +82,7 @@ const Category = () => {
     [filters]
   );
 
+  // eslint-disable-next-line react/prop-types
   const handleClearFilters = useCallback(() => {
     setFilters({
       priceRange: "",
@@ -90,6 +93,7 @@ const Category = () => {
     setPaginate((prev) => ({ ...prev, page: 1 }));
   }, []);
 
+  // eslint-disable-next-line react/prop-types
   const handleSortChange = useCallback((value) => {
     setFilters((prev) => ({ ...prev, sortOrder: value }));
   }, []);
