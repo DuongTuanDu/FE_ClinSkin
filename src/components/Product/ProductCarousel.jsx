@@ -153,16 +153,19 @@ const ProductCarousel = ({
             <div className="flex items-center justify-center gap-2">
               <Rate
                 disabled
-                value={4.5}
+                value={parseFloat(item.averageRating)}
                 character={({ index }) =>
                   createAverageRate({
                     index: index + 1,
-                    rate: 4.5,
+                    rate: parseFloat(item.averageRating),
                     width: "12px",
                     height: "12px",
                   })
                 }
               />
+              <span className="text-sm text-gray-500">
+                ({item.totalReviews})
+              </span>
             </div>
           </div>
         </div>
