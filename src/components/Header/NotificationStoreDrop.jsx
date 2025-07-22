@@ -25,10 +25,8 @@ const NotificationDrop = () => {
       },
       { skip: !isAuthenticated }
     );
-  console.log("data", data);
 
   const [notifications, setNotifications] = useState(data?.notifications || []);
-  console.log("notifications", notifications);
 
   const [unreadCount, setUnreadCount] = useState(0);
 

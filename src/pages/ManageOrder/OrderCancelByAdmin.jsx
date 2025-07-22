@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { IoMdArrowRoundBack, IoMdClose } from "react-icons/io";
 import { useDispatch } from "react-redux";
 
-const OrderCancelByAdmin = ({ open, onClose, order }) => {
+const OrderCancelByAdmin = ({ open, onClose, order, socket }) => {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +38,14 @@ const OrderCancelByAdmin = ({ open, onClose, order }) => {
         })
       ).unwrap();
       if (res.success) {
+        socket?.emit(
+          "updateOrderStatus",
+          JSON.stringify({
+            recipient: order.userId._id,
+            model: "User",
+            order: res.data,
+          })
+        );
         message.success(res.message);
         form.resetFields();
         onClose(true);
