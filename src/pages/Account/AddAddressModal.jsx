@@ -53,8 +53,6 @@ const AddAddressModal = ({
         label: values.label || "Địa chỉ mới"
       };
       
-      console.log("addressData", addressData);
-      
       await onAddAddress(addressData);
       
       // Reset form sau khi thêm thành công

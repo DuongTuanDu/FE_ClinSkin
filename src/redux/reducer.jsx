@@ -6,6 +6,7 @@ import promotionReducer from "./promotion/promotion.slice";
 import orderReducer from "./order/order.slice";
 import shipReducer from "./ship/ship.slice";
 import reviewReducer from "./review/review.slice";
+import notificationReducer from "./notification/notification.slice";
 
 const reducer = {
   auth: authReducer,
@@ -16,6 +17,7 @@ const reducer = {
   order: orderReducer,
   ship: shipReducer,
   review: reviewReducer,
+  notification: notificationReducer,
 };
 
 export default reducer;
