@@ -15,7 +15,7 @@ const CONTENT_TYPES = {
   PROFILE: "profile",
   ORDERS: "orders",
   CARTS: "carts",
-  ADDRESSES: "addresses", // Thêm tab địa chỉ
+  ADDRESSES: "addresses", 
 };
 
 const Account = () => {
@@ -62,7 +62,7 @@ const Account = () => {
     }
   };
 
-  // Cập nhật breadcrumb dựa trên tab hiện tại
+ 
   const getBreadcrumbItems = () => {
     const baseItems = [{ title: "Trang chủ" }, { title: "Tài khoản" }];
 
