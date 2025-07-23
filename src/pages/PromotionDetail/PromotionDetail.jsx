@@ -214,10 +214,6 @@ const PromotionDetail = () => {
       render: (_, record) => (
         <div className="space-y-1">
           <div className="text-sm truncate-2-lines">{record.name}</div>
-          <div className="flex flex-col sm:flex-row sm:items-center">
-            <span className="font-bold mr-1">Hạn sử dụng:</span>
-            {formatDateReview(record.expiry)}
-          </div>
           <div className="text-sm truncate-2-lines">
             <span className="font-bold mr-1">Giá:</span>
             <span>{formatPrice(record.price)} đ</span>
