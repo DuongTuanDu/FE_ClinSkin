@@ -104,6 +104,14 @@ const TableAccount = ({
                 width: 160,
                 render: (_, record) => (
                     <div className="flex gap-2 items-center text-[#00246a]">
+                        <Tooltip title={record.isActive ? "Tạm dừng" : "Mở hoạt động"}>
+                            <Switch
+                                checked={record.isActive}
+                                onChange={(checked) =>
+                                    handleToggle({ id: record._id, isActive: checked })
+                                }
+                            />
+                        </Tooltip>
                         <Tooltip title="Xem chi tiết">
                             <button
                                 onClick={() => {
@@ -113,14 +121,6 @@ const TableAccount = ({
                             >
                                 <FaEye />
                             </button>
-                        </Tooltip>
-                        <Tooltip title={record.isActive ? "Tạm dừng" : "Mở hoạt động"}>
-                            <Switch
-                                checked={record.isActive}
-                                onChange={(checked) =>
-                                    handleToggle({ id: record._id, isActive: checked })
-                                }
-                            />
                         </Tooltip>
                         <Tooltip title="Sửa">
                             <button
@@ -133,7 +133,7 @@ const TableAccount = ({
                                 <GrEdit />
                             </button>
                         </Tooltip>
-                        <Popconfirm
+                        {/* <Popconfirm
                             className="max-w-40"
                             placement="topLeft"
                             title={"Xác nhận xóa tài khoản"}
@@ -150,7 +150,7 @@ const TableAccount = ({
                                     <MdOutlineDeleteOutline />
                                 </button>
                             </Tooltip>
-                        </Popconfirm>
+                        </Popconfirm> */}
                     </div>
                 ),
             },

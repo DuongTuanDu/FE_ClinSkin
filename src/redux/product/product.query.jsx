@@ -207,6 +207,14 @@ export const productApi = createApi({
             },
             transformResponse: (response) => response.data,
         }),
+
+        getPromotionActive: builder.query({
+            query: () => ({
+                url: "/products/promotions-info",
+                method: "GET",
+            }),
+            transformResponse: (response) => response.data,
+        }),
     }),
 });
 
@@ -226,4 +234,5 @@ export const {
     useGetProductAddPromotionQuery,
     useGetProductFromCategoryQuery,
     useGetProductPromtionQuery,
+    useGetPromotionActiveQuery
 } = productApi;

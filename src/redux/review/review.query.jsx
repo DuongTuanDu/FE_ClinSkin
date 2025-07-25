@@ -55,7 +55,25 @@ export const reviewApi = createApi({
         };
       },
     }),
+    replyReview: builder.mutation({
+      query: ({ id, reply }) => ({
+        url: `/admin/reviews/${id}/reply`,
+        method: "PUT",
+        data: { reply },
+      }),
+      invalidatesTags: ['Review'], // Refresh cache sau khi reply
+      // Transform response nếu cần
+      transformResponse: (response) => {
+        console.log('Reply response:', response);
+        return response;
+      },
+      // Transform error nếu cần
+      transformErrorResponse: (response) => {
+        console.error('Reply error:', response);
+        return response.data || response;
+      },
+    }),
   }),
 });
 
-export const { useGetReviewListAdminQuery, useGetReviewByUserQuery } = reviewApi;
+export const { useGetReviewListAdminQuery, useGetReviewByUserQuery, useReplyReviewMutation } = reviewApi;
