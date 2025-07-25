@@ -24,7 +24,6 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const [errors, setErrors] = useState({});
   const [description, setDescription] = useState("");
 
-  // Use actual API queries
   const {
     data: categoriesData,
     isLoading: isLoadingCategories,
@@ -38,15 +37,64 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const categories = categoriesData || [];
   const brands = brandsData || [];
 
+  const renderCategoryOptions = (categories, level = 0) => {
+    const options = [];
+    
+    categories.forEach(category => {
+      const paddingLeft = level * 20 + 12;
+      
+      options.push(
+        <Option 
+          key={category._id} 
+          value={category._id}
+          style={{ paddingLeft: `${paddingLeft}px` }}
+        >
+          {category.name}
+        </Option>
+      );
+      
+      // Add children categories if they exist
+      if (category.children && category.children.length > 0) {
+        options.push(...renderCategoryOptions(category.children, level + 1));
+      }
+    });
+    
+    return options;
+  };
+
+  const flattenCategories = (categories, level = 0) => {
+    const flattened = [];
+    
+    categories.forEach(category => {
+      flattened.push(category);
+      if (category.children && category.children.length > 0) {
+        flattened.push(...flattenCategories(category.children, level + 1));
+      }
+    });
+    
+    return flattened;
+  };
+
+  const flatCategories = flattenCategories(categories);
+
   useEffect(() => {
 
     if (open) {
       if (!isEmpty(product)) {
+        // Helper function to extract category IDs from nested structure
+        const extractCategoryIds = (categories) => {
+          if (!categories || !Array.isArray(categories)) return [];
+          return categories.map(cat => {
+            if (typeof cat === 'string') return cat;
+            return cat._id || cat;
+          });
+        };
+
         form.setFieldsValue({
           name: product.name,
           price: product.price,
           currentStock: product.currentStock,
-          categories: product.categories?.map(cat => cat._id || cat),
+          categories: extractCategoryIds(product.categories),
           brandId: product.brandId?._id || product.brandId,
           tags: product.tags?.join(", ")
         });
@@ -355,12 +403,23 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
           <Select
             mode="multiple"
             size="large"
-            placeholder="Chọn danh mục"
+            placeholder="Chọn danh mục (có thể chọn nhiều)"
             loading={isLoadingCategories}
+            showSearch
+            filterOption={(input, option) => {
+              // Find the category by ID to check its name
+              const category = flatCategories.find(cat => cat._id === option.value);
+              if (category) {
+                return category.name.toLowerCase().includes(input.toLowerCase());
+              }
+              return false;
+            }}
+            optionLabelProp="children"
+            maxTagCount="responsive"
+            allowClear
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
           >
-            {categories.map(category => (
-              <Option key={category._id} value={category._id}>{category.name}</Option>
-            ))}
+            {renderCategoryOptions(categories)}
           </Select>
         </Form.Item>
 
