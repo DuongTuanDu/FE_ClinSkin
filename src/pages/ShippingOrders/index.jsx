@@ -119,11 +119,13 @@ const ShippingOrders = () => {
   const getStatusTag = (status) => {
     const statusConfig = {
       in_transit: { color: "blue", text: "Đang vận chuyển" },
-      carrier_confirmed: { color: "green", text: "Đã xác nhận nhận hàng" },
+      carrier_confirmed: { color: "green", text: "Shipper đã xác nhận" },
       failed_pickup: { color: "red", text: "Lấy hàng thất bại" },
       delivery_pending: { color: "processing", text: "Đang giao hàng" },
-      carrier_delivered: { color: "success", text: "Đã giao hàng" },
-      delivery_failed: { color: "error", text: "Giao hàng thất bại" }
+      carrier_delivered: { color: "success", text: "Shipper đã giao hàng" },
+      delivery_failed: { color: "error", text: "Giao hàng thất bại" },
+      return: { color: "warning", text: "Trả hàng" },
+      cancelled: { color: "default", text: "Đã hủy" }
     };
     
     const config = statusConfig[status] || { color: "default", text: status };
@@ -251,10 +253,10 @@ const ShippingOrders = () => {
             >
               <Option value="all">Tất cả trạng thái</Option>
               <Option value="in_transit">Đang vận chuyển</Option>
-              <Option value="carrier_confirmed">Đã xác nhận nhận hàng</Option>
+              <Option value="carrier_confirmed">Shipper đã xác nhận</Option>
               <Option value="failed_pickup">Lấy hàng thất bại</Option>
               <Option value="delivery_pending">Đang giao hàng</Option>
-              <Option value="carrier_delivered">Đã giao hàng</Option>
+              <Option value="carrier_delivered">Shipper đã giao hàng</Option>
               <Option value="delivery_failed">Giao hàng thất bại</Option>
               <Option value="return">Trả hàng</Option>
               <Option value="cancelled">Đã hủy</Option>

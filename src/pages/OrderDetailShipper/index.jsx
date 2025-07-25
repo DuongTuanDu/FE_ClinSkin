@@ -125,7 +125,7 @@ const OrderDetailShipper = () => {
       carrier_confirmed: "Shipper đã xác nhận nhận hàng",
       failed_pickup: "Lấy hàng thất bại",
       delivery_pending: "Đang giao hàng đến khách hàng",
-      carrier_delivered: "Đã giao hàng thành công",
+      carrier_delivered: "Shipper đã giao hàng thành công",
       delivery_failed: "Giao hàng thất bại",
       return: "Đơn hàng được trả về",
       cancelled: "Đơn hàng đã bị hủy"
@@ -137,10 +137,10 @@ const OrderDetailShipper = () => {
   const getStatusInfo = (status) => {
     const statusConfig = {
       in_transit: { color: "blue", text: "Đang vận chuyển", icon: <CarOutlined /> },
-      carrier_confirmed: { color: "green", text: "Đã xác nhận nhận hàng", icon: <CheckCircleOutlined /> },
+      carrier_confirmed: { color: "green", text: "Shipper đã xác nhận", icon: <CheckCircleOutlined /> },
       failed_pickup: { color: "red", text: "Lấy hàng thất bại", icon: <ClockCircleOutlined /> },
       delivery_pending: { color: "processing", text: "Đang giao hàng", icon: <CarOutlined /> },
-      carrier_delivered: { color: "success", text: "Đã giao hàng", icon: <CheckCircleOutlined /> },
+      carrier_delivered: { color: "success", text: "Shipper đã giao hàng", icon: <CheckCircleOutlined /> },
       delivery_failed: { color: "error", text: "Giao hàng thất bại", icon: <ClockCircleOutlined /> },
       return: { color: "warning", text: "Trả hàng", icon: <ClockCircleOutlined /> },
       cancelled: { color: "default", text: "Đã hủy", icon: <ClockCircleOutlined /> }
@@ -235,7 +235,7 @@ const OrderDetailShipper = () => {
             type="primary"
             icon={<EditOutlined />}
             onClick={() => setStatusModalVisible(true)}
-            disabled={order.status === 'carrier_delivered' || order.status === 'cancelled' || order.status === 'return'}
+            disabled={['carrier_delivered', 'cancelled', 'return', 'delivery_failed'].includes(order.status)}
           >
             Cập nhật trạng thái
           </Button>
@@ -398,7 +398,7 @@ const OrderDetailShipper = () => {
           >
             {order.status === 'in_transit' && (
               <>
-                <Option value="carrier_confirmed">Đã xác nhận nhận hàng</Option>
+                <Option value="carrier_confirmed">Shipper đã xác nhận nhận hàng</Option>
                 <Option value="failed_pickup">Lấy hàng thất bại</Option>
               </>
             )}
@@ -407,7 +407,7 @@ const OrderDetailShipper = () => {
             )}
             {order.status === 'delivery_pending' && (
               <>
-                <Option value="carrier_delivered">Đã giao hàng thành công</Option>
+                <Option value="carrier_delivered">Shipper đã giao hàng thành công</Option>
                 <Option value="delivery_failed">Giao hàng thất bại</Option>
               </>
             )}
