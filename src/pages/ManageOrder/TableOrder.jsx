@@ -96,22 +96,41 @@ const TableOrder = ({
         key: "status",
         width: 200,
         render: (status, record) => {
-          // Xác định các option có thể chọn dựa trên trạng thái hiện tại
+          // Xác định các option có thể chọn dựa trên trạng thái hiện tại (cho Admin)
           const getAvailableOptions = (currentStatus) => {
             switch (currentStatus) {
               case "pending":
-                return orderStatus.filter(item =>
-                  ["pending", "processing", "cancelled"].includes(item.value)
+                return orderStatus.filter(item => 
+                  ["pending", "confirmed", "cancelled"].includes(item.value)
                 );
-              case "processing":
-                return orderStatus.filter(item =>
-                  ["processing", "cancelled"].includes(item.value)
+              case "confirmed":
+                return orderStatus.filter(item => 
+                  ["confirmed", "cancelled"].includes(item.value)
                 );
-              case "shipping":
-                return orderStatus.filter(item =>
-                  ["shipping", "delivered", "cancelled"].includes(item.value)
+              case "picked_up":
+                return orderStatus.filter(item => 
+                  ["picked_up", "in_transit", "cancelled"].includes(item.value)
                 );
-              case "delivered":
+              case "in_transit":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "carrier_confirmed":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "failed_pickup":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "delivery_pending":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "carrier_delivered":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "delivery_failed":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "delivered_confirmed":
+                return orderStatus.filter(item => item.value === currentStatus);
+              case "return":
+                return orderStatus.filter(item => 
+                  ["return", "return_confirmed"].includes(item.value)
+                );
+              case "return_confirmed":
+                return orderStatus.filter(item => item.value === currentStatus);
               case "cancelled":
                 return orderStatus.filter(item => item.value === currentStatus);
               default:
@@ -120,7 +139,17 @@ const TableOrder = ({
           };
 
           const availableOptions = getAvailableOptions(status);
-          const isDisabled = status === "cancelled" || status === "delivered";
+          const isDisabled = [
+            "in_transit", 
+            "carrier_confirmed", 
+            "failed_pickup", 
+            "delivery_pending", 
+            "carrier_delivered", 
+            "delivery_failed", 
+            "delivered_confirmed", 
+            "return_confirmed", 
+            "cancelled"
+          ].includes(status);
 
           return (
             <div className="flex items-center gap-2">
@@ -138,13 +167,23 @@ const TableOrder = ({
                   </Select.Option>
                 ))}
               </Select>
-              {status === "processing" && (
+              {status === "confirmed" && (
                 <Tooltip title="Lấy hàng">
                   <button
                     onClick={() => handlePickupOrder(record)}
                     className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
                   >
                     Lấy hàng
+                  </button>
+                </Tooltip>
+              )}
+              {status === "picked_up" && (
+                <Tooltip title="Chuyển giao vận chuyển">
+                  <button
+                    onClick={() => handleTransferToShipping(record)}
+                    className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors whitespace-nowrap"
+                  >
+                    Vận chuyển
                   </button>
                 </Tooltip>
               )}
@@ -239,6 +278,21 @@ const TableOrder = ({
 
   const handlePickupOrder = (order) => {
     navigate(`/admin/export-order/${order._id}`);
+  };
+
+  const handleTransferToShipping = async (order) => {
+    try {
+      const res = await dispatch(
+        updateStatusOrderByAdmin({ id: order._id, data: { status: "in_transit" } })
+      ).unwrap();
+
+      if (res.success) {
+        message.success("Đơn hàng đã được chuyển giao cho đơn vị vận chuyển");
+        refetch();
+      }
+    } catch (error) {
+      message.error("Không thể chuyển giao đơn hàng cho vận chuyển");
+    }
   };
 
   const removeOrder = async (id) => {

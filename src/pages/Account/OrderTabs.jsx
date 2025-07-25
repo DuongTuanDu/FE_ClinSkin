@@ -23,9 +23,27 @@ const OrderTabs = () => {
         pageSize: 5,
     });
 
+    // Map UI tab status to backend status filters
+    const getBackendStatus = (tabStatus) => {
+        switch (tabStatus) {
+            case "pending":
+                return "pending";
+            case "processing":
+                return "confirmed,picked_up,in_transit,carrier_confirmed";
+            case "shipping":
+                return "delivery_pending,carrier_delivered,delivery_failed";
+            case "delivered":
+                return "delivered_confirmed";
+            case "cancelled":
+                return "cancelled,failed_pickup,return,return_confirmed";
+            default:
+                return "all";
+        }
+    };
+
     const { data, isLoading, refetch } = useGetOrderHistoryQuery({
         ...paginate,
-        status,
+        status: getBackendStatus(status),
     });
 
     const { data: orders = [], pagination = {}, statusCounts = {} } = data || {};
@@ -58,7 +76,7 @@ const OrderTabs = () => {
             label: (
                 <TabLabel
                     icon={<ClockCircleOutlined />}
-                    text="Chờ xác nhận"
+                    text="Chờ xử lý"
                     badgeCount={statusCounts?.pending}
                 />
             ),
@@ -80,7 +98,12 @@ const OrderTabs = () => {
                 <TabLabel
                     icon={<SyncOutlined />}
                     text="Đang xử lý"
-                    badgeCount={statusCounts?.processing}
+                    badgeCount={
+                        (statusCounts?.confirmed || 0) + 
+                        (statusCounts?.picked_up || 0) + 
+                        (statusCounts?.in_transit || 0) + 
+                        (statusCounts?.carrier_confirmed || 0)
+                    }
                 />
             ),
             children: (
@@ -101,7 +124,11 @@ const OrderTabs = () => {
                 <TabLabel
                     icon={<CarOutlined />}
                     text="Đang giao"
-                    badgeCount={statusCounts?.shipping}
+                    badgeCount={
+                        (statusCounts?.delivery_pending || 0) + 
+                        (statusCounts?.carrier_delivered || 0) +
+                        (statusCounts?.delivery_failed || 0)
+                    }
                 />
             ),
             children: (
@@ -121,8 +148,8 @@ const OrderTabs = () => {
             label: (
                 <TabLabel
                     icon={<CheckCircleOutlined />}
-                    text="Đã giao"
-                    badgeCount={statusCounts?.delivered}
+                    text="Hoàn thành"
+                    badgeCount={statusCounts?.delivered_confirmed || 0}
                 />
             ),
             children: (
@@ -142,8 +169,13 @@ const OrderTabs = () => {
             label: (
                 <TabLabel
                     icon={<CloseCircleOutlined />}
-                    text="Đã hủy"
-                    badgeCount={statusCounts?.cancelled}
+                    text="Đã hủy/Trả hàng"
+                    badgeCount={
+                        (statusCounts?.cancelled || 0) +
+                        (statusCounts?.failed_pickup || 0) +
+                        (statusCounts?.return || 0) +
+                        (statusCounts?.return_confirmed || 0)
+                    }
                 />
             ),
             children: (

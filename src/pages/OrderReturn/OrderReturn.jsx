@@ -34,14 +34,14 @@
 //     const queryParams = new URLSearchParams(location.search);
 //     const { orderReturn, isLoading, error } = useSelector((state) => state.order);
 //     console.log("orderReturn", orderReturn);
-    
+
 
 //     const orderId = queryParams.get("vnp_TxnRef");
 //     const code = queryParams.get("vnp_ResponseCode");
 //     const stripeSessionId = queryParams.get("session_id");
 //     const orderSessionId = queryParams.get("order_session") || "";
 //     console.log("orderSessionId", orderSessionId);
-    
+
 
 //     const handleOrderStripeReturn = async () => {
 //         const res = await dispatch(
@@ -257,9 +257,9 @@ const OrderReturn = () => {
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const { orderReturn, isLoading, error } = useSelector((state) => state.order);
-    
+
     console.log("orderReturn", orderReturn);
-    
+
     // ✅ FIX: Thêm state để track success
     const [isSuccess, setIsSuccess] = useState(false);
     const [payload, setPayload] = useState(null);
@@ -272,13 +272,13 @@ const OrderReturn = () => {
     const handleOrderStripeReturn = async () => {
         try {
             console.log("Calling orderStripeReturn with:", { stripeSessionId, orderSessionId });
-            
+
             const res = await dispatch(
                 orderStripeReturn({ stripeSessionId, orderSessionId })
             ).unwrap();
-            
+
             console.log("orderStripeReturn response:", res);
-            
+
             if (res.success) {
                 const { products } = res.data;
                 if (products && products.length > 0) {
@@ -327,11 +327,11 @@ const OrderReturn = () => {
 
     // ✅ FIX: Sử dụng payload hoặc orderReturn, với fallback values
     const displayOrder = payload || orderReturn || {};
-    
+
     const OrderStatus = () => (
         <Steps
             direction="vertical"
-            current={1}
+            current={getStepFromStatus(orderReturn?.status)}
             className="custom-steps"
             items={[
                 {
@@ -340,21 +340,52 @@ const OrderReturn = () => {
                     icon: <ShoppingOutlined />,
                 },
                 {
-                    title: "Đang xử lý",
-                    description: "Đơn hàng của bạn đang được xử lý",
+                    title: "Đã xác nhận",
+                    description: "Đơn hàng đã được xác nhận",
+                    icon: <CheckCircleFilled />,
+                },
+                {
+                    title: "Đã lấy hàng",
+                    description: "Đơn hàng đã được lấy từ kho",
                     icon: <ClockCircleOutlined />,
                 },
                 {
-                    title: "Đang giao hàng",
+                    title: "Đang vận chuyển",
+                    description: "Đơn hàng đang được vận chuyển",
                     icon: <CarOutlined />,
                 },
                 {
-                    title: "Đã giao hàng",
+                    title: "Đang giao hàng",
+                    description: "Đang giao hàng đến khách hàng",
+                    icon: <CarOutlined />,
+                },
+                {
+                    title: "Hoàn thành",
+                    description: "Đã giao hàng thành công",
                     icon: <SmileOutlined />,
                 },
             ]}
         />
     );
+
+    const getStepFromStatus = (status) => {
+        const stepMap = {
+            "pending": 0,
+            "confirmed": 1,
+            "picked_up": 2,
+            "in_transit": 3,
+            "carrier_confirmed": 3,
+            "delivery_pending": 4,
+            "carrier_delivered": 5,
+            "delivered_confirmed": 5,
+            "failed_pickup": 2,
+            "delivery_failed": 5, // Show as completed step but with failed state
+            "return": 3,
+            "return_confirmed": 3,
+            "cancelled": 0
+        };
+        return stepMap[status] || 0;
+    };
 
     const OrderSummary = () => (
         <List
@@ -392,8 +423,8 @@ const OrderReturn = () => {
                         <div className="text-gray-600 text-base lg:text-lg mb-6">
                             {error.message || "Không thể tải thông tin đơn hàng"}
                         </div>
-                        <Button 
-                            type="primary" 
+                        <Button
+                            type="primary"
                             onClick={() => navigate("/")}
                             className="bg-red-500 hover:bg-red-600"
                         >
@@ -445,25 +476,29 @@ const OrderReturn = () => {
                                     {displayOrder.paymentMethod === "stripe" ? "Stripe" : displayOrder.paymentMethod || "COD"}
                                 </p>
                                 <Tag color="pink" className="mt-2">
-                                    {displayOrder.status === "pending" ? "Đang chờ" : 
-                                     displayOrder.status === "processing" ? "Đang xử lý" :
-                                     displayOrder.status || "Đang xử lý"}
+                                    {displayOrder.status === "pending" ? "Đang chờ xử lý" :
+                                        displayOrder.status === "confirmed" ? "Đã xác nhận" :
+                                            displayOrder.status === "picked_up" ? "Đã lấy hàng" :
+                                                displayOrder.status === "in_transit" ? "Đang vận chuyển" :
+                                                    displayOrder.status === "carrier_confirmed" ? "Shipper đã xác nhận" :
+                                                        displayOrder.status === "failed_pickup" ? "Lấy hàng thất bại" :
+                                                            displayOrder.status === "delivery_pending" ? "Đang giao hàng" :
+                                                                displayOrder.status === "carrier_delivered" ? "Shipper đã giao hàng" :
+                                                                    displayOrder.status === "delivery_failed" ? "Giao hàng thất bại" :
+                                                                        displayOrder.status === "delivered_confirmed" ? "Khách hàng đã xác nhận" :
+                                                                            displayOrder.status === "return" ? "Trả hàng" :
+                                                                                displayOrder.status === "return_confirmed" ? "Đã xác nhận trả hàng" :
+                                                                                    displayOrder.status === "cancelled" ? "Đã hủy" : "Đang chờ"}
                                 </Tag>
                             </div>
-                            <div className="bg-purple-50 p-6 rounded-lg shadow-md">
-                                <Title level={4} className="text-purple-700 mb-4">
-                                    Trạng thái đơn hàng
-                                </Title>
-                                <OrderStatus />
-                            </div>
-                        </div>
 
-                        <Divider className="my-8" />
-                        <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-6 rounded-lg shadow-md">
-                            <Title level={4} className="text-pink-700 mb-4">
-                                Sản phẩm đã đặt ({displayOrder.products?.length || 0} sản phẩm)
-                            </Title>
-                            <OrderSummary />
+                            <Divider className="my-8" />
+                            <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-6 rounded-lg shadow-md">
+                                <Title level={4} className="text-pink-700 mb-4">
+                                    Sản phẩm đã đặt ({displayOrder.products?.length || 0} sản phẩm)
+                                </Title>
+                                <OrderSummary />
+                            </div>
                         </div>
                     </>
                 )}
