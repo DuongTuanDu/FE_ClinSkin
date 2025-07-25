@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { Input, Button, Menu, Drawer, Dropdown, Avatar } from "antd";
 import {
     SearchOutlined,
@@ -29,7 +29,7 @@ const HeaderUser = () => {
     const location = useLocation();
     const { isAuthenticated, userInfo } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.cart.cart);
-    const { t } = useTranslation("aboutUs");
+    const { t } = useTranslation("homePage");
     const navigate = useNavigate();
     const [current, setCurrent] = useState("");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
