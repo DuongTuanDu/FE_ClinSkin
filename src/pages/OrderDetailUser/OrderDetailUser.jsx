@@ -18,12 +18,28 @@ const getStatusBg = (status) => {
     switch (status) {
         case "pending":
             return "bg-[#FFF3E0] text-[#F57C00]";
-        case "processing":
+        case "confirmed":
             return "bg-[#E3F2FD] text-[#1976D2]";
-        case "shipping":
+        case "picked_up":
+            return "bg-[#F3E5F5] text-[#7B1FA2]";
+        case "in_transit":
             return "bg-[#EDE7F6] text-[#5E35B1]";
-        case "delivered":
+        case "carrier_confirmed":
             return "bg-[#E8F5E9] text-[#2E7D32]";
+        case "failed_pickup":
+            return "bg-[#FFEBEE] text-[#C62828]";
+        case "delivery_pending":
+            return "bg-[#E0F7FA] text-[#0097A7]";
+        case "carrier_delivered":
+            return "bg-[#F1F8E9] text-[#689F38]";
+        case "delivery_failed":
+            return "bg-[#FCE4EC] text-[#C2185B]";
+        case "delivered_confirmed":
+            return "bg-[#E8F5E9] text-[#2E7D32]";
+        case "return":
+            return "bg-[#FFF3E0] text-[#F57C00]";
+        case "return_confirmed":
+            return "bg-[#FFFBF0] text-[#FA8C16]";
         case "cancelled":
             return "bg-[#FFEBEE] text-[#C62828]";
         default:
@@ -85,10 +101,18 @@ const OrderDetailUser = () => {
                                     order.status
                                 )}`}
                             >
-                                {order.status === "pending" && "Đang chờ xác nhận"}
-                                {order.status === "processing" && "Đang xử lý"}
-                                {order.status === "shipping" && "Đang giao hàng"}
-                                {order.status === "delivered" && "Đã giao hàng"}
+                                {order.status === "pending" && "Đang chờ xử lý"}
+                                {order.status === "confirmed" && "Đã xác nhận"}
+                                {order.status === "picked_up" && "Đã lấy hàng"}
+                                {order.status === "in_transit" && "Đang vận chuyển"}
+                                {order.status === "carrier_confirmed" && "Shipper đã xác nhận"}
+                                {order.status === "failed_pickup" && "Lấy hàng thất bại"}
+                                {order.status === "delivery_pending" && "Đang giao hàng"}
+                                {order.status === "carrier_delivered" && "Shipper đã giao hàng"}
+                                {order.status === "delivery_failed" && "Giao hàng thất bại"}
+                                {order.status === "delivered_confirmed" && "Khách hàng đã xác nhận"}
+                                {order.status === "return" && "Trả hàng"}
+                                {order.status === "return_confirmed" && "Đã xác nhận trả hàng"}
                                 {order.status === "cancelled" && "Đã hủy"}
                             </div>
                         </div>
@@ -100,12 +124,29 @@ const OrderDetailUser = () => {
                                     <div className="pb-4">
                                         <div className="font-medium mb-1">
                                             {history.status === "pending" &&
-                                                "Đặt hàng thành công chờ xác nhận"}
-                                            {history.status === "processing" &&
-                                                "Đơn hàng đang được xử lý"}
-                                            {history.status === "shipping" &&
-                                                "Đơn hàng đang được giao"}
-                                            {history.status === "delivered" && "Giao hàng thành công"}
+                                                "Đặt hàng thành công, đang chờ xử lý"}
+                                            {history.status === "confirmed" &&
+                                                "Đơn hàng đã được xác nhận"}
+                                            {history.status === "picked_up" &&
+                                                "Đơn hàng đã được lấy từ kho"}
+                                            {history.status === "in_transit" &&
+                                                "Đơn hàng đang được vận chuyển"}
+                                            {history.status === "carrier_confirmed" &&
+                                                "Shipper đã xác nhận nhận hàng"}
+                                            {history.status === "failed_pickup" &&
+                                                "Lấy hàng thất bại"}
+                                            {history.status === "delivery_pending" &&
+                                                "Đang giao hàng đến khách hàng"}
+                                            {history.status === "carrier_delivered" &&
+                                                "Shipper đã giao hàng"}
+                                            {history.status === "delivery_failed" &&
+                                                "Giao hàng thất bại"}
+                                            {history.status === "delivered_confirmed" &&
+                                                "Khách hàng đã xác nhận nhận hàng"}
+                                            {history.status === "return" &&
+                                                "Đơn hàng đang được trả về"}
+                                            {history.status === "return_confirmed" &&
+                                                "Đã xác nhận trả hàng"}
                                             {history.status === "cancelled" && "Đơn hàng đã bị hủy"}
                                         </div>
                                         <div className="text-sm text-gray-500">

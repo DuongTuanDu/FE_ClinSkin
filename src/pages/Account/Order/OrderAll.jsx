@@ -40,7 +40,6 @@ const OrderAll = ({
   const renderOrderActions = (order) => {
     switch (order.status) {
       case "pending":
-      case "processing":
         return (
           <Button
             onClick={() => {
@@ -52,25 +51,83 @@ const OrderAll = ({
             Hủy đơn hàng
           </Button>
         );
-      case "shipping":
+      case "carrier_delivered":
         return (
-          <Popconfirm
-            className="max-w-40"
-            placement="bottom"
-            title={"Xác nhận giao hàng thành công"}
-            onConfirm={() => handleCompleteOrder(order._id)}
-            okText="Xác nhận"
-            cancelText="Hủy"
-            okButtonProps={{
-              loading: isLoading,
-            }}
-            destroyTooltipOnHide={true}
-          >
-            <Button type="primary">Đã nhận hàng</Button>
-          </Popconfirm>
+          <div className="flex gap-2">
+            <Popconfirm
+              className="max-w-40"
+              placement="bottom"
+              title={"Xác nhận đã nhận hàng thành công"}
+              onConfirm={() => handleCompleteOrder(order._id)}
+              okText="Xác nhận"
+              cancelText="Hủy"
+              okButtonProps={{
+                loading: isLoading,
+              }}
+              destroyTooltipOnHide={true}
+            >
+              <Button type="primary">Đã nhận hàng</Button>
+            </Popconfirm>
+            <Button 
+              onClick={() => handleReportDeliveryFailed(order._id)}
+              danger
+            >
+              Báo cáo giao hàng thất bại
+            </Button>
+          </div>
         );
-      // case "cancelled":
-      //   return <Button >Mua lại</Button>;
+      case "delivery_failed":
+        return (
+          <div className="flex gap-2 flex-wrap">
+            <Popconfirm
+              className="max-w-40"
+              placement="bottom"
+              title={"Xác nhận đã nhận hàng thành công"}
+              description="Bạn đã thay đổi quyết định và muốn xác nhận đã nhận hàng?"
+              onConfirm={() => handleCompleteOrder(order._id)}
+              okText="Xác nhận"
+              cancelText="Hủy"
+              okButtonProps={{
+                loading: isLoading,
+              }}
+              destroyTooltipOnHide={true}
+            >
+              <Button type="primary">Đã nhận hàng</Button>
+            </Popconfirm>
+            <Popconfirm
+              className="max-w-40"
+              placement="bottom"
+              title={"Xác nhận hủy đơn hàng"}
+              description="Hủy đơn hàng do giao hàng thất bại?"
+              onConfirm={() => handleCancelOrder(order._id)}
+              okText="Hủy đơn hàng"
+              cancelText="Không"
+              okButtonProps={{
+                loading: isLoading,
+              }}
+              destroyTooltipOnHide={true}
+            >
+              <Button danger>Hủy đơn hàng</Button>
+            </Popconfirm>
+          </div>
+        );
+      case "delivered_confirmed":
+        return (
+          <Button
+            onClick={() => {
+              setOrderId(order._id);
+              setProductDetail({
+                _id: order.products[0]?.pid || order.products[0]?.productId,
+                name: order.products[0]?.name,
+                image: order.products[0]?.image,
+              });
+              setOpenRate(true);
+            }}
+            disabled={order.products?.every(p => p.isReviewed)}
+          >
+            {order.products?.every(p => p.isReviewed) ? "Đã đánh giá" : "Đánh giá"}
+          </Button>
+        );
       default:
         return <></>;
     }
@@ -81,12 +138,42 @@ const OrderAll = ({
       updateStatusOrderByUser({
         id: orderId,
         data: {
-          status: "delivered",
+          status: "delivered_confirmed",
         },
       })
     ).unwrap();
     if (res.success) {
       message.success(res.message);
+      refetch();
+    }
+  };
+
+  const handleReportDeliveryFailed = async (orderId) => {
+    const res = await dispatch(
+      updateStatusOrderByUser({
+        id: orderId,
+        data: {
+          status: "delivery_failed",
+        },
+      })
+    ).unwrap();
+    if (res.success) {
+      message.success("Đã báo cáo giao hàng thất bại");
+      refetch();
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    const res = await dispatch(
+      updateStatusOrderByUser({
+        id: orderId,
+        data: {
+          status: "cancelled",
+        },
+      })
+    ).unwrap();
+    if (res.success) {
+      message.success("Đã hủy đơn hàng");
       refetch();
     }
   };

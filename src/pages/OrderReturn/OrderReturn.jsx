@@ -48,7 +48,7 @@ const OrderReturn = () => {
     const OrderStatus = () => (
         <Steps
             direction="vertical"
-            current={1}
+            current={getStepFromStatus(orderReturn?.status)}
             className="custom-steps"
             items={[
                 {
@@ -57,21 +57,52 @@ const OrderReturn = () => {
                     icon: <ShoppingOutlined />,
                 },
                 {
-                    title: "Đang xử lý",
-                    description: "Đơn hàng của bạn đang được xử lý",
+                    title: "Đã xác nhận",
+                    description: "Đơn hàng đã được xác nhận",
+                    icon: <CheckCircleFilled />,
+                },
+                {
+                    title: "Đã lấy hàng",
+                    description: "Đơn hàng đã được lấy từ kho",
                     icon: <ClockCircleOutlined />,
                 },
                 {
-                    title: "Đang giao hàng",
+                    title: "Đang vận chuyển",
+                    description: "Đơn hàng đang được vận chuyển",
                     icon: <CarOutlined />,
                 },
                 {
-                    title: "Đã giao hàng",
+                    title: "Đang giao hàng",
+                    description: "Đang giao hàng đến khách hàng",
+                    icon: <CarOutlined />,
+                },
+                {
+                    title: "Hoàn thành",
+                    description: "Đã giao hàng thành công",
                     icon: <SmileOutlined />,
                 },
             ]}
         />
     );
+
+    const getStepFromStatus = (status) => {
+        const stepMap = {
+            "pending": 0,
+            "confirmed": 1,
+            "picked_up": 2,
+            "in_transit": 3,
+            "carrier_confirmed": 3,
+            "delivery_pending": 4,
+            "carrier_delivered": 5,
+            "delivered_confirmed": 5,
+            "failed_pickup": 2,
+            "delivery_failed": 5, // Show as completed step but with failed state
+            "return": 3,
+            "return_confirmed": 3,
+            "cancelled": 0
+        };
+        return stepMap[status] || 0;
+    };
 
     const OrderSummary = () => (
         <List
@@ -139,7 +170,19 @@ const OrderReturn = () => {
                                 {orderReturn.paymentMethod}
                             </p>
                             <Tag color="pink" className="mt-2">
-                                {orderReturn.status === "pending" ? "Đang chờ" : ""}
+                                {orderReturn.status === "pending" ? "Đang chờ xử lý" : 
+                                 orderReturn.status === "confirmed" ? "Đã xác nhận" :
+                                 orderReturn.status === "picked_up" ? "Đã lấy hàng" :
+                                 orderReturn.status === "in_transit" ? "Đang vận chuyển" :
+                                 orderReturn.status === "carrier_confirmed" ? "Shipper đã xác nhận" :
+                                 orderReturn.status === "failed_pickup" ? "Lấy hàng thất bại" :
+                                 orderReturn.status === "delivery_pending" ? "Đang giao hàng" :
+                                 orderReturn.status === "carrier_delivered" ? "Shipper đã giao hàng" :
+                                 orderReturn.status === "delivery_failed" ? "Giao hàng thất bại" :
+                                 orderReturn.status === "delivered_confirmed" ? "Khách hàng đã xác nhận" :
+                                 orderReturn.status === "return" ? "Trả hàng" :
+                                 orderReturn.status === "return_confirmed" ? "Đã xác nhận trả hàng" :
+                                 orderReturn.status === "cancelled" ? "Đã hủy" : "Đang chờ"}
                             </Tag>
                         </div>
                         <div className="bg-purple-50 p-6 rounded-lg shadow-md">
