@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input, Button, Badge, Menu, Drawer, Dropdown, Avatar } from "antd";
+import { Input, Button, Menu, Drawer, Dropdown, Avatar } from "antd";
 import {
     SearchOutlined,
     MenuOutlined,
@@ -18,13 +18,11 @@ import Logo from "./Logo";
 import { useGetAllCategoryUserQuery } from "@/redux/category/category.query";
 import { useGetAllBrandByUserQuery } from "@/redux/brand/brand.query";
 import Loading from "../Loading/Loading";
-import { IoCartOutline, IoNotificationsOutline } from "react-icons/io5";
+import { IoCartOutline } from "react-icons/io5";
 import NotificationDrop from "./NotificationStoreDrop";
 import LanguageSelector from "../language/LanguageSelector";
 import { useTranslation } from "react-i18next";
-import Promotion from "@/pages/Promotion";
 import { useGetAllActivePromotionsQuery } from "@/redux/promotion/promotion.query";
-import { message } from "antd";
 
 const HeaderUser = () => {
     const dispatch = useDispatch();
@@ -127,25 +125,7 @@ const HeaderUser = () => {
         {
             key: "promotions",
             label: "🎁 Khuyến mãi hot",
-            path: "/promotionProduct",
-            children:
-                Array.isArray(promotions) && promotions.length > 0
-                    ? promotions.map((item) => ({
-                        key: item._id,
-                        label: (
-                            <div className="text-pink-600 font-bold text-sm">
-                                {item.name}
-                            </div>
-                        ),
-                        path: `/promotionProduct/${item.slug}`, 
-                    }))
-                    : [{key: 0,
-                        label: (
-                            <div className="text-pink-600 font-bold text-sm">
-                                Hiện tại không có khuyến mãi !!!
-                            </div>
-                        ),
-                        path: `#`, }],
+            path: "/promotions",
         },
         {
             key: "categories",
@@ -185,7 +165,7 @@ const HeaderUser = () => {
                     {
                         label: "Lịch sử đơn hàng",
                         key: "orderHistory",
-                        path: "#",
+                        path: "/account?tab=orders",
                     },
                     {
                         label: "Đăng xuất",

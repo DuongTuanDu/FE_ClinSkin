@@ -1,23 +1,21 @@
 import React, { useState, useCallback, useMemo, Suspense } from "react";
-import { Breadcrumb, Button, Empty, Skeleton } from "antd";
-import { useParams } from "react-router-dom";
+import { Breadcrumb, Button, Skeleton } from "antd";
 import debounce from "lodash/debounce";
 
 import {
   useGetFilterOptionsQuery,
-  useGetProductFromBrandQuery,
+  useGetProductPromtionQuery,
 } from "@/redux/product/product.query";
 import FilterPanelProduct from "@/components/Filter/FilterPanelProduct";
-import ProductHeader from "../../components/Filter/ProductHeader";
-import FilterDrawer from "../../components/Filter/FilterDrawer";
+import ProductHeader from "@/components/Filter/ProductHeader";
+import FilterDrawer from "@/components/Filter/FilterDrawer";
 import Banner from "./Banner";
 import { IoClose } from "react-icons/io5";
+import Loading from "@/components/Loading/Loading";
 
 const ProductList = React.lazy(() =>
   import("@/components/Product/ProductList")
 );
-
-// eslint-disable-next-line react/prop-types
 const ListSkeleton = () => (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {[...Array(8)].map((_, idx) => (
@@ -26,9 +24,7 @@ const ListSkeleton = () => (
   </div>
 );
 
-// eslint-disable-next-line react/prop-types
-const Category = () => {
-  const { slug } = useParams();
+const Promotion = () => {
   const [paginate, setPaginate] = useState({
     page: 1,
     pageSize: 12,
@@ -37,6 +33,7 @@ const Category = () => {
   const [filters, setFilters] = useState({
     priceRange: "",
     brands: [],
+    rating: "",
     categories: [],
     tags: [],
     sortOrder: "asc",
@@ -52,26 +49,21 @@ const Category = () => {
     []
   );
 
-  // eslint-disable-next-line react/prop-types
   const { data: productData, isLoading: isLoadingProducts } =
-    useGetProductFromBrandQuery(
-      { ...paginate, ...filters, slug },
+    useGetProductPromtionQuery(
+      { ...paginate, ...filters },
       {
-        skip: !slug,
         refetchOnMountOrArgChange: true,
       }
     );
 
   const { data: filterOptions, isLoading: isLoadingFilterOptions } =
-    useGetFilterOptionsQuery(undefined, {
-      skip: !slug,
-    });
+    useGetFilterOptionsQuery();
 
-  const {
-    products = [],
-    brand = "",
-    pagination = {},
-  } = useMemo(() => productData || {}, [productData]);
+  const { products = [], pagination = {} } = useMemo(
+    () => productData || {},
+    [productData]
+  );
 
   const hasActiveFilters = useMemo(
     () =>
@@ -83,10 +75,11 @@ const Category = () => {
     [filters]
   );
 
-  // eslint-disable-next-line react/prop-types
   const handleClearFilters = useCallback(() => {
     setFilters({
       priceRange: "",
+      brands: [],
+      rating: "",
       categories: [],
       tags: [],
       sortOrder: "asc",
@@ -94,12 +87,14 @@ const Category = () => {
     setPaginate((prev) => ({ ...prev, page: 1 }));
   }, []);
 
-  // eslint-disable-next-line react/prop-types
   const handleSortChange = useCallback((value) => {
     setFilters((prev) => ({ ...prev, sortOrder: value }));
   }, []);
 
-  if (!slug) return <Empty description="Không tìm thấy danh mục" />;
+  if (isLoadingProducts || isLoadingFilterOptions) return <Loading />;
+
+  const discountPercentage =
+    products.length > 0 ? products[0]?.promotion?.discountPercentage : 0;
 
   return (
     <div className="space-y-6">
@@ -107,12 +102,11 @@ const Category = () => {
         <Breadcrumb
           items={[
             { title: "Trang chủ", href: "/" },
-            { title: "Thương hiệu", href: "/categories" },
-            { title: brand },
+            { title: "Khuyến mãi hot", href: "/promtions" },
           ]}
         />
       </div>
-      <Banner />
+      <Banner {...{ discountPercentage }} />
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Desktop Filter */}
         <div className="hidden lg:block lg:w-[350px]">
@@ -128,7 +122,6 @@ const Category = () => {
               </Button>
             )}
             <FilterPanelProduct
-              isShowBrand={false}
               filterOptions={filterOptions}
               isLoading={isLoadingFilterOptions}
               selectedFilters={filters}
@@ -177,4 +170,4 @@ const Category = () => {
   );
 };
 
-export default Category;
+export default Promotion;

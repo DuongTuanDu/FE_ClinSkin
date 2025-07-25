@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import Loading from "@components/Loading/Loading";
 import ManagePromotion from "@/pages/ManagePromotion";
+import ProviderSocket from "@/components/Layout/ProviderSocket";
 
 const PageTitle = lazy(() => import("@components/Layout/PageTitle"));
 const LayoutAdmin = lazy(() => import("@components/Layout/LayoutAdmin"));
@@ -62,21 +63,23 @@ const WrapAdminRoute = ({
     <Suspense fallback={<Loading />}>
         <PageTitle title={`ClinSkin | ${title}`}>
             <AuthAdminWrapper>
-                {isAuthRoute ? (
-                    <AuthRoute>
-                        <Element />
-                    </AuthRoute>
-                ) : (
-                    <LayoutAdmin title={layoutTitle}>
-                        {isProtected ? (
-                            <ProtectedRoute>
-                                <Element />
-                            </ProtectedRoute>
-                        ) : (
+                <ProviderSocket>
+                    {isAuthRoute ? (
+                        <AuthRoute>
                             <Element />
-                        )}
-                    </LayoutAdmin>
-                )}
+                        </AuthRoute>
+                    ) : (
+                        <LayoutAdmin title={layoutTitle}>
+                            {isProtected ? (
+                                <ProtectedRoute>
+                                    <Element />
+                                </ProtectedRoute>
+                            ) : (
+                                <Element />
+                            )}
+                        </LayoutAdmin>
+                    )}
+                </ProviderSocket>
             </AuthAdminWrapper>
         </PageTitle>
     </Suspense>

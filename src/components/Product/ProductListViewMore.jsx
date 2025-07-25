@@ -115,12 +115,12 @@ const ProductListViewMore = ({
                         </div>
                         <div className="py-2 flex items-center justify-center gap-2">
                             <Rate
+                                allowHalf
                                 disabled
-                                value={4.5}
                                 character={({ index }) =>
                                     createAverageRate({
                                         index: index + 1,
-                                        rate: 4.5,
+                                        rate: parseFloat(item.averageRating),
                                         width: "12px",
                                         height: "12px",
                                     })

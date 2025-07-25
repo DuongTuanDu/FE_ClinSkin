@@ -13,7 +13,7 @@ import { formatDateOrder } from "@helpers/formatDate";
 import { formatPrice } from "@helpers/formatPrice";
 import { orderStatus } from "@const/status";
 import { MdOutlineDeleteOutline } from "react-icons/md";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   deleteOrder,
   updateStatusOrderByAdmin,
@@ -30,6 +30,7 @@ const TableOrder = ({
   setPaginate,
   refetch,
 }) => {
+  const { socketAdmin: socket } = useSelector((state) => state.socket);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [openCancel, setOpenCancel] = useState(false);
@@ -262,6 +263,14 @@ const TableOrder = ({
     ).unwrap();
 
     if (res.success) {
+      socket?.emit(
+        "updateOrderStatus",
+        JSON.stringify({
+          recipient: order.userId._id,
+          model: "User",
+          order: res.data,
+        })
+      );
       message.success(res.message);
       refetch();
     }
@@ -298,6 +307,7 @@ const TableOrder = ({
     <>
       <OrderCancelByAdmin
         {...{
+          socket,
           open: openCancel,
           order: orderDetail,
           onClose: (isFetch) => {
