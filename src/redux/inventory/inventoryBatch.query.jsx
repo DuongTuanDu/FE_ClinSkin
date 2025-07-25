@@ -16,6 +16,7 @@ export const inventoryBatchApi = createApi({
                 batchNumber = "", 
                 productId = "", 
                 importer = "",
+                expiryStatus = "all",
                 sortBy = "createdAt",
                 sortOrder = "desc" 
             } = {}) => {
@@ -24,6 +25,7 @@ export const inventoryBatchApi = createApi({
                 if (batchNumber) queryParams.batchNumber = batchNumber;
                 if (productId) queryParams.productId = productId;
                 if (importer) queryParams.importer = importer;
+                if (expiryStatus && expiryStatus !== "all") queryParams.expiryStatus = expiryStatus;
                 
                 const queryStrings = new URLSearchParams(queryParams).toString();
                 return {
