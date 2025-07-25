@@ -1,4 +1,4 @@
-import { Input, message, Modal, Select, InputNumber, Upload, Form } from "antd";
+import { Input, message, Modal, TreeSelect, Select, InputNumber, Upload, Form } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
@@ -12,8 +12,6 @@ import { updateProduct, createProduct } from "@redux/product/product.thunk";
 import { validateForm, validateProductActionSchema } from "@validate/validate";
 import SelectBrandsAsyncInfinite from "@/components/CustomSelect/SelectBrandsAsyncInfinite";
 import { tags } from "@/const/tags";
-
-const { Option } = Select;
 
 const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const dispatch = useDispatch();
@@ -37,38 +35,28 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
   const categories = categoriesData || [];
   const brands = brandsData || [];
 
-  const renderCategoryOptions = (categories, level = 0) => {
-    const options = [];
-    
-    categories.forEach(category => {
-      const paddingLeft = level * 20 + 12;
-      
-      options.push(
-        <Option 
-          key={category._id} 
-          value={category._id}
-          style={{ paddingLeft: `${paddingLeft}px` }}
-        >
-          {category.name}
-        </Option>
-      );
-      
-      // Add children categories if they exist
-      if (category.children && category.children.length > 0) {
-        options.push(...renderCategoryOptions(category.children, level + 1));
-      }
-    });
-    
-    return options;
+  // Helper function to convert categories to TreeSelect format
+  const convertToTreeData = (categories) => {
+    return categories.map(category => ({
+      title: category.name,
+      value: category._id,
+      key: category._id,
+      children: category.children && category.children.length > 0 
+        ? convertToTreeData(category.children) 
+        : undefined,
+    }));
   };
 
-  const flattenCategories = (categories, level = 0) => {
+  const treeData = convertToTreeData(categories);
+
+  // Helper function to flatten categories for search
+  const flattenCategories = (categories) => {
     const flattened = [];
     
     categories.forEach(category => {
       flattened.push(category);
       if (category.children && category.children.length > 0) {
-        flattened.push(...flattenCategories(category.children, level + 1));
+        flattened.push(...flattenCategories(category.children));
       }
     });
     
@@ -85,8 +73,9 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
         const extractCategoryIds = (categories) => {
           if (!categories || !Array.isArray(categories)) return [];
           return categories.map(cat => {
-            if (typeof cat === 'string') return cat;
-            return cat._id || cat;
+            const id = typeof cat === 'string' ? cat : (cat._id || cat);
+            // Return in format expected by treeCheckStrictly
+            return { value: id, label: cat.name || id };
           });
         };
 
@@ -157,9 +146,21 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
         }
       }
 
+      // Process categories for treeCheckStrictly format
+      let processedCategories = values.categories;
+      if (Array.isArray(values.categories)) {
+        processedCategories = values.categories.map(cat => {
+          if (typeof cat === 'object' && cat.value) {
+            return cat.value; // Extract value from {value, label} format
+          }
+          return cat; 
+        });
+      }
+
       // Add processed tags back to values for validation
       const processedValues = {
         ...values,
+        categories: processedCategories,
         tags: tags
       };
 
@@ -180,6 +181,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       // Prepare form data
       const productData = {
         ...values,
+        categories: processedCategories,
         tags,
         description, // Use description from ReactQuill state
       };
@@ -400,27 +402,25 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
           validateStatus={errors.categories ? "error" : ""}
           help={errors.categories ? <ErrorMessage message={errors.categories} /> : ""}
         >
-          <Select
-            mode="multiple"
+          <TreeSelect
+            multiple
             size="large"
             placeholder="Chọn danh mục (có thể chọn nhiều)"
             loading={isLoadingCategories}
             showSearch
-            filterOption={(input, option) => {
-              // Find the category by ID to check its name
-              const category = flatCategories.find(cat => cat._id === option.value);
-              if (category) {
-                return category.name.toLowerCase().includes(input.toLowerCase());
-              }
-              return false;
-            }}
-            optionLabelProp="children"
+            treeData={treeData}
+            treeCheckable={true}
+            showCheckedStrategy={TreeSelect.SHOW_ALL}
+            treeCheckStrictly={true}
+            treeDefaultExpandAll={false}
+            treeExpandAction="click"
+            filterTreeNode={(search, node) =>
+              node.title.toLowerCase().includes(search.toLowerCase())
+            }
             maxTagCount="responsive"
             allowClear
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-          >
-            {renderCategoryOptions(categories)}
-          </Select>
+          />
         </Form.Item>
 
         <Form.Item label="Tags" name="tags">

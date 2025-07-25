@@ -1,4 +1,4 @@
-import { Input, message, Modal, Select } from "antd";
+import { Input, message, Modal, TreeSelect } from "antd";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
@@ -43,37 +43,22 @@ const ModalCategoryAction = ({
     }
   }, [category, open]);
 
-  // Helper function to render categories with hierarchy for parent selection
-  const renderCategoryOptions = (categories, level = 0, excludeId = null) => {
-    const options = [];
-    
-    categories.forEach(category => {
-      // Exclude current category to prevent circular reference
-      if (category._id !== excludeId) {
-        const paddingLeft = level * 20 + 12;
-        
-        options.push(
-          <Select.Option 
-            key={category._id} 
-            value={category._id}
-            style={{ paddingLeft: `${paddingLeft}px` }}
-          >
-            {category.name}
-          </Select.Option>
-        );
-        
-        // Add children categories if they exist
-        if (category.children && category.children.length > 0) {
-          options.push(...renderCategoryOptions(category.children, level + 1, excludeId));
-        }
-      }
-    });
-    
-    return options;
+  // Helper function to convert categories to TreeSelect format
+  const convertToTreeData = (categories, excludeId = null) => {
+    return categories
+      .filter(category => category._id !== excludeId)
+      .map(category => ({
+        title: category.name,
+        value: category._id,
+        key: category._id,
+        children: category.children && category.children.length > 0 
+          ? convertToTreeData(category.children, excludeId) 
+          : undefined,
+      }));
   };
 
-  const parentOptions = useMemo(() => {
-    return renderCategoryOptions(categories, 0, category._id);
+  const treeData = useMemo(() => {
+    return convertToTreeData(categories, category._id);
   }, [categories, category._id]);
 
   const handleInputChange = (e) => {
@@ -183,9 +168,8 @@ const ModalCategoryAction = ({
           <label className="block text-sm font-medium text-[#14134f]">
             Danh mục cha (Tùy chọn)
           </label>
-          <Select
+          <TreeSelect
             loading={isLoading}
-            name="parent"
             value={input.parent}
             onChange={handleParentChange}
             placeholder="Chọn danh mục cha (để trống nếu là danh mục gốc)"
@@ -193,15 +177,17 @@ const ModalCategoryAction = ({
             className="w-full mt-1"
             allowClear
             showSearch
-            filterOption={(input, option) => {
-              return option.children.toLowerCase().includes(input.toLowerCase());
-            }}
-          >
-            {parentOptions}
-          </Select>
+            treeData={treeData}
+            treeDefaultExpandAll={false}
+            treeExpandAction="click"
+            filterTreeNode={(search, node) =>
+              node.title.toLowerCase().includes(search.toLowerCase())
+            }
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+          />
           {validates.parent && <ErrorMessage message={validates.parent} />}
           <div className="text-xs text-gray-500 mt-1">
-            Để trống nếu muốn tạo danh mục gốc
+            Để trống nếu muốn tạo danh mục gốc. Nhấp vào biểu tượng để mở rộng/thu gọn
           </div>
         </div>
       </form>
