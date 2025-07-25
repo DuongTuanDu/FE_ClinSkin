@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "@axios/axios";
 import { message } from "antd";
+import { remove } from "@storage/storage";
 
 // login
 export const loginUser = createAsyncThunk(
@@ -152,6 +153,19 @@ export const removeAccountAdmin = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       return await axios.delete(`/admin/admin-accounts/${payload}`);
+    } catch (error) {
+      message.error(error.response.data.message);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Admin
+export const getAccountAdminDetail = createAsyncThunk(
+  "auth/getAccountAdminDetail",
+  async (adminId, { rejectWithValue }) => {
+    try {
+      return await axios.get(`/admin/admin-accounts/detail/${adminId}`);
     } catch (error) {
       message.error(error.response.data.message);
       return rejectWithValue(error.response.data);

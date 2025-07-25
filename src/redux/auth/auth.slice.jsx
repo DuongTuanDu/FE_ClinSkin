@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
     getAccountAdmin,
+    getAccountAdminDetail,
     loginAdmin,
     loginUser,
     registerUser,
@@ -45,6 +46,7 @@ const initialState = {
             publicId: "",
         },
     },
+    adminDetail: null,
 };
 
 export const authSlice = createSlice({
@@ -186,6 +188,18 @@ export const authSlice = createSlice({
                 state.error = action.payload;
                 state.isLoading = false;
                 state.isAuthenticatedAdmin = false;
+            })
+            .addCase(getAccountAdminDetail.pending, (state, action) => {
+                state.isLoading = true;
+            })
+            .addCase(getAccountAdminDetail.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.adminDetail = action.payload.data;
+                state.error = {};
+            })
+            .addCase(getAccountAdminDetail.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload;
             });
     },
 });

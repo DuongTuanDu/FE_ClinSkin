@@ -7,9 +7,11 @@ import {
     Tag,
     Tooltip,
 } from "antd";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
+import { FaEye } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import ModelAccountAction from "@components/Modal/ModelAccountAction";
 import { removeAccountAdmin, updateAccountAdmin } from "@redux/auth/auth.thunk";
@@ -24,6 +26,7 @@ const TableAccount = ({
     setStateByAction,
 }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [account, setAccount] = useState({});
 
@@ -98,9 +101,19 @@ const TableAccount = ({
             {
                 title: "Thao Tác",
                 key: "action",
-                width: 120,
+                width: 160,
                 render: (_, record) => (
                     <div className="flex gap-2 items-center text-[#00246a]">
+                        <Tooltip title="Xem chi tiết">
+                            <button
+                                onClick={() => {
+                                    navigate(`/admin/accounts/${record._id}`);
+                                }}
+                                className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors"
+                            >
+                                <FaEye />
+                            </button>
+                        </Tooltip>
                         <Tooltip title={record.isActive ? "Tạm dừng" : "Mở hoạt động"}>
                             <Switch
                                 checked={record.isActive}
