@@ -390,7 +390,7 @@ const ModalCheckout = ({
         try {
             const result = await createAddress(addressData).unwrap();
             console.log("Create address result:", result);
-            
+
             if (result.success) {
                 message.success("Thêm địa chỉ thành công!");
                 setShowAddAddressModal(false);
@@ -421,6 +421,12 @@ const ModalCheckout = ({
             }
 
             setIsLoading(true);
+
+            const formattedProducts = products.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity
+            }));
+
             const order = {
                 name: values.name,
                 phone: values.phone,
@@ -432,7 +438,7 @@ const ModalCheckout = ({
                 addressDetail: selectedAddress.street,
                 note: values.note || "",
                 paymentMethod: values.paymentMethod?.toLowerCase() || "cod",
-                products,
+                products: formattedProducts,
                 totalAmount,
             };
 
