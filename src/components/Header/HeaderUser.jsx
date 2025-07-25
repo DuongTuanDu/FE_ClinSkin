@@ -106,7 +106,7 @@ const HeaderUser = () => {
     const menuItems = [
         {
             key: "brands",
-            label: t("brand"),
+            label: "Thương hiệu",
             path: "/brands",
             children:
                 isArray(brands) && brands.length > 0

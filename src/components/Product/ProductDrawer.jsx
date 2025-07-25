@@ -182,7 +182,7 @@ const ProductDrawer = ({ open, onClose, product = null }) => {
                                 className="w-32"
                             />
                             <span className="text-sm text-gray-500">
-                                Còn lại: 10 sản phẩm
+                                Còn lại: {product.currentStock} sản phẩm
                             </span>
                         </div>
                     </div>

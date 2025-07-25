@@ -40,8 +40,8 @@ const CustomTooltip = ({ active, payload, label }) => {
                                     currency: 'VND'
                                 }).format(entry.value)
                                 : entry.dataKey === "sales"
-                                ? `${entry.value} sản phẩm`
-                                : `${entry.value} đơn`
+                                    ? `${entry.value} sản phẩm`
+                                    : `${entry.value} đơn`
                             }
                         </span>
                     </div>
@@ -80,13 +80,13 @@ const StatsBestSellingProducts = () => {
     const fetchProductChartData = async (productId, year, type = "month") => {
         try {
             setLoadingChart(true);
-            
-            const apiUrl = type === "year" 
+
+            const apiUrl = type === "year"
                 ? `/admin/dashboard/product-chart/${productId}/five-years`
                 : `/admin/dashboard/product-chart/${productId}/${year}`;
-            
+
             const response = await axiosInstance.get(apiUrl);
-            
+
             if (response.success) {
                 if (type === "year") {
                     // Transform yearly data to chart format
@@ -97,7 +97,7 @@ const StatsBestSellingProducts = () => {
                         grossProfit: item.grossProfit,
                         totalOrders: item.totalOrders
                     }));
-                    
+
                     setChartData({
                         monthly: yearlyChartData,
                         productInfo: response.data.productInfo,
@@ -113,7 +113,7 @@ const StatsBestSellingProducts = () => {
                         grossProfit: item.grossProfit,
                         totalOrders: item.totalOrders
                     }));
-                    
+
                     setChartData({
                         monthly: monthlyChartData,
                         productInfo: response.data.productInfo,
@@ -138,27 +138,27 @@ const StatsBestSellingProducts = () => {
                 setIsLoading(true);
                 setDisplayedProducts([]); // Reset khi thay đổi query
             }
-            
+
             // Build API URL based on query type
-            const apiUrl = query.type === "month" 
+            const apiUrl = query.type === "month"
                 ? `/admin/dashboard/best-selling-products/${year}/${month}?page=${page}&limit=10`
                 : `/admin/dashboard/best-selling-products/${year}?page=${page}&limit=10`;
-            
+
             const response = await axiosInstance.get(apiUrl);
-            
+
             if (response.success) {
                 // Transform API data to component format
                 const transformedProducts = response.data.map((item, index) => {
                     // Get data based on query type (month or year)
                     const currentData = query.type === "month" ? item.currentMonth : item.currentYear;
-                    
+
                     return {
                         id: item.productId,
                         name: item.productInfo.name,
                         image: item.productInfo.mainImage?.url || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100",
                         totalSold: currentData.totalQuantity,
                         revenue: currentData.totalRevenue,
-                        rating: item.productInfo.ratingCount > 0 
+                        rating: item.productInfo.ratingCount > 0
                             ? (item.productInfo.totalRating / item.productInfo.ratingCount).toFixed(1)
                             : 0,
                         ratingCount: item.productInfo.ratingCount || 0,
@@ -183,7 +183,7 @@ const StatsBestSellingProducts = () => {
                         setSelectedProduct(transformedProducts[0]);
                     }
                 }
-                
+
                 setProducts(prev => isLoadMore ? [...prev, ...transformedProducts] : transformedProducts);
                 setPagination(response.pagination);
                 setSummary(response.summary);
@@ -205,7 +205,7 @@ const StatsBestSellingProducts = () => {
     // Load more function cho infinite scroll
     const loadMore = useCallback(() => {
         if (loadingMore || !pagination.hasNextPage) return;
-        
+
         const nextPage = pagination.currentPage + 1;
         fetchBestSellingProducts(query.year, query.month, nextPage, true);
     }, [query.year, query.month, query.type, pagination.currentPage, pagination.hasNextPage, loadingMore]);
@@ -262,7 +262,7 @@ const StatsBestSellingProducts = () => {
         const isPositive = growthRate > 0;
         const IconComponent = isPositive ? IoTrendingUpOutline : IoTrendingDownOutline;
         const colorClass = isPositive ? 'text-green-600' : 'text-red-600';
-        
+
         return (
             <div className={`flex items-center gap-1 ${colorClass}`}>
                 <IconComponent className="text-sm" />
@@ -378,7 +378,7 @@ const StatsBestSellingProducts = () => {
                 <Row gutter={[24, 16]}>
                     {/* Left: Product List */}
                     <Col xs={24} lg={10}>
-                        <Card 
+                        <Card
                             title={
                                 <div className="flex items-center gap-2">
                                     <MdShoppingCart className="text-green-600" />
@@ -392,7 +392,7 @@ const StatsBestSellingProducts = () => {
                             }
                             className="h-full"
                         >
-                            <div 
+                            <div
                                 className="max-h-96 overflow-y-auto"
                                 onScroll={handleScroll}
                             >
@@ -400,18 +400,18 @@ const StatsBestSellingProducts = () => {
                                     dataSource={displayedProducts}
                                     renderItem={(product, index) => (
                                         <List.Item
-                                            className={`cursor-pointer p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
-                                                selectedProduct?.id === product.id 
-                                                    ? 'bg-blue-50 border-l-4 border-blue-500' 
+                                            className={`cursor-pointer p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${selectedProduct?.id === product.id
+                                                    ? 'bg-blue-50 border-l-4 border-blue-500'
                                                     : 'border-l-4 border-transparent'
-                                            }`}
+                                                }`}
                                             onClick={() => handleProductSelect(product)}
                                         >
                                             <List.Item.Meta
+                                                className="px-4"
                                                 avatar={
                                                     <div className="relative">
-                                                        <Avatar 
-                                                            src={product.image} 
+                                                        <Avatar
+                                                            src={product.image}
                                                             size={64}
                                                             shape="square"
                                                         />
@@ -497,7 +497,7 @@ const StatsBestSellingProducts = () => {
 
                     {/* Right: Chart */}
                     <Col xs={24} lg={14}>
-                        <Card 
+                        <Card
                             title={
                                 selectedProduct ? (
                                     <div>
@@ -520,16 +520,16 @@ const StatsBestSellingProducts = () => {
                                             <div className="flex items-center gap-2">
                                                 <MdTrendingUp className="text-blue-600 text-xl" />
                                                 <span className="font-medium">
-                                                    {query.type === "month" 
+                                                    {query.type === "month"
                                                         ? `Biểu đồ bán hàng theo tháng năm ${query.year}`
                                                         : `Biểu đồ bán hàng theo năm (${chartData.yearRange || "5 năm gần nhất"})`
                                                     }
                                                 </span>
                                             </div>
                                             <div className="mt-2 text-sm text-gray-600">
-                                                Tổng bán: {chartData.yearSummary.totalQuantity.toLocaleString()} sản phẩm | 
-                                                Doanh thu: {formatPrice(chartData.yearSummary.totalRevenue)} | 
-                                                Lợi nhuận: {formatPrice(chartData.yearSummary.grossProfit)} | 
+                                                Tổng bán: {chartData.yearSummary.totalQuantity.toLocaleString()} sản phẩm |
+                                                Doanh thu: {formatPrice(chartData.yearSummary.totalRevenue)} |
+                                                Lợi nhuận: {formatPrice(chartData.yearSummary.grossProfit)} |
                                                 Đơn hàng: {chartData.yearSummary.totalOrders} đơn
                                             </div>
                                         </div>
@@ -542,20 +542,20 @@ const StatsBestSellingProducts = () => {
                                                         height={60}
                                                         tick={<CustomizedAxisTick />}
                                                     />
-                                                    <YAxis 
-                                                        yAxisId="left" 
-                                                        label={{ 
-                                                            value: query.type === "month" ? 'Số lượng bán' : 'Số lượng bán', 
-                                                            angle: -90, 
-                                                            position: 'insideLeft' 
+                                                    <YAxis
+                                                        yAxisId="left"
+                                                        label={{
+                                                            value: query.type === "month" ? 'Số lượng bán' : 'Số lượng bán',
+                                                            angle: -90,
+                                                            position: 'insideLeft'
                                                         }}
                                                     />
-                                                    <YAxis 
-                                                        yAxisId="right" 
+                                                    <YAxis
+                                                        yAxisId="right"
                                                         orientation="right"
-                                                        label={{ 
-                                                            value: 'Doanh thu (VND)', 
-                                                            angle: 90, 
+                                                        label={{
+                                                            value: 'Doanh thu (VND)',
+                                                            angle: 90,
                                                             position: 'insideRight',
                                                             offset: 10,
                                                             textAnchor: 'middle'
