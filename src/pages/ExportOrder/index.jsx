@@ -137,7 +137,7 @@ const ExportOrder = () => {
       const result = await createSalesHistory(formData).unwrap();
       
       if (result.success) {
-        message.success("Giao hàng thành công!");
+        message.success("lấy hàng thành công!");
         console.log("Sales history created:", result);
         // Navigate to order management page with state to indicate refresh needed
         setTimeout(() => {
@@ -226,7 +226,7 @@ const ExportOrder = () => {
             disabled={hasInsufficientStock || isCreating}
             onClick={handleDelivery}
         >
-            {isCreating ? "Đang xử lý..." : "Giao hàng"}
+            {isCreating ? "Đang xử lý..." : "Lấy hàng"}
         </button>
       </div>
     </div>

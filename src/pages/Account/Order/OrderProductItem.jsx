@@ -47,7 +47,7 @@ const OrderProductItem = ({
                 }
             />
             <div className="flex flex-col items-center justify-end gap-1 flex-wrap">
-                {order.status === "delivered" && (
+                {order.status === "delivered_confirmed" && (
                     <Button
                         onClick={() => {
                             setOrderId(order._id);

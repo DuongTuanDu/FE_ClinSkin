@@ -34,12 +34,42 @@ const OrderShip = ({
       updateStatusOrderByUser({
         id: orderId,
         data: {
-          status: "delivered",
+          status: "delivered_confirmed",
         },
       })
     ).unwrap();
     if (res.success) {
       message.success(res.message);
+      refetch();
+    }
+  };
+
+  const handleReportDeliveryFailed = async (orderId) => {
+    const res = await dispatch(
+      updateStatusOrderByUser({
+        id: orderId,
+        data: {
+          status: "delivery_failed",
+        },
+      })
+    ).unwrap();
+    if (res.success) {
+      message.success("Đã báo cáo giao hàng thất bại");
+      refetch();
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    const res = await dispatch(
+      updateStatusOrderByUser({
+        id: orderId,
+        data: {
+          status: "cancelled",
+        },
+      })
+    ).unwrap();
+    if (res.success) {
+      message.success("Đã hủy đơn hàng");
       refetch();
     }
   };
@@ -59,20 +89,64 @@ const OrderShip = ({
                     Đơn hàng: <span className="uppercase">OD{order._id}</span>
                   </Title>
                   <div className="flex items-center gap-2">
-                    <Popconfirm
-                      className="max-w-40"
-                      placement="bottom"
-                      title={"Xác nhận giao hàng thành công"}
-                      onConfirm={() => handleCompleteOrder(order._id)}
-                      okText="Xác nhận"
-                      cancelText="Hủy"
-                      okButtonProps={{
-                        loading: isLoading,
-                      }}
-                      destroyTooltipOnHide={true}
-                    >
-                      <Button type="primary">Đã nhận hàng</Button>
-                    </Popconfirm>
+                    {order.status === "carrier_delivered" && (
+                      <>
+                        <Popconfirm
+                          className="max-w-40"
+                          placement="bottom"
+                          title={"Xác nhận đã nhận hàng thành công"}
+                          onConfirm={() => handleCompleteOrder(order._id)}
+                          okText="Xác nhận"
+                          cancelText="Hủy"
+                          okButtonProps={{
+                            loading: isLoading,
+                          }}
+                          destroyTooltipOnHide={true}
+                        >
+                          <Button type="primary">Đã nhận hàng</Button>
+                        </Popconfirm>
+                        <Button 
+                          onClick={() => handleReportDeliveryFailed(order._id)}
+                          danger
+                        >
+                          Báo cáo thất bại
+                        </Button>
+                      </>
+                    )}
+                    {order.status === "delivery_failed" && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Popconfirm
+                          className="max-w-40"
+                          placement="bottom"
+                          title={"Xác nhận đã nhận hàng thành công"}
+                          description="Bạn đã thay đổi quyết định và muốn xác nhận đã nhận hàng?"
+                          onConfirm={() => handleCompleteOrder(order._id)}
+                          okText="Xác nhận"
+                          cancelText="Hủy"
+                          okButtonProps={{
+                            loading: isLoading,
+                          }}
+                          destroyTooltipOnHide={true}
+                        >
+                          <Button type="primary">Đã nhận hàng</Button>
+                        </Popconfirm>
+                        <Popconfirm
+                          className="max-w-40"
+                          placement="bottom"
+                          title={"Xác nhận hủy đơn hàng"}
+                          description="Hủy đơn hàng do giao hàng thất bại?"
+                          onConfirm={() => handleCancelOrder(order._id)}
+                          okText="Hủy đơn hàng"
+                          cancelText="Không"
+                          okButtonProps={{
+                            loading: isLoading,
+                          }}
+                          destroyTooltipOnHide={true}
+                        >
+                          <Button danger>Hủy đơn hàng</Button>
+                        </Popconfirm>
+                      </div>
+                    )}
                   </div>
                 </Space>
               }

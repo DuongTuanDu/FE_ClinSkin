@@ -42,11 +42,17 @@ const OrderProcess = ({
   const getStatusInfo = (status) => {
     switch (status) {
       case "pending":
-        return { color: "orange", text: "Chờ xác nhận", step: 0 };
-      case "processing":
-        return { color: "blue", text: "Đang xử lý", step: 1 };
-      case "shipping":
-        return { color: "cyan", text: "Đang giao", step: 2 };
+        return { color: "orange", text: "Đang chờ xử lý", step: 0 };
+      case "confirmed":
+        return { color: "blue", text: "Đã xác nhận", step: 1 };
+      case "picked_up":
+        return { color: "purple", text: "Đã lấy hàng", step: 2 };
+      case "in_transit":
+        return { color: "geekblue", text: "Đang vận chuyển", step: 3 };
+      case "carrier_confirmed":
+        return { color: "green", text: "Shipper đã xác nhận", step: 3 };
+      case "delivery_pending":
+        return { color: "cyan", text: "Đang giao hàng", step: 4 };
       default:
         return { color: "default", text: status, step: 0 };
     }
@@ -84,10 +90,12 @@ const OrderProcess = ({
                       Đơn hàng: <span className="uppercase">OD{order._id}</span>
                     </Title>
                     <div className="flex items-center gap-2">
-                      <Button onClick={() => {
-                        setOrderId(order._id)
-                        setOpenCancel(true)
-                      }} danger>Hủy đơn hàng</Button>
+                      {(order.status === "pending" || order.status === "confirmed") && (
+                        <Button onClick={() => {
+                          setOrderId(order._id)
+                          setOpenCancel(true)
+                        }} danger>Hủy đơn hàng</Button>
+                      )}
                       <Button
                         onClick={() => {
                           setOrder(order);
@@ -101,10 +109,12 @@ const OrderProcess = ({
                 }
               >
                 <Steps current={step} size="small" className="mb-4">
-                  <Step title="Chờ xác nhận" icon={<ClockCircleOutlined />} />
-                  <Step title="Đang xử lý" icon={<SyncOutlined spin />} />
-                  <Step title="Đang giao" icon={<CarOutlined />} />
-                  <Step title="Đã giao" icon={<CheckCircleOutlined />} />
+                  <Step title="Đang chờ xử lý" icon={<ClockCircleOutlined />} />
+                  <Step title="Đã xác nhận" icon={<CheckCircleOutlined />} />
+                  <Step title="Đã lấy hàng" icon={<SyncOutlined />} />
+                  <Step title="Đang vận chuyển" icon={<CarOutlined />} />
+                  <Step title="Đang giao hàng" icon={<CarOutlined />} />
+                  <Step title="Hoàn thành" icon={<CheckCircleOutlined />} />
                 </Steps>
                 <List
                   itemLayout="horizontal"
