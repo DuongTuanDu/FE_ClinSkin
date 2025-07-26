@@ -1,5 +1,5 @@
 import { Image, Table, Tag, Tooltip } from "antd";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 import { formatDateReview } from "@helpers/formatDate";
 import { PiSpinnerBall } from "react-icons/pi";
 import { formatPrice } from "@helpers/formatPrice";
@@ -11,9 +11,9 @@ const TableProductAlmostExpired = ({
     isLoading,
     paginate,
     setPaginate,
+    selectedProducts = [], // Nhận selected products từ parent
+    setSelectedProducts, // Nhận setter function từ parent
 }) => {
-    const [selectedProducts, setSelectedProducts] = useState([]);
-
     // Helper function to calculate days remaining
     const calculateDaysRemaining = (endDate) => {
         const today = dayjs();
@@ -32,6 +32,17 @@ const TableProductAlmostExpired = ({
             return { text: `Còn ${daysRemaining} ngày`, color: "#52c41a", bgColor: "#f6ffed" };
         }
     };
+
+    // Create unique key for each product
+    const getProductKey = (product) => {
+        return product.name || product._id;
+    };
+
+    // Clear selection when switching pages or changing filters
+    useEffect(() => {
+        // Optional: You might want to clear selection when changing pages
+        // setSelectedProducts([]);
+    }, [paginate.page, paginate.pageSize]);
 
     const batchColumns = [
         {
@@ -202,36 +213,49 @@ const TableProductAlmostExpired = ({
     );
 
     const rowSelection = {
-        selectedRowKeys: selectedProducts.map((p) => p.name),
-        onChange: (_, selectedRows) => {
-            const currentPageProducts = products.map((p) => p.name);
+        selectedRowKeys: selectedProducts.map((p) => getProductKey(p)),
+        onChange: (selectedRowKeys, selectedRows) => {
+            // Get products from current page
+            const currentPageProductKeys = products.map((p) => getProductKey(p));
 
+            // Keep products from other pages that are still selected
             const productsFromOtherPages = selectedProducts.filter(
-                (p) => !currentPageProducts.includes(p.name)
+                (p) => !currentPageProductKeys.includes(getProductKey(p))
             );
 
+            // Map selected rows to the expected format
             const updatedCurrentPageProducts = selectedRows.map((row) => {
                 const existingProduct = selectedProducts.find(
-                    (p) => p.name === row.name
+                    (p) => getProductKey(p) === getProductKey(row)
                 );
                 return {
+                    _id: row._id || row.productId,
+                    productId: row._id || row.productId,
                     image: row.mainImage?.url,
+                    mainImage: row.mainImage,
                     name: row.name,
                     price: row.price,
                     currentStock: row.currentStock,
                     nearExpiryQuantity: row.nearExpiryQuantity,
                     nearExpiryDate: row.nearExpiryDate,
+                    nearExpiryBatches: row.nearExpiryBatches,
+                    promotion: row.promotion,
+                    // Keep existing promotion settings if already selected
                     discountPercentage: existingProduct
                         ? existingProduct.discountPercentage
                         : 0,
                     maxQty: existingProduct ? existingProduct.maxQty : 0,
+                    maxDiscountAmount: existingProduct ? existingProduct.maxDiscountAmount : 0,
                 };
             });
 
-            setSelectedProducts([
+            // Combine products from other pages with current page selections
+            const allSelectedProducts = [
                 ...productsFromOtherPages,
                 ...updatedCurrentPageProducts,
-            ]);
+            ];
+
+            setSelectedProducts(allSelectedProducts);
         },
         getCheckboxProps: (record) => ({
             disabled: !isEmpty(record.promotion),
@@ -241,7 +265,7 @@ const TableProductAlmostExpired = ({
     return (
         <>
             <Table
-                rowKey={(record) => record.name}
+                rowKey={(record) => getProductKey(record)}
                 columns={columns}
                 dataSource={products}
                 loading={isLoading}
@@ -259,6 +283,10 @@ const TableProductAlmostExpired = ({
                             page,
                             pageSize,
                         })),
+                    showSizeChanger: true,
+                    showQuickJumper: true,
+                    showTotal: (total, range) => 
+                        `${range[0]}-${range[1]} của ${total} sản phẩm`,
                 }}
                 scroll={{ x: true }}
             />

@@ -11,19 +11,32 @@ import {
     Pagination,
     Image,
     Divider,
+    Tag,
+    Alert,
 } from "antd";
 import { createAverageRate, createIcon, SingleStar } from "@utils/createIcon";
-import { CameraOutlined, CommentOutlined, EyeOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import {
+    CameraOutlined,
+    CommentOutlined,
+    EyeOutlined,
+    CustomerServiceOutlined,
+    CheckCircleOutlined,
+    ShoppingCartOutlined,
+    EditOutlined
+} from "@ant-design/icons";
+import { useState, useEffect } from "react";
 import { capitalizeFirstLetter } from "@helpers/formatDate";
 import { FaQuoteLeft, FaQuoteRight } from "react-icons/fa6";
-import { MdVerified } from "react-icons/md";
+import { MdVerified, MdAdminPanelSettings } from "react-icons/md";
 import dayjs from "@utils/dayjsTz";
 import { useGetReviewByUserQuery } from "@/redux/review/review.query";
-import ModalRate from "./Modal/ModalRate";
+import { useSelector } from "react-redux";
+import ModalRateUser from "./ModalRateUser";
 
 const RateList = ({ product, refetchProduct }) => {
     const [open, setOpen] = useState(false);
+    const [canReview, setCanReview] = useState(false);
+    const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
     const [reviewFilter, setReviewFilter] = useState({
         rate: "",
         hasImage: "",
@@ -33,6 +46,8 @@ const RateList = ({ product, refetchProduct }) => {
         page: 1,
         pageSize: 10,
     });
+
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
 
     const { data, isLoading, refetch } = useGetReviewByUserQuery(
         { ...paginate, ...reviewFilter, productId: product?._id },
@@ -45,6 +60,33 @@ const RateList = ({ product, refetchProduct }) => {
         averageRating = 0,
         rateDistribution = {},
     } = data || {};
+
+    // Kiểm tra user có thể đánh giá sản phẩm này không
+    useEffect(() => {
+        const checkUserCanReview = () => {
+            if (!isAuthenticated || !user || !product) {
+                setCanReview(false);
+                return;
+            }
+
+            // Kiểm tra user đã review sản phẩm này chưa
+            const userReview = reviews.find(review =>
+                review.userId._id === user._id
+            );
+
+            if (userReview) {
+                setHasAlreadyReviewed(true);
+                setCanReview(false);
+            } else {
+                setHasAlreadyReviewed(false);
+                // Ở đây bạn có thể thêm logic kiểm tra user có đơn hàng delivered không
+                // Hiện tại set là true để user có thể review, backend sẽ validate
+                setCanReview(true);
+            }
+        };
+
+        checkUserCanReview();
+    }, [isAuthenticated, user, product, reviews]);
 
     const handleFilterChange = (type, value) => {
         setReviewFilter((prev) => ({
@@ -66,16 +108,56 @@ const RateList = ({ product, refetchProduct }) => {
         0
     );
 
+    const renderReviewButton = () => {
+        if (!isAuthenticated) {
+            return (
+                <Alert
+                    message="Đăng nhập để đánh giá sản phẩm"
+                    type="info"
+                    showIcon
+                    className="mb-4"
+                />
+            );
+        }
+
+        if (hasAlreadyReviewed) {
+            return (
+                <Alert
+                    message="Bạn đã đánh giá sản phẩm này"
+                    type="success"
+                    showIcon
+                    icon={<CheckCircleOutlined />}
+                    className="mb-4"
+                />
+            );
+        }
+
+        return (
+            <div className="flex items-center justify-center mb-4">
+                <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    size="large"
+                    onClick={() => setOpen(true)}
+                    className="bg-gradient-to-r from-pink-500 to-purple-500 border-none hover:from-pink-600 hover:to-purple-600"
+                >
+                    Viết đánh giá
+                </Button>
+            </div>
+        );
+    };
+
     return (
         <Card className="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300 text-base">
             <div className="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
-                <ModalRate
+                <ModalRateUser
                     {...{
                         open,
                         setOpen,
                         product,
                         refetch,
                         refetchProduct,
+                        withOrderValidation: true, // Sử dụng API mới
                     }}
                 />
                 <div className="md:w-1/3">
@@ -119,17 +201,11 @@ const RateList = ({ product, refetchProduct }) => {
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-start justify-center">
-                        <Button
-                            className="text-slate-900 font-medium"
-                            size="large"
-                            onClick={() => setOpen(true)}
-                            type="link"
-                        >
-                            ✍ Viết đánh giá
-                        </Button>
-                    </div>
+
+                    {/* Render review button based on user status */}
+                    {renderReviewButton()}
                 </div>
+
                 <div className="md:w-2/3">
                     <div className="flex justify-between items-center mb-4">
                         <Space wrap>
@@ -183,6 +259,7 @@ const RateList = ({ product, refetchProduct }) => {
                             </Button>
                         </Space>
                     </div>
+
                     {reviews.length === 0 ? (
                         <>
                             <div className="flex items-center justify-center">
@@ -206,8 +283,9 @@ const RateList = ({ product, refetchProduct }) => {
                                 renderItem={(review) => (
                                     <div className="pb-4">
                                         <Divider />
-                                        <div className="flex flex-col space-y-2">
-                                            <div className="flex items-start space-x-2">
+                                        <div className="flex flex-col space-y-3">
+                                            {/* User Review Section */}
+                                            <div className="flex items-start space-x-3">
                                                 <Avatar
                                                     className="w-12 h-12"
                                                     src={review.userId.avatar.url}
@@ -221,7 +299,7 @@ const RateList = ({ product, refetchProduct }) => {
                                                                 </div>
                                                                 {review.order && (
                                                                     <div className="flex items-center gap-1">
-                                                                        <MdVerified className="text-[#3fbaf6] text-lg" />{" "}
+                                                                        <MdVerified className="text-[#3fbaf6] text-lg" />
                                                                         <span className="text-sm text-[#3fbaf6] italic">
                                                                             Đã mua
                                                                         </span>
@@ -252,34 +330,64 @@ const RateList = ({ product, refetchProduct }) => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-1 text-gray-600 text-base italic">
+                                            <div className="flex items-center gap-1 text-gray-600 text-base italic ml-15">
                                                 <FaQuoteLeft className="text-gray-400" />
                                                 <span>{review.comment}</span>
                                                 <FaQuoteRight className="text-gray-400" />
                                             </div>
 
                                             {review.images && review.images.length > 0 && (
-                                                <Image.PreviewGroup>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {review.images.map((image, index) => (
-                                                            <Image
-                                                                key={index}
-                                                                src={image.url}
-                                                                alt={`Review image ${index + 1}`}
-                                                                width={60}
-                                                                height={60}
-                                                                preview={{
-                                                                    maskClassName: "rounded-lg",
-                                                                    mask: (
-                                                                        <div className="flex items-center justify-center w-full h-full bg-black bg-opacity-50 rounded-lg">
-                                                                            <EyeOutlined className="text-white text-2xl" />
-                                                                        </div>
-                                                                    ),
-                                                                }}
-                                                            />
-                                                        ))}
+                                                <div className="ml-15">
+                                                    <Image.PreviewGroup>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {review.images.map((image, index) => (
+                                                                <Image
+                                                                    key={index}
+                                                                    src={image.url}
+                                                                    alt={`Review image ${index + 1}`}
+                                                                    width={60}
+                                                                    height={60}
+                                                                    preview={{
+                                                                        maskClassName: "rounded-lg",
+                                                                        mask: (
+                                                                            <div className="flex items-center justify-center w-full h-full bg-black bg-opacity-50 rounded-lg">
+                                                                                <EyeOutlined className="text-white text-2xl" />
+                                                                            </div>
+                                                                        ),
+                                                                    }}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </Image.PreviewGroup>
+                                                </div>
+                                            )}
+
+                                            {/* Admin Reply Section */}
+                                            {review.reply && review.reply.trim() && (
+                                                <div className="ml-8 mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-400">
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className="flex-shrink-0">
+                                                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                                                <CustomerServiceOutlined className="text-white text-lg" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-grow">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <Tag
+                                                                    icon={<MdAdminPanelSettings />}
+                                                                    color="blue"
+                                                                    className="text-sm font-semibold"
+                                                                >
+                                                                    Phản hồi từ ClinSkin
+                                                                </Tag>
+                                                                <CheckCircleOutlined className="text-blue-500" />
+                                                            </div>
+                                                            <div className="text-gray-700 text-base leading-relaxed">
+                                                                <span className="italic">"{review.reply}"</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </Image.PreviewGroup>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

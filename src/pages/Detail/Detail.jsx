@@ -321,14 +321,17 @@ const Detail = () => {
                         </div>
                         <div>
                             <h3 className="font-semibold mb-2">Số lượng: {quantity}</h3>
-                            <InputNumber
-                                min={1}
-                                max={getAvailableQuantity()}
-                                value={quantity}
-                                onChange={handleQuantityChange}
-                                className="w-40 h-10 text-base"
-                                disabled={isOutOfStock}
-                            />
+                            <div className="flex items-center gap-2">
+                                <InputNumber
+                                    min={1}
+                                    max={getAvailableQuantity()}
+                                    value={quantity}
+                                    onChange={handleQuantityChange}
+                                    className="w-40 h-10 text-base"
+                                    disabled={isOutOfStock}
+                                />
+                                <h4 className="font-semibold mb-2">Còn lại: {dataProduct.currentStock} sản phẩm</h4>
+                            </div>
                         </div>
                     </Card>
                     <div className="flex space-x-4 mb-6 items-center">
