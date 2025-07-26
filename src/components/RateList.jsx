@@ -20,8 +20,10 @@ import { FaQuoteLeft, FaQuoteRight } from "react-icons/fa6";
 import { MdVerified } from "react-icons/md";
 import dayjs from "@utils/dayjsTz";
 import { useGetReviewByUserQuery } from "@/redux/review/review.query";
+import ModalRate from "./Modal/ModalRate";
 
-const RateList = ({ product }) => {
+const RateList = ({ product, refetchProduct }) => {
+    const [open, setOpen] = useState(false);
     const [reviewFilter, setReviewFilter] = useState({
         rate: "",
         hasImage: "",
@@ -32,7 +34,7 @@ const RateList = ({ product }) => {
         pageSize: 10,
     });
 
-    const { data, isLoading } = useGetReviewByUserQuery(
+    const { data, isLoading, refetch } = useGetReviewByUserQuery(
         { ...paginate, ...reviewFilter, productId: product?._id },
         { skip: !product }
     );
@@ -67,6 +69,15 @@ const RateList = ({ product }) => {
     return (
         <Card className="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300 text-base">
             <div className="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+                <ModalRate
+                    {...{
+                        open,
+                        setOpen,
+                        product,
+                        refetch,
+                        refetchProduct,
+                    }}
+                />
                 <div className="md:w-1/3">
                     <div className="flex items-center justify-center">
                         <div className="text-center">
@@ -107,6 +118,16 @@ const RateList = ({ product }) => {
                                 <span className="ml-2 w-12 text-right">({count})</span>
                             </div>
                         ))}
+                    </div>
+                    <div className="flex items-start justify-center">
+                        <Button
+                            className="text-slate-900 font-medium"
+                            size="large"
+                            onClick={() => setOpen(true)}
+                            type="link"
+                        >
+                            ✍ Viết đánh giá
+                        </Button>
                     </div>
                 </div>
                 <div className="md:w-2/3">

@@ -379,7 +379,7 @@ const Detail = () => {
 
             <div className="mt-12">
                 <h2 className="text-2xl font-bold mb-4">Đánh giá sản phẩm</h2>
-                <RateList {...{ product: dataProduct }} />
+                <RateList {...{ product: dataProduct, refetchProduct: refetch }} />
             </div>
         </div>
     );
