@@ -1,4 +1,4 @@
-import { Input, message, Modal, Select } from "antd";
+import { Input, message, Modal, TreeSelect } from "antd";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
@@ -21,7 +21,6 @@ const ModalCategoryAction = ({
   const [input, setInput] = useState({
     name: category.name || "",
     parent: category.parent || null,
-    level: category.level || 0,
   });
   const [validates, setValidates] = useState({});
   const {
@@ -40,56 +39,32 @@ const ModalCategoryAction = ({
         ...prev,
         name: category.name,
         parent: category.parent,
-        level: category.level,
       }));
     }
   }, [category, open]);
 
-  const flattenCategories = useCallback(
-    (categories, level = 0, prefix = "", excludeId = null) => {
-      return categories.reduce((acc, category) => {
-        if (category._id !== excludeId) {
-          acc.push({
-            value: category._id,
-            label: `${prefix}${category.name}`,
-            level: level,
-          });
-          if (category.children && category.children.length > 0) {
-            acc.push(
-              ...flattenCategories(
-                category.children,
-                level + 1,
-                `${prefix}  `,
-                excludeId
-              )
-            );
-          }
-        }
-        return acc;
-      }, []);
-    },
-    []
-  );
+  // Helper function to convert categories to TreeSelect format
+  const convertToTreeData = (categories, excludeId = null) => {
+    return categories
+      .filter(category => category._id !== excludeId)
+      .map(category => ({
+        title: category.name,
+        value: category._id,
+        key: category._id,
+        children: category.children && category.children.length > 0 
+          ? convertToTreeData(category.children, excludeId) 
+          : undefined,
+      }));
+  };
 
-  const parentOptions = useMemo(() => {
-    const flattened = flattenCategories(categories, 0, "", category._id);
-    if (input.level === 1) {
-      return flattened.filter((cat) => cat.level === 0);
-    } else if (input.level === 2) {
-      return flattened.filter((cat) => cat.level === 1);
-    }
-    return [];
-  }, [categories, input.level, category._id, flattenCategories]);
+  const treeData = useMemo(() => {
+    return convertToTreeData(categories, category._id);
+  }, [categories, category._id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInput((prev) => ({ ...prev, [name]: value }));
     setValidates((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleLevelChange = (value) => {
-    setInput((prev) => ({ ...prev, level: value, parent: null }));
-    setValidates((prev) => ({ ...prev, level: "", parent: "" }));
   };
 
   const handleParentChange = (value) => {
@@ -98,7 +73,7 @@ const ModalCategoryAction = ({
   };
 
   const clearInput = useCallback(() => {
-    setInput({ name: "", level: 0, parent: null });
+    setInput({ name: "", parent: null });
     setValidates({});
   }, []);
 
@@ -114,21 +89,12 @@ const ModalCategoryAction = ({
       return;
     }
 
-    if (input.level > 0 && !input.parent) {
-      setValidates((prev) => ({
-        ...prev,
-        parent: "Vui lòng chọn danh mục cha",
-      }));
-      return;
-    }
-
     let result;
     if (isEmpty(category)) {
       result = await dispatch(
         createCategory({
           name: input.name,
           parent: input.parent,
-          level: input.level,
         })
       ).unwrap();
     } else {
@@ -136,7 +102,6 @@ const ModalCategoryAction = ({
         id: category._id,
         name: input.name,
         parent: input.parent,
-        level: input.level,
       })
       ).unwrap();
     }
@@ -194,53 +159,37 @@ const ModalCategoryAction = ({
             onChange={handleInputChange}
             size="large"
             className="mt-1"
+            placeholder="Nhập tên danh mục"
           />
           {validates.name && <ErrorMessage message={validates.name} />}
         </div>
+        
         <div className="w-full">
           <label className="block text-sm font-medium text-[#14134f]">
-            Level
+            Danh mục cha (Tùy chọn)
           </label>
-          <Select
-            name="level"
-            value={input.level}
-            onChange={handleLevelChange}
-            placeholder={<div className="text-sm">Chọn cấp độ danh mục</div>}
+          <TreeSelect
+            loading={isLoading}
+            value={input.parent}
+            onChange={handleParentChange}
+            placeholder="Chọn danh mục cha (để trống nếu là danh mục gốc)"
             size="large"
             className="w-full mt-1"
-          >
-            <Select.Option value={0}>Danh mục (0)</Select.Option>
-            <Select.Option value={1}>Danh mục (1)</Select.Option>
-            <Select.Option value={2}>Danh mục (2)</Select.Option>
-          </Select>
-          {validates.level && <ErrorMessage message={validates.level} />}
-        </div>
-        {input.level > 0 && (
-          <div className="w-full">
-            <label className="block text-sm font-medium text-[#14134f]">
-              Danh mục cha
-            </label>
-            <Select
-              loading={isLoading}
-              name="parent"
-              value={input.parent}
-              onChange={handleParentChange}
-              placeholder={
-                <div className="text-sm">Danh sách danh mục cha</div>
-              }
-              size="large"
-              className="w-full mt-1"
-              allowClear
-            >
-              {parentOptions.map((option) => (
-                <Select.Option key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Option>
-              ))}
-            </Select>
-            {validates.parent && <ErrorMessage message={validates.parent} />}
+            allowClear
+            showSearch
+            treeData={treeData}
+            treeDefaultExpandAll={false}
+            treeExpandAction="click"
+            filterTreeNode={(search, node) =>
+              node.title.toLowerCase().includes(search.toLowerCase())
+            }
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+          />
+          {validates.parent && <ErrorMessage message={validates.parent} />}
+          <div className="text-xs text-gray-500 mt-1">
+            Để trống nếu muốn tạo danh mục gốc. Nhấp vào biểu tượng để mở rộng/thu gọn
           </div>
-        )}
+        </div>
       </form>
     </Modal>
   );

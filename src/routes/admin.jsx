@@ -38,6 +38,18 @@ const ProtectedRoute = ({ children }) => {
     );
 };
 
+const RoleProtectedRoute = ({ children, allowedRoles = ["ADMIN", "STAFF"] }) => {
+    const { adminInfo } = useSelector((state) => state.auth);
+    
+    if (!allowedRoles.includes(adminInfo?.role)) {
+        // Redirect based on role
+        const redirectPath = adminInfo?.role === "STAFF" ? "/admin/products" : "/admin/dashboard";
+        return <Navigate to={redirectPath} replace />;
+    }
+    
+    return children;
+};
+
 const AuthRoute = ({ children }) => {
     const { isAuthenticatedAdmin, isLoading, adminInfo } = useSelector(
         (state) => state.auth
@@ -45,7 +57,11 @@ const AuthRoute = ({ children }) => {
     return isAuthenticatedAdmin && !isLoading ? (
         <Navigate
             to={
-                adminInfo.role === "ADMIN" && "/admin/dashboard"
+                adminInfo.role === "ADMIN" 
+                    ? "/admin/dashboard" 
+                    : adminInfo.role === "STAFF" 
+                        ? "/admin/products"
+                        : "/admin/dashboard"
             }
             replace
         />
@@ -60,6 +76,7 @@ const WrapAdminRoute = ({
     layoutTitle,
     isProtected,
     isAuthRoute,
+    allowedRoles = ["ADMIN", "STAFF"] // Default allow both roles
 }) => (
     <Suspense fallback={<Loading />}>
         <PageTitle title={`ClinSkin | ${title}`}>
@@ -73,7 +90,9 @@ const WrapAdminRoute = ({
                         <LayoutAdmin title={layoutTitle}>
                             {isProtected ? (
                                 <ProtectedRoute>
-                                    <Element />
+                                    <RoleProtectedRoute allowedRoles={allowedRoles}>
+                                        <Element />
+                                    </RoleProtectedRoute>
                                 </ProtectedRoute>
                             ) : (
                                 <Element />
@@ -99,6 +118,7 @@ const adminRoutes = [
         title: "Dashboard",
         layoutTitle: "Hi 👋, Wellcome Admin ClinSkin!",
         isProtected: true,
+        allowedRoles: ["ADMIN"], // Only ADMIN can access dashboard
     },
     {
         path: "/admin/categories",
@@ -106,6 +126,7 @@ const adminRoutes = [
         title: "Admin - Danh sách danh mục",
         layoutTitle: "Danh sách danh mục",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
 
     {
@@ -114,6 +135,7 @@ const adminRoutes = [
         title: "Admin - Danh sách Khuyến mãi",
         layoutTitle: "",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/products",
@@ -121,6 +143,7 @@ const adminRoutes = [
         title: "Admin - Danh sách sản phẩm",
         layoutTitle: "Danh sách sản phẩm",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/reviews",
@@ -128,6 +151,7 @@ const adminRoutes = [
         title: "Admin - Danh sách review",
         layoutTitle: "Danh sách review",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/settings",
@@ -135,6 +159,7 @@ const adminRoutes = [
         title: "Admin - Cài đặt",
         layoutTitle: "Thông tin cài đặt tài khoản",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/brands",
@@ -142,6 +167,7 @@ const adminRoutes = [
         title: "Admin - Danh sách thương hiệu",
         layoutTitle: "Danh sách thương hiệu",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/users",
@@ -149,6 +175,7 @@ const adminRoutes = [
         title: "Admin - Danh sách người dùng",
         layoutTitle: "Danh sách người dùng",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/orders",
@@ -156,6 +183,7 @@ const adminRoutes = [
         title: "Admin - Danh sách đặt hàng",
         layoutTitle: "Danh sách đặt hàng",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/inventory",
@@ -163,6 +191,7 @@ const adminRoutes = [
         title: "Admin - Quản lý lô hàng",
         layoutTitle: "Quản lý lô hàng",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/export-order/:orderId",
@@ -170,6 +199,7 @@ const adminRoutes = [
         title: "Admin - Chi tiết đơn xuất kho",
         layoutTitle: "Chi tiết đơn xuất kho",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/promotions/create",
@@ -177,6 +207,7 @@ const adminRoutes = [
         title: "Admin - Tạo mới khuyến mãi",
         layoutTitle: "",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/promotions/:id",
@@ -184,6 +215,7 @@ const adminRoutes = [
         title: "Admin - Chi tiết khuyến mãi",
         layoutTitle: "",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
     {
         path: "/admin/accounts",
@@ -191,6 +223,7 @@ const adminRoutes = [
         title: "Admin - Quản lý tài khoản",
         layoutTitle: "Danh sách tài khoản quản trị",
         isProtected: true,
+        allowedRoles: ["ADMIN"], // Only ADMIN can access
     },
     {
         path: "/admin/accounts/:adminId",
@@ -198,6 +231,7 @@ const adminRoutes = [
         title: "Admin - Chi tiết tài khoản",
         layoutTitle: "Chi tiết tài khoản",
         isProtected: true,
+        allowedRoles: ["ADMIN"], // Only ADMIN can access
     },
     {
         path: "/admin/orders/:id",
@@ -205,11 +239,12 @@ const adminRoutes = [
         title: "Admin - Chi tiết đơn hàng",
         layoutTitle: "Chi tiết đơn hàng",
         isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"], // Both can access
     },
 ];
 
 const AdminRoutes = adminRoutes.map(
-    ({ path, element, title, layoutTitle, isProtected, isAuthRoute }) => ({
+    ({ path, element, title, layoutTitle, isProtected, isAuthRoute, allowedRoles }) => ({
         path,
         element: (
             <WrapAdminRoute
@@ -218,6 +253,7 @@ const AdminRoutes = adminRoutes.map(
                 layoutTitle={layoutTitle}
                 isProtected={isProtected}
                 isAuthRoute={isAuthRoute}
+                allowedRoles={allowedRoles}
             />
         ),
     })

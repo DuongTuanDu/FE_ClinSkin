@@ -21,6 +21,8 @@ const LoginAdmin = () => {
         set("ACCESS_TOKEN_ADMIN", res.payload.accessToken);
         if (resData.role === "ADMIN") {
           navigate("/admin/dashboard");
+        } else if (resData.role === "STAFF") {
+          navigate("/admin/products");
         }
       }
     });
