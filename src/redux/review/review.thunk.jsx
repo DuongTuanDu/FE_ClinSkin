@@ -72,3 +72,16 @@ export const getReviewProduct = createAsyncThunk(
         }
     }
 );
+
+export const createReviewWithOrderValidation = createAsyncThunk(
+    "review/createReviewWithOrderValidation",
+    async (payload, { rejectWithValue }) => {
+        try {
+            const res = await axios.post("/reviews/with-order-validation", payload);
+            return res;
+        } catch (error) {
+            message.error(error.response.data.message);
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
