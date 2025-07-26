@@ -238,11 +238,11 @@ const TableOrder = ({
               }}
               destroyTooltipOnHide={true}
             >
-              <Tooltip title="Xóa">
+              {/* <Tooltip title="Xóa">
                 <button className="p-2 border-2 rounded-md cursor-pointer hover:bg-[#edf1ff] transition-colors">
                   <MdOutlineDeleteOutline />
                 </button>
-              </Tooltip>
+              </Tooltip> */}
             </Popconfirm>
           </div>
         ),
