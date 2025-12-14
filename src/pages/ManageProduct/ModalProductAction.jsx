@@ -213,6 +213,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       let result;
       if (isEmpty(product)) {
         result = await dispatch(createProduct(productData)).unwrap();
+        message.success("Tạo sản phẩm thành công");
       } else {
         result = await dispatch(updateProduct({
           id: product._id,
@@ -225,7 +226,7 @@ const ModalProductAction = ({ open, setOpen, product = {}, refetch }) => {
       setErrors({});
     } catch (error) {
       console.error("Form submission error:", error);
-      message.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
+      message.error(error.errors[0]?.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

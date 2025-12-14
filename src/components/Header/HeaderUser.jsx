@@ -226,7 +226,7 @@ const HeaderUser = () => {
             label: (
                 <div
                     className="flex items-center gap-4"
-                    onClick={() => navigate("#")}
+                    onClick={() => navigate("/account?tab=orders")}
                 >
                     <IoCartOutline /> <span>Lịch sử đơn hàng</span>
                 </div>
