@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Table, Tooltip, Pagination, Tag, Popconfirm, message } from "antd";
 import { GrEdit } from "react-icons/gr";
 import { MdOutlineDeleteOutline } from "react-icons/md";
-import { useDeleteCategoryMutation } from "@/redux/category/category.query";
+import { useDeleteCategoryMutation, useGetAllCategoryQuery } from "@/redux/category/category.query";
 import ModalCategoryAction from "./ModalCategoryAction";
 
 const TableCategory = ({
@@ -18,16 +18,35 @@ const TableCategory = ({
   const [deleteCategory, { isLoading: isLoadingDelete }] = useDeleteCategoryMutation();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState({});
+  
+  // Lấy tất cả categories để tìm parent category (không phân trang)
+  const { data: allCategories = [] } = useGetAllCategoryQuery();
+
+  // Helper function để flatten categories từ cấu trúc nested
+  const flattenCategories = (categories) => {
+    const flattened = [];
+    categories.forEach(cat => {
+      flattened.push(cat);
+      if (cat.children && cat.children.length > 0) {
+        flattened.push(...flattenCategories(cat.children));
+      }
+    });
+    return flattened;
+  };
+
+  const allCategoriesFlat = useMemo(() => flattenCategories(allCategories), [allCategories]);
 
   const removeCategory = async (id) => {
-    console.log(id);
     try {
       const res = await deleteCategory(id);
-      if (res.data.success) {
+      if (res.data) {
         message.success(res.data.message);
+      } else {
+        message.error(res.error.message.message)
       }
     } catch (error) {
-      console.log(error);
+      message.error(error.message)
+      console.log("error11111111", error);
     }
   };
 
@@ -60,9 +79,15 @@ const TableCategory = ({
         title: "Danh mục cha",
         key: "parent",
         render: (_, record) => {
-          if (record.parent) {
-            const parentCategory = categories.find(
-              (cat) => cat._id === record.parent
+          // Kiểm tra nếu parent là string (ID) hoặc object
+          const parentId = typeof record.parent === 'string' 
+            ? record.parent 
+            : record.parent?._id || record.parent;
+            
+          if (parentId) {
+            // Tìm trong tất cả categories (không chỉ trang hiện tại)
+            const parentCategory = allCategoriesFlat.find(
+              (cat) => cat._id === parentId
             );
             return parentCategory ? (
               <Tag className="text-sm" color="#65bebc">
@@ -121,7 +146,7 @@ const TableCategory = ({
         ),
       },
     ],
-    [page, pageSize, categories]
+    [page, pageSize, allCategoriesFlat]
   );
 
   return (
