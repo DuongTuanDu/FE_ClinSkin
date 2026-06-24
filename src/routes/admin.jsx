@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import Loading from "@components/Loading/Loading";
 import ManagePromotion from "@/pages/ManagePromotion";
 import ProviderSocket from "@/components/Layout/ProviderSocket";
+import ManageAccount from "@/pages/ManageAccount";
 
 const PageTitle = lazy(() => import("@components/Layout/PageTitle"));
 const LayoutAdmin = lazy(() => import("@components/Layout/LayoutAdmin"));
@@ -24,7 +25,7 @@ const ManageInventory = lazy(() => import("@pages/ManageInventory"));
 const ExportOrder = lazy(() => import("@pages/ExportOrder"));
 const CreatePromotion = lazy(() => import("@pages/CreatePromotion"));
 const PromotionDetail = lazy(() => import("@pages/PromotionDetail"));
-const ManageAccount = lazy(() => import("@pages/ManageAccount"));
+const ManageChat = lazy(() => import("@pages/ManageChat"));
 const AccountDetail = lazy(() => import("@pages/AccountDetail"));
 
 const ProtectedRoute = ({ children }) => {
@@ -216,6 +217,14 @@ const adminRoutes = [
         layoutTitle: "",
         isProtected: true,
         allowedRoles: ["ADMIN", "STAFF"], // Both can access
+    },
+    {
+        path: "/admin/chat",
+        element: ManageChat,
+        title: "Admin - Chat hỗ trợ",
+        layoutTitle: "Quản lý chat khách hàng",
+        isProtected: true,
+        allowedRoles: ["ADMIN", "STAFF"],
     },
     {
         path: "/admin/accounts",

@@ -13,9 +13,12 @@ import {
   TagOutlined,
   ShopOutlined,
   GiftOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { GrUserAdmin } from "react-icons/gr";
 import { useSelector } from "react-redux";
+import { Badge } from "antd";
+import { selectTotalAdminUnread } from "@/redux/chat/chat.selectors";
 
 // eslint-disable-next-line no-unused-vars
 const LOGO_ANIMATION = {
@@ -101,6 +104,13 @@ const MENU_ITEMS = [
     roles: ["ADMIN", "STAFF"], // Both ADMIN and STAFF can access
   },
   {
+    key: "10",
+    icon: <MessageOutlined />,
+    label: "Chat hỗ trợ",
+    path: "/admin/chat",
+    roles: ["ADMIN", "STAFF"],
+  },
+  {
     key: "9",
     icon: <GrUserAdmin />,
     label: "Quản trị",
@@ -169,6 +179,7 @@ const filterMenuItemsByRole = (menuItems, userRole) => {
 const SiderAdmin = ({ collapsed, setCollapsed }) => {
   const { isMobile } = useScreen();
   const { adminInfo } = useSelector((state) => state.auth);
+  const adminUnread = useSelector(selectTotalAdminUnread);
 
   useEffect(() => {
     setCollapsed(isMobile);
@@ -202,7 +213,21 @@ const SiderAdmin = ({ collapsed, setCollapsed }) => {
   };
 
   // Get filtered menu items based on user role
-  const filteredMenuItems = filterMenuItemsByRole(MENU_ITEMS, adminInfo?.role);
+  const filteredMenuItems = filterMenuItemsByRole(MENU_ITEMS, adminInfo?.role).map(
+    (item) => {
+      if (item.path === "/admin/chat" && adminUnread > 0) {
+        return {
+          ...item,
+          label: (
+            <Badge count={adminUnread} size="small" offset={[8, 0]}>
+              <span>Chat hỗ trợ</span>
+            </Badge>
+          ),
+        };
+      }
+      return item;
+    }
+  );
 
   return (
     <Sider trigger={null} collapsible collapsed={collapsed}>

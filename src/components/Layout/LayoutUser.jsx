@@ -7,11 +7,12 @@ import ModalAuth from "../Modal/ModalAuth";
 import { setOpenModelAuth } from "@/redux/auth/auth.slice";
 import ClickSpark from "../ClickSpark";
 import ConversationSupport from "../Chat/ConversationSupport";
+import ChatSocketBridge from "../Chat/ChatSocketBridge";
 
 const LayoutUser = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { openModelAuth } = useSelector((state) => state.auth);
+  const { openModelAuth, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
     window.scrollTo({
@@ -39,6 +40,7 @@ const LayoutUser = ({ children }) => {
       >
         <HeaderUser />
         <main className="flex-grow px-4 lg:px-16 py-2 min-h-screen">{children}</main>
+        {isAuthenticated && <ChatSocketBridge actorType="customer" />}
         <ConversationSupport />
         <FooterUser />
       </ClickSpark>
