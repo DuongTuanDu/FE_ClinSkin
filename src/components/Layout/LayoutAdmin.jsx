@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Layout } from "antd";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import useScreen from "@/hook/useScreen";
 import HeaderAdmin from "@components/Header/HeaderAdmin";
 import SiderAdmin from "@/components/Layout/SiderAdmin";
+import ChatSocketBridge from "@/components/Chat/ChatSocketBridge";
 
 const { Content, Footer } = Layout;
 
 const LayoutAdmin = ({ children, title, className = "bg-white" }) => {
     const [collapsed, setCollapsed] = useState(false);
     const { isMobile } = useScreen();
+    const { isAuthenticatedAdmin, adminInfo } = useSelector((state) => state.auth);
+    const canUseChat =
+        isAuthenticatedAdmin &&
+        (adminInfo?.role === "ADMIN" || adminInfo?.role === "STAFF");
 
     useEffect(() => {
         if (isMobile) {
@@ -23,6 +29,7 @@ const LayoutAdmin = ({ children, title, className = "bg-white" }) => {
         // eslint-disable-next-line react/jsx-no-constructed-context-values
         <Layout className="min-h-screen">
             <SiderAdmin {...{ collapsed, setCollapsed }} />
+            {canUseChat && <ChatSocketBridge actorType="admin" />}
             <Layout className="site-layout">
                 <HeaderAdmin {...{ collapsed, setCollapsed }} />
                 <Content

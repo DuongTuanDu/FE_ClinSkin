@@ -14,6 +14,8 @@ import { promotionApi } from "./promotion/promotion.query";
 import { notificationApi } from "./notification/notification.query";
 import { addressApi } from "./address/address.query";
 import { salesHistoryApi } from "./salesHistory/salesHistory.query";
+import { chatApi } from "./chat/chat.query";
+import { chatAdminApi } from "./chat/chatAdmin.query";
 
 
 export const store = configureStore({
@@ -33,6 +35,8 @@ export const store = configureStore({
     [notificationApi.reducerPath]: notificationApi.reducer,
     [addressApi.reducerPath]: addressApi.reducer,
     [salesHistoryApi.reducerPath]: salesHistoryApi.reducer,
+    [chatApi.reducerPath]: chatApi.reducer,
+    [chatAdminApi.reducerPath]: chatAdminApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
@@ -51,7 +55,9 @@ export const store = configureStore({
       notificationApi.middleware,
       addressApi.middleware,
       salesHistoryApi.middleware,
-      promotionApi.middleware
+      promotionApi.middleware,
+      chatApi.middleware,
+      chatAdminApi.middleware
     )
 
 });
